@@ -1,0 +1,83 @@
+/*
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.wso2.identity.webhook.wso2.event.handler.internal;
+
+import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
+import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.EventConfigurationMgtService;
+import org.wso2.identity.webhook.wso2.event.handler.builder.WSO2LoginEventPayloadBuilder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+/**
+ * WSO2 Event Handler service component class.
+ */
+@Component(
+        name = "internal.org.wso2.identity.webhook.wso2.event.handler.WSO2EventHookHandlerServiceComponent",
+        immediate = true)
+public class WSO2EventHookHandlerServiceComponent {
+
+    private static final Log log = LogFactory.getLog(WSO2EventHookHandlerServiceComponent.class);
+
+    @Activate
+    protected void activate(ComponentContext context) {
+
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug("wso2 event handler is enabled");
+            }
+
+            context.getBundleContext().registerService(LoginEventPayloadBuilder.class.getName(),
+                    new WSO2LoginEventPayloadBuilder(), null);
+
+        } catch (Exception e) {
+            log.error("Error while activating event handler.", e);
+        }
+    }
+
+    @Deactivate
+    protected void deactivate(ComponentContext context) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("event handler is de-activated");
+        }
+    }
+
+    @Reference(
+            name = "event.configuration.manager.service",
+            service = EventConfigurationMgtService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unregisterEventConfigurationManager"
+    )
+    protected void registerEventConfigurationManager(EventConfigurationMgtService eventConfigurationMgtService) {
+        /* Reference EventConfigurationMgtService to guarantee that this component will wait until
+        event configuration core is started */
+    }
+
+    protected void unregisterEventConfigurationManager(EventConfigurationMgtService eventConfigurationMgtService) {
+        /* Reference EventConfigurationMgtService to guarantee that this component will wait until
+        event configuration core is started */
+    }
+}
