@@ -35,11 +35,13 @@ import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.publishers.common.EventPublisherService;
 
+import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.logDebug;
+
 /**
  * WSO2 Event Handler service component class.
  */
 @Component(
-        name = "org.wso2.identity.webhook.event.handlers.internal.EventHookHandlerServiceComponent",
+        name = "org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerServiceComponent",
         immediate = true)
 public class EventHookHandlerServiceComponent {
 
@@ -49,9 +51,7 @@ public class EventHookHandlerServiceComponent {
     protected void activate(ComponentContext context) {
 
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("event handler is enabled");
-            }
+            logDebug(log, "Event Handler is activated.");
 
             BundleContext bundleContext = context.getBundleContext();
 
@@ -66,9 +66,7 @@ public class EventHookHandlerServiceComponent {
     @Deactivate
     protected void deactivate(ComponentContext context) {
 
-        if (log.isDebugEnabled()) {
-            log.debug("event handler is de-activated");
-        }
+        logDebug(log, "Event Handler is deactivated.");
     }
 
     @Reference(
@@ -80,25 +78,21 @@ public class EventHookHandlerServiceComponent {
     )
     protected void addLoginEventPayloadBuilder(LoginEventPayloadBuilder loginEventPayloadBuilder) {
 
-        if (log.isDebugEnabled()) {
-            log.debug("Adding the Login Event Payload Builder Service : " +
+        logDebug(log, "Adding the Login Event Payload Builder Service : " +
                     loginEventPayloadBuilder.getEventSchemaType());
-        }
         EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(loginEventPayloadBuilder);
     }
 
     protected void removeLoginEventPayloadBuilder(LoginEventPayloadBuilder loginEventPayloadBuilder) {
 
-        if (log.isDebugEnabled()) {
-            log.debug("Removing the Login Event Payload Builder Service : " +
+        logDebug(log, "Removing the Login Event Payload Builder Service : " +
                     loginEventPayloadBuilder.getEventSchemaType());
-        }
         EventHookHandlerDataHolder.getInstance().removeLoginEventPayloadBuilder(loginEventPayloadBuilder);
     }
 
     @Reference(
             name = "resource.configuration.manager",
-            service = org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager.class,
+            service = ConfigurationManager.class,
             cardinality = ReferenceCardinality.MANDATORY,
             policy = ReferencePolicy.DYNAMIC,
             unbind = "unregisterConfigurationManager"

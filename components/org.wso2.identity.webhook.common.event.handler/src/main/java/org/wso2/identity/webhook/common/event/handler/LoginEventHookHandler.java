@@ -60,6 +60,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType.PrimitiveOperator.EQUALS;
+import static org.wso2.identity.webhook.common.event.handler.constant.Constants.EVENT_SCHEMA_TYPE_WSO2;
+import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.logDebug;
+import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.logError;
 
 /**
  * Login Event Hook Handler.
@@ -79,10 +82,10 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         String eventName = identityContext.getEvent().getEventName();
 
         if (isSupportedEvent(eventName) && isLoginEventHandlerEnabled()) {
-            logDebug(String.format("canHandle() returning True for the event: %s", eventName));
+            logDebug(log, String.format("canHandle() returning True for the event: %s", eventName));
             return true;
         }
-        logDebug("Login Event Handler is not enabled or unsupported event.");
+        logDebug(log, "Login Event Handler is not enabled or unsupported event.");
         return false;
     }
 
@@ -93,10 +96,10 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
-        logDebug(String.format("Event: %s received.", event.getEventName()));
+        logDebug(log, String.format("Event: %s received.", event.getEventName()));
 
         if (!isLoginEventHandlerEnabled()) {
-            logDebug("Login Event Handler is not enabled.");
+            logDebug(log, "Login Event Handler is not enabled.");
             return;
         }
 
@@ -112,11 +115,11 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         EventAttribute loginSuccessEventAttribute = getLoginEventPublisherConfigForTenant(
                 context.getLoginTenantDomain(), IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name());
         if (loginSuccessEventAttribute.isPublishEnabled()) {
-            logDebug(String.format("Handling %s event.", event.getEventName()));
+            logDebug(log, String.format("Handling %s event.", event.getEventName()));
             List<AuthStep> authSteps = convertAuthHistoryToAuthSteps(context.getAuthenticationStepHistory());
             handleLoginEvent(event, context, authSteps, true);
         } else {
-            logDebug(String.format("Event %s received, but ignored as publishing config is disabled", event.getEventName()));
+            logDebug(log, String.format("Event %s received, but ignored as publishing config is disabled", event.getEventName()));
         }
     }
 
@@ -124,26 +127,34 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         EventAttribute eventConfigAttribute = getLoginEventPublisherConfigForTenant(
                 context.getLoginTenantDomain(), IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name());
         if (eventConfigAttribute.isPublishEnabled()) {
-            logDebug(String.format("Handling %s event.", event.getEventName()));
+            logDebug(log, String.format("Handling %s event.", event.getEventName()));
             AuthStep failedStep = setFailedStep(context);
             handleLoginEvent(event, context, new ArrayList<>(Arrays.asList(failedStep)), false);
         } else {
-            logDebug(String.format("Event %s received, but ignored as publishing config is disabled", event.getEventName()));
+            logDebug(log, String.format("Event %s received, but ignored as publishing config is disabled", event.getEventName()));
         }
     }
 
     private void handleLoginEvent(Event event, AuthenticationContext context, List<AuthStep> authSteps, boolean isSuccess)
             throws IdentityEventException {
-        AuthenticationData authenticationData = AnalyticsLoginDataPublisherUtils.buildAuthnDataForAuthentication(event);
+
+        AuthenticationData authenticationData;
+        if (isSuccess) {
+            authenticationData = AnalyticsLoginDataPublisherUtils.buildAuthnDataForAuthentication(event);
+        } else {
+            authenticationData = AnalyticsLoginDataPublisherUtils.buildAuthnDataForAuthnStep(event);
+        }
+
         if (authenticationData.isPassive()) {
             return;
         }
 
         try {
-            LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getLoginEventPayloadBuilder("WSO2");
+            LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getLoginEventPayloadBuilder(EVENT_SCHEMA_TYPE_WSO2);
             AuthenticatedUser authenticatedUser = EventHookHandlerUtils.getAuthenticatedUserFromEvent(event);
             EventHookHandlerUtils.setLocalUserClaims(authenticatedUser, context);
-            EventData eventData = buildEventData(context, authSteps, authenticationData, authenticatedUser);
+            EventData eventData = new EventData(authenticationData, authenticatedUser, null, authSteps, context,
+                    context.getLoginTenantDomain());
             EventPayload eventPayload = isSuccess ? payloadBuilder.buildAuthenticationSuccessEvent(eventData)
                     : payloadBuilder.buildAuthenticationFailedEvent(eventData);
 
@@ -151,16 +162,6 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         } catch (Exception e) {
             throw new IdentityEventException(String.format("Error while handling %s event.", event.getEventName()), e);
         }
-    }
-
-    private EventData buildEventData(AuthenticationContext context, List<AuthStep> authSteps,
-                                     AuthenticationData authenticationData, AuthenticatedUser authenticatedUser) {
-        EventData eventData = new EventData();
-        eventData.setAuthenticationData(authenticationData);
-        eventData.setAuthenticatedUser(authenticatedUser);
-        eventData.setAuthSteps(authSteps);
-        eventData.setAuthenticationContext(context);
-        return eventData;
     }
 
     private void publishEventPayload(Event event, AuthenticationContext context, EventPayload eventPayload,
@@ -198,7 +199,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
             return extractEventAttribute(publisherConfigResource, eventName);
         } catch (ConfigurationManagementException | EventConfigurationMgtServerException e) {
-            logError("Error while retrieving event publisher configuration for tenant.", e);
+            logError(log, "Error while retrieving event publisher configuration for tenant.", e);
         }
 
         return new EventAttribute();
@@ -257,15 +258,5 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         failedStep.setIdp(context.getExternalIdP() != null ?
                 context.getExternalIdP().getIdentityProvider().getIdentityProviderName() : null);
         return failedStep;
-    }
-
-    private void logDebug(String message) {
-        if (log.isDebugEnabled()) {
-            log.debug(message);
-        }
-    }
-
-    private void logError(String message, Exception e) {
-        log.error(message, e);
     }
 }

@@ -77,11 +77,11 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         populateUserAttributes(authenticatedUser, user);
 
         user.setId(authenticationData.getUserId());
-        user.setRef(getReference(authenticationData.getTenantDomain(),
+        user.setRef(getReference(authenticationContext.getTenantDomain(),
                 Constants.SCIM2_ENDPOINT, authenticationData.getUserId()));
         payload.setUser(user);
-        payload.setOrganization(new Organization(IdentityTenantUtil.getTenantId(authenticationData.getTenantDomain()),
-                authenticationData.getTenantDomain()));
+        payload.setOrganization(new Organization(IdentityTenantUtil.getTenantId(authenticationContext.getTenantDomain()),
+                authenticationContext.getTenantDomain()));
         payload.setUserStore(new UserStore(authenticationData.getUserStoreDomain()));
         payload.setApplication(new Application(authenticationContext.getServiceProviderResourceId(),
                 authenticationData.getServiceProvider()));

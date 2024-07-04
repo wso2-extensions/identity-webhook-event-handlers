@@ -213,10 +213,8 @@ public class EventHookHandlerUtils {
             }
             return url;
         } catch (URLBuilderException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Error occurred while building the endpoint URL with tenant " +
+            logDebug(log, "Error occurred while building the endpoint URL with tenant " +
                         "qualified URL.", e);
-            }
             // Fallback to legacy approach during error scenarios to maintain backward compatibility.
             return getURLLegacy(tenantDomain, endpoint);
         }
@@ -235,5 +233,21 @@ public class EventHookHandlerUtils {
 
     private static boolean isNotASuperTenantFlow(String tenantDomain) {
         return !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain);
+    }
+
+    public static void logDebug(Log log, String message) {
+        if (log.isDebugEnabled()) {
+            log.debug(message);
+        }
+    }
+
+    public static void logDebug(Log log, String message, Exception e) {
+        if (log.isDebugEnabled()) {
+            log.debug(message, e);
+        }
+    }
+
+    public static void logError(Log log, String message, Exception e) {
+        log.error(message, e);
     }
 }

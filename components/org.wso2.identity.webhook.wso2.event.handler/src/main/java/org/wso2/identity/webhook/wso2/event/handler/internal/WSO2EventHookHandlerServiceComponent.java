@@ -30,11 +30,14 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+
+import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.logDebug;
+
 /**
  * WSO2 Event Handler service component class.
  */
 @Component(
-        name = "internal.org.wso2.identity.webhook.wso2.event.handler.WSO2EventHookHandlerServiceComponent",
+        name = "org.wso2.identity.webhook.wso2.event.handler.internal.WSO2EventHookHandlerServiceComponent",
         immediate = true)
 public class WSO2EventHookHandlerServiceComponent {
 
@@ -44,9 +47,7 @@ public class WSO2EventHookHandlerServiceComponent {
     protected void activate(ComponentContext context) {
 
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("wso2 event handler is enabled");
-            }
+            logDebug(log, "WSO2 Event Handler is activated.");
 
             context.getBundleContext().registerService(LoginEventPayloadBuilder.class.getName(),
                     new WSO2LoginEventPayloadBuilder(), null);
@@ -59,9 +60,7 @@ public class WSO2EventHookHandlerServiceComponent {
     @Deactivate
     protected void deactivate(ComponentContext context) {
 
-        if (log.isDebugEnabled()) {
-            log.debug("event handler is de-activated");
-        }
+        logDebug(log, "WSO2 Event Handler is deactivated.");
     }
 
     @Reference(
