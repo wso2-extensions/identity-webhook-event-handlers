@@ -51,6 +51,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
     @Override
     public EventPayload buildAuthenticationSuccessEvent(EventData eventData) {
+
         WSO2AuthenticationSuccessEventPayload payload = new WSO2AuthenticationSuccessEventPayload();
         buildEventPayload(eventData, payload);
         return payload;
@@ -58,6 +59,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
     @Override
     public EventPayload buildAuthenticationFailedEvent(EventData eventData) {
+
         WSO2AuthenticationFailedEventPayload payload = new WSO2AuthenticationFailedEventPayload();
         buildEventPayload(eventData, payload);
         return payload;
@@ -65,10 +67,12 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
     @Override
     public String getEventSchemaType() {
+
         return EVENT_SCHEMA_TYPE_WSO2;
     }
 
     private void buildEventPayload(EventData eventData, WSO2BaseEventPayload payload) {
+
         User user = new User();
         AuthenticationData<?, ?> authenticationData = eventData.getAuthenticationData();
         AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
@@ -95,6 +99,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
     }
 
     private void populateUserAttributes(AuthenticatedUser authenticatedUser, User user) {
+        
         List<UserClaim> userClaims = new ArrayList<>();
         if (authenticatedUser == null) {
             return;

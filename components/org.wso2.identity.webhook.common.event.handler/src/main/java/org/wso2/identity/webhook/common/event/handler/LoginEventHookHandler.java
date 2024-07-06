@@ -73,11 +73,13 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
     @Override
     public String getName() {
+
         return Constants.LOGIN_EVENT_HOOK_NAME;
     }
 
     @Override
     public boolean canHandle(MessageContext messageContext) throws IdentityRuntimeException {
+
         IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
         String eventName = identityContext.getEvent().getEventName();
 
@@ -90,12 +92,14 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     }
 
     private boolean isSupportedEvent(String eventName) {
+
         return IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name().equals(eventName) ||
                 IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name().equals(eventName);
     }
 
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
+
         logDebug(log, String.format("Event: %s received.", event.getEventName()));
 
         if (!isLoginEventHandlerEnabled()) {
@@ -112,6 +116,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     }
 
     private void handleLoginSuccess(Event event, AuthenticationContext context) throws IdentityEventException {
+
         EventAttribute loginSuccessEventAttribute = getLoginEventPublisherConfigForTenant(
                 context.getLoginTenantDomain(), IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name());
         if (loginSuccessEventAttribute.isPublishEnabled()) {
@@ -124,6 +129,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     }
 
     private void handleLoginFailure(Event event, AuthenticationContext context) throws IdentityEventException {
+
         EventAttribute eventConfigAttribute = getLoginEventPublisherConfigForTenant(
                 context.getLoginTenantDomain(), IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name());
         if (eventConfigAttribute.isPublishEnabled()) {
@@ -158,14 +164,15 @@ public class LoginEventHookHandler extends AbstractEventHandler {
             EventPayload eventPayload = isSuccess ? payloadBuilder.buildAuthenticationSuccessEvent(eventData)
                     : payloadBuilder.buildAuthenticationFailedEvent(eventData);
 
-            publishEventPayload(event, context, eventPayload, isSuccess);
+            publishEventPayload(context, eventPayload, isSuccess);
         } catch (Exception e) {
             throw new IdentityEventException(String.format("Error while handling %s event.", event.getEventName()), e);
         }
     }
 
-    private void publishEventPayload(Event event, AuthenticationContext context, EventPayload eventPayload,
+    private void publishEventPayload(AuthenticationContext context, EventPayload eventPayload,
                                      boolean isSuccess) throws Exception {
+
         EventContext eventContext = new EventContext();
         eventContext.setTenantDomain(context.getLoginTenantDomain());
         String eventUri = EventHookHandlerUtils.getEventUri(isSuccess ? Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT
@@ -178,16 +185,19 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     }
 
     private boolean isLoginEventHandlerEnabled() {
+
         String enablePropertyKey = Constants.LOGIN_EVENT_HOOK_NAME + "." + Constants.ENABLE;
         return this.configs != null && this.configs.getModuleProperties() != null &&
                 Boolean.parseBoolean(configs.getModuleProperties().getProperty(enablePropertyKey));
     }
 
     private AuthenticationContext getAuthenticationContext(Event event) {
+
         return (AuthenticationContext) event.getEventProperties().get(IdentityEventConstants.EventProperty.CONTEXT);
     }
 
     private EventAttribute getLoginEventPublisherConfigForTenant(String tenantDomain, String eventName) {
+
         if (StringUtils.isEmpty(tenantDomain) || MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain)) {
             return new EventAttribute();
         }
@@ -207,6 +217,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
     private EventAttribute extractEventAttribute(Resources publisherConfigResource, String eventName)
             throws EventConfigurationMgtServerException {
+
         if (CollectionUtils.isNotEmpty(publisherConfigResource.getResources()) &&
                 publisherConfigResource.getResources().get(0) != null &&
                 CollectionUtils.isNotEmpty(publisherConfigResource.getResources().get(0).getAttributes())) {
@@ -221,6 +232,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     }
 
     private boolean isMatchingEventAttribute(Attribute attribute, String eventName) {
+
         return (Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT.equals(attribute.getKey()) &&
                 eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name())) ||
                 (Constants.EventHandlerKey.LOGIN_FAILED_EVENT.equals(attribute.getKey()) &&
@@ -228,6 +240,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     }
 
     private ComplexCondition createPublisherConfigFilterCondition() {
+
         List<Condition> conditionList = new ArrayList<>();
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS, Constants.WEB_SUB_HUB_CONFIG_RESOURCE_TYPE_NAME));
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS, Constants.WEB_SUB_HUB_CONFIG_RESOURCE_NAME));
@@ -235,6 +248,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     }
 
     private List<AuthStep> convertAuthHistoryToAuthSteps(List<AuthHistory> authHistories) {
+
         List<AuthStep> authStepsList = new ArrayList<>();
         int authenticationStep = 1;
 
@@ -252,6 +266,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     }
 
     private AuthStep setFailedStep(AuthenticationContext context) {
+
         AuthStep failedStep = new AuthStep();
         failedStep.setStep(context.getCurrentStep());
         failedStep.setAuthenticator(context.getCurrentAuthenticator());

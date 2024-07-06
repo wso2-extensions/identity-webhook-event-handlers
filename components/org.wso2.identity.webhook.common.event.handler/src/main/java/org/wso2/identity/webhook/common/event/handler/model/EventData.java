@@ -33,7 +33,10 @@ public class EventData {
     private AuthenticationContext authenticationContext;
     private String tenantDomain;
 
-    public EventData(AuthenticationData<?, ?> authenticationData, AuthenticatedUser authenticatedUser, AuthStep failedStep, List<AuthStep> authSteps, AuthenticationContext authenticationContext, String tenantDomain) {
+    public EventData(AuthenticationData<?, ?> authenticationData, AuthenticatedUser authenticatedUser,
+                     AuthStep failedStep, List<AuthStep> authSteps, AuthenticationContext authenticationContext,
+                     String tenantDomain) {
+
         this.authenticationData = authenticationData;
         this.authenticatedUser = authenticatedUser;
         this.failedStep = failedStep;
@@ -50,6 +53,7 @@ public class EventData {
     }
 
     public void setAuthenticationData(AuthenticationData<?, ?> authenticationData) {
+
         this.authenticationData = authenticationData;
     }
 
@@ -58,6 +62,7 @@ public class EventData {
     }
 
     public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
+
         this.authenticatedUser = authenticatedUser;
     }
 

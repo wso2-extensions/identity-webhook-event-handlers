@@ -193,12 +193,14 @@ public class EventHookHandlerUtils {
      * @return Resource location.
      */
     public static String getReference(String tenantDomain, String endpoint, String id) {
+
         StringBuilder reference = new StringBuilder(getURL(tenantDomain, endpoint))
                 .append(id);
         return reference.toString();
     }
 
     private static String getURL(String tenantDomain, String endpoint) {
+
         String url;
         try {
             if (IdentityTenantUtil.isTenantQualifiedUrlsEnabled()) {
@@ -221,6 +223,7 @@ public class EventHookHandlerUtils {
     }
 
     private static String getURLLegacy(String tenantDomain, String endpoint) {
+
         String url;
         if (isNotASuperTenantFlow(tenantDomain)) {
             url = IdentityUtil.getServerURL(Constants.TENANT_SEPARATOR +
@@ -232,22 +235,26 @@ public class EventHookHandlerUtils {
     }
 
     private static boolean isNotASuperTenantFlow(String tenantDomain) {
+
         return !MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain);
     }
 
     public static void logDebug(Log log, String message) {
+
         if (log.isDebugEnabled()) {
             log.debug(message);
         }
     }
 
     public static void logDebug(Log log, String message, Exception e) {
+
         if (log.isDebugEnabled()) {
             log.debug(message, e);
         }
     }
 
     public static void logError(Log log, String message, Exception e) {
+
         log.error(message, e);
     }
 }

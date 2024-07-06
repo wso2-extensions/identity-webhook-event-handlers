@@ -30,8 +30,6 @@ public class WSO2BaseEventPayload extends EventPayload {
     private UserStore userStore;
     private Application application;
 
-    // Getters and setters
-
     public User getUser() {
         return user;
     }
