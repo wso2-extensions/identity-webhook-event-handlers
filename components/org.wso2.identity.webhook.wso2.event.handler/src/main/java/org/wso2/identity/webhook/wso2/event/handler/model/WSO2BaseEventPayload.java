@@ -22,7 +22,7 @@ import org.wso2.identity.webhook.wso2.event.handler.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.model.common.Organization;
 import org.wso2.identity.webhook.wso2.event.handler.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.model.common.UserStore;
-import org.wso2.identity.event.publishers.common.model.EventPayload;
+import org.wso2.identity.event.common.publisher.model.EventPayload;
 
 public class WSO2BaseEventPayload extends EventPayload {
     private User user;

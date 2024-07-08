@@ -19,7 +19,7 @@
 package org.wso2.identity.webhook.common.event.handler.builder;
 
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
-import org.wso2.identity.event.publishers.common.model.EventPayload;
+import org.wso2.identity.event.common.publisher.model.EventPayload;
 
 /**
  * Interface for Login Event Payload Builder.

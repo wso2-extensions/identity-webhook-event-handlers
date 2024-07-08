@@ -112,7 +112,7 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.identity.event.publishers</groupId>
-            <artifactId>org.wso2.identity.event.publishers.common</artifactId>
+            <artifactId>org.wso2.identity.event.common.publisher</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity.organization.management.core</groupId>
@@ -172,13 +172,13 @@
                             com.wso2.identity.asgardeo.event.configuration.mgt.core.service.*; version="${asgardeo.event.configuration.mgt.core.version.range}",
                             org.wso2.identity.webhook.common.event.handler.*;
                             version="${org.wso2.identity.webhook.common.event.handler.version.range}",
-                            org.wso2.identity.event.publishers.common;
+                            org.wso2.identity.event.common.publisher;
                             version="${org.wso2.identity.event.publishers.version.range}",
-                            org.wso2.identity.event.publishers.common.constant;
+                            org.wso2.identity.event.common.publisher.constant;
                             version="${org.wso2.identity.event.publishers.version.range}",
-                            org.wso2.identity.event.publishers.common.model;
+                            org.wso2.identity.event.common.publisher.model;
                             version="${org.wso2.identity.event.publishers.version.range}",
-                            org.wso2.identity.event.publishers.common.exception;
+                            org.wso2.identity.event.common.publisher.exception;
                             version="${org.wso2.identity.event.publishers.version.range}"
                         </Import-Package>
                     </instructions>

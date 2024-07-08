@@ -35,7 +35,7 @@ import org.wso2.carbon.identity.application.authentication.framework.model.Authe
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.data.publisher.authentication.analytics.login.model.AuthenticationData;
-import org.wso2.identity.event.publishers.common.model.EventPayload;
+import org.wso2.identity.event.common.publisher.model.EventPayload;
 
 import java.util.ArrayList;
 import java.util.List;

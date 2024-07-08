@@ -33,7 +33,7 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
-import org.wso2.identity.event.publishers.common.EventPublisherService;
+import org.wso2.identity.event.common.publisher.EventPublisherService;
 
 import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.logDebug;
 
@@ -125,7 +125,7 @@ public class EventHookHandlerServiceComponent {
     }
 
     @Reference(
-            name = "org.wso2.identity.event.publishers.common",
+            name = "org.wso2.identity.event.common.publisher",
             service = EventPublisherService.class,
             cardinality = ReferenceCardinality.MANDATORY,
             policy = ReferencePolicy.DYNAMIC,

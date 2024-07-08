@@ -174,7 +174,7 @@
             </dependency>
             <dependency>
                 <groupId>org.wso2.identity.event.publishers</groupId>
-                <artifactId>org.wso2.identity.event.publishers.common</artifactId>
+                <artifactId>org.wso2.identity.event.common.publisher</artifactId>
                 <version>${org.wso2.identity.event.publishers.version}</version>
             </dependency>
             <dependency>
@@ -257,13 +257,13 @@
                 <artifactId>maven-deploy-plugin</artifactId>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
                 <inherited>true</inherited>
                 <configuration>
-                    <encoding>UTF-8</encoding>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <source>${compiler-source.version}</source>
+                    <target>${compiler-target.version}</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -275,7 +275,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <source>1.8</source>
+                    <source>${compiler-source.version}</source>
                 </configuration>
                 <executions>
                     <execution>
@@ -377,9 +377,14 @@
         <commons-lang.wso2.osgi.version.range>[2.6.0,3.0.0)</commons-lang.wso2.osgi.version.range>
         <apache.felix.scr.ds.annotations.version>1.2.4</apache.felix.scr.ds.annotations.version>
         <commons-collections.wso2.osgi.version.range>[3.2.0,4.0.0)</commons-collections.wso2.osgi.version.range>
+
+        <compiler-source.version>11</compiler-source.version>
+        <compiler-target.version>11</compiler-target.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Unit test versions -->
         <testng.version>6.9.10</testng.version>
         <jacoco.version>0.8.6</jacoco.version>
+        <maven.bundle.plugin.version>4.2.1</maven.bundle.plugin.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
         <maven.buildnumber.plugin.version>1.4</maven.buildnumber.plugin.version>
         <protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
@@ -405,12 +410,12 @@
         <com.fasterxml.jackson.databind.version>2.14.1</com.fasterxml.jackson.databind.version>
 
         <!--Web Sub Hub Adapter dependency versions-->
-        <org.wso2.identity.event.publishers.version>1.0.29</org.wso2.identity.event.publishers.version>
+        <org.wso2.identity.event.publishers.version>1.0.1-SNAPSHOT</org.wso2.identity.event.publishers.version>
         <org.wso2.identity.event.publishers.version.range>[1.0.0,2.0.0)
         </org.wso2.identity.event.publishers.version.range>
 
-        <org.wso2.identity.event.publishers.common.range>[1.0.0, 2.0.0)
-        </org.wso2.identity.event.publishers.common.range>
+        <org.wso2.identity.event.common.publisher.range>[1.0.0, 2.0.0)
+        </org.wso2.identity.event.common.publisher.range>
 
         <!--Check style dependency versions-->
         <maven.checkstyleplugin.version>2.17</maven.checkstyleplugin.version>

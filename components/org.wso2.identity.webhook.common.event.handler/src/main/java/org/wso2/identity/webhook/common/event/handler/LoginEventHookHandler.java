@@ -51,9 +51,9 @@ import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
-import org.wso2.identity.event.publishers.common.model.EventContext;
-import org.wso2.identity.event.publishers.common.model.EventPayload;
-import org.wso2.identity.event.publishers.common.model.SecurityEventTokenPayload;
+import org.wso2.identity.event.common.publisher.model.EventContext;
+import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 
 import java.util.ArrayList;
 import java.util.Arrays;

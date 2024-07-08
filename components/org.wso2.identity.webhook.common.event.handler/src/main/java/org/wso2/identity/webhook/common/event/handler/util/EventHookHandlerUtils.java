@@ -37,8 +37,8 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
-import org.wso2.identity.event.publishers.common.model.EventPayload;
-import org.wso2.identity.event.publishers.common.model.SecurityEventTokenPayload;
+import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 
 import java.util.HashMap;
