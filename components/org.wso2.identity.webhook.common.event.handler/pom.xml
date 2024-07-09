@@ -170,8 +170,6 @@
                             org.wso2.identity.event.common.publisher.model;
                             version="${org.wso2.identity.event.publishers.version.range}",
                             org.wso2.identity.event.common.publisher.exception;
-                            version="${org.wso2.identity.event.publishers.version.range}",
-                            org.wso2.identity.event.common.publisher.constant;
                             version="${org.wso2.identity.event.publishers.version.range}"
                         </Import-Package>
                     </instructions>

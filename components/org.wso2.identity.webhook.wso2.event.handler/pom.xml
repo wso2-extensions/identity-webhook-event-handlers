@@ -171,9 +171,7 @@
                             com.wso2.identity.asgardeo.event.configuration.mgt.core.service.*; version="${asgardeo.event.configuration.mgt.core.version.range}",
                             org.wso2.identity.webhook.common.event.handler.*;
                             version="${org.wso2.identity.webhook.common.event.handler.version.range}",
-                            org.wso2.identity.event.common.publisher;
-                            version="${org.wso2.identity.event.publishers.version.range}",
-                            org.wso2.identity.event.common.publisher.constant;
+                            org.wso2.identity.event.common.publisher.*;
                             version="${org.wso2.identity.event.publishers.version.range}",
                             org.wso2.identity.event.common.publisher.model;
                             version="${org.wso2.identity.event.publishers.version.range}",

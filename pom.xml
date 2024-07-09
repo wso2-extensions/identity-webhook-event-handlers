@@ -378,13 +378,13 @@
         <apache.felix.scr.ds.annotations.version>1.2.4</apache.felix.scr.ds.annotations.version>
         <commons-collections.wso2.osgi.version.range>[3.2.0,4.0.0)</commons-collections.wso2.osgi.version.range>
 
-        <compiler-source.version>11</compiler-source.version>
-        <compiler-target.version>11</compiler-target.version>
+        <compiler-source.version>1.8</compiler-source.version>
+        <compiler-target.version>1.8</compiler-target.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Unit test versions -->
         <testng.version>6.9.10</testng.version>
         <jacoco.version>0.8.6</jacoco.version>
-        <maven.bundle.plugin.version>4.2.1</maven.bundle.plugin.version>
+        <maven.bundle.plugin.version>3.2.0</maven.bundle.plugin.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
         <maven.buildnumber.plugin.version>1.4</maven.buildnumber.plugin.version>
         <protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
@@ -413,9 +413,6 @@
         <org.wso2.identity.event.publishers.version>1.0.1-SNAPSHOT</org.wso2.identity.event.publishers.version>
         <org.wso2.identity.event.publishers.version.range>[1.0.0,2.0.0)
         </org.wso2.identity.event.publishers.version.range>
-
-        <org.wso2.identity.event.common.publisher.range>[1.0.0, 2.0.0)
-        </org.wso2.identity.event.common.publisher.range>
 
         <!--Check style dependency versions-->
         <maven.checkstyleplugin.version>2.17</maven.checkstyleplugin.version>
