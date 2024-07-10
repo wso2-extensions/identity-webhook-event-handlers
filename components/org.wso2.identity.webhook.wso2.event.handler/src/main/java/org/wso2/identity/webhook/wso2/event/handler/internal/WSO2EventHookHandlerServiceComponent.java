@@ -19,7 +19,6 @@
 package org.wso2.identity.webhook.wso2.event.handler.internal;
 
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
-import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.EventConfigurationMgtService;
 import org.wso2.identity.webhook.wso2.event.handler.builder.WSO2LoginEventPayloadBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,9 +26,6 @@ import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 
 import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.logDebug;
 
@@ -61,22 +57,5 @@ public class WSO2EventHookHandlerServiceComponent {
     protected void deactivate(ComponentContext context) {
 
         logDebug(log, "WSO2 Event Handler is deactivated.");
-    }
-
-    @Reference(
-            name = "event.configuration.manager.service",
-            service = EventConfigurationMgtService.class,
-            cardinality = ReferenceCardinality.MANDATORY,
-            policy = ReferencePolicy.DYNAMIC,
-            unbind = "unregisterEventConfigurationManager"
-    )
-    protected void registerEventConfigurationManager(EventConfigurationMgtService eventConfigurationMgtService) {
-        /* Reference EventConfigurationMgtService to guarantee that this component will wait until
-        event configuration core is started */
-    }
-
-    protected void unregisterEventConfigurationManager(EventConfigurationMgtService eventConfigurationMgtService) {
-        /* Reference EventConfigurationMgtService to guarantee that this component will wait until
-        event configuration core is started */
     }
 }

@@ -55,6 +55,7 @@ public class EventHookHandlerServiceComponent {
 
             BundleContext bundleContext = context.getBundleContext();
 
+            //TODO: Login event handler enable check
             bundleContext.registerService(AbstractEventHandler.class.getName(),
                     new LoginEventHookHandler(), null);
 

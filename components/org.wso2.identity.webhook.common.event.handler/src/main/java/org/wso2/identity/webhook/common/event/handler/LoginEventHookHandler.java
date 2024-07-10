@@ -144,8 +144,10 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     private void handleLoginEvent(Event event, AuthenticationContext context, List<AuthStep> authSteps, boolean isSuccess)
             throws IdentityEventException {
 
+        //TODO: make this also builder pattern
         AuthenticationData authenticationData;
         if (isSuccess) {
+            //TODO: buildAuthnDataForAuthentication to util in common
             authenticationData = AnalyticsLoginDataPublisherUtils.buildAuthnDataForAuthentication(event);
         } else {
             authenticationData = AnalyticsLoginDataPublisherUtils.buildAuthnDataForAuthnStep(event);
@@ -173,13 +175,15 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     private void publishEventPayload(AuthenticationContext context, EventPayload eventPayload,
                                      boolean isSuccess) throws Exception {
 
-        EventContext eventContext = new EventContext();
-        eventContext.setTenantDomain(context.getLoginTenantDomain());
         String eventUri = EventHookHandlerUtils.getEventUri(isSuccess ? Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT
                 : Constants.EventHandlerKey.LOGIN_FAILED_EVENT);
+        //TODO: remove extensibility of this event context builder
+        EventContext eventContext = EventContext.builder()
+                .tenantDomain(context.getLoginTenantDomain())
+                .eventUri(eventUri)
+                .build();
         SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.buildSecurityEventToken(eventPayload,
                 context, eventUri, eventContext.getTenantDomain());
-        eventContext.setEventUri(eventUri);
         EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                 .publish(securityEventTokenPayload, eventContext);
     }
