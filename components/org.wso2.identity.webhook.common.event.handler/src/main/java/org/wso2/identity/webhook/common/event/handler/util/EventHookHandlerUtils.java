@@ -146,9 +146,9 @@ public class EventHookHandlerUtils {
         return null;
     }
 
+    //TODO: remove it from the util class
     public static AuthenticatedUser setLocalUserClaims(AuthenticatedUser authenticatedUser,
                                                        AuthenticationContext context) {
-        try {
             // Retrieve the claim mappings from the context
             Map<String, String> claimMappings = (Map<String, String>) context.getParameters()
                     .get(Constants.SP_TO_CARBON_CLAIM_MAPPING);
@@ -162,6 +162,7 @@ public class EventHookHandlerUtils {
             Map<ClaimMapping, String> userAttributes = authenticatedUser.getUserAttributes();
 
             // If user attributes are null, initialize them
+            //TODO: Improve the refactoring, remove inline comments
             if (userAttributes == null) {
                 userAttributes = new HashMap<>();
             }
@@ -177,9 +178,6 @@ public class EventHookHandlerUtils {
                     localClaim.setClaimUri(claimMappings.get(localClaim.getClaimUri()));
                 }
             }
-        } catch (Exception e) {
-            log.error("Error occurred while setting user claims.", e);
-        }
 
         return authenticatedUser;
     }

@@ -39,8 +39,8 @@
     </scm>
 
     <modules>
-        <module>components/org.wso2.identity.webhook.wso2.event.handler</module>
         <module>components/org.wso2.identity.webhook.common.event.handler</module>
+        <module>components/org.wso2.identity.webhook.wso2.event.handler</module>
     </modules>
 
     <dependencyManagement>

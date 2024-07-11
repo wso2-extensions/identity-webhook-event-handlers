@@ -100,12 +100,8 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
 
+        //TODO: Remove the debug enabled check
         logDebug(log, String.format("Event: %s received.", event.getEventName()));
-
-        if (!isLoginEventHandlerEnabled()) {
-            logDebug(log, "Login Event Handler is not enabled.");
-            return;
-        }
 
         AuthenticationContext context = getAuthenticationContext(event);
         if (IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name().equals(event.getEventName())) {
@@ -166,12 +162,14 @@ public class LoginEventHookHandler extends AbstractEventHandler {
             EventPayload eventPayload = isSuccess ? payloadBuilder.buildAuthenticationSuccessEvent(eventData)
                     : payloadBuilder.buildAuthenticationFailedEvent(eventData);
 
+            //TODO: Pass the event itself to the publishEventPayload method
             publishEventPayload(context, eventPayload, isSuccess);
         } catch (Exception e) {
             throw new IdentityEventException(String.format("Error while handling %s event.", event.getEventName()), e);
         }
     }
 
+    //TODO: Improve the isSuccess variable name
     private void publishEventPayload(AuthenticationContext context, EventPayload eventPayload,
                                      boolean isSuccess) throws Exception {
 

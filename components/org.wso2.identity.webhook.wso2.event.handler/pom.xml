@@ -131,6 +131,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
+                <version>3.2.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -138,10 +139,10 @@
                             ${project.artifactId}
                         </Bundle-SymbolicName>
                         <Private-Package>
-                            org.wso2.identity.webhook.common.event.handler.internal
+                            org.wso2.identity.webhook.wso2.event.handler.internal
                         </Private-Package>
                         <Export-Package>
-                            !org.wso2.identity.webhook.common.event.handler.internal,
+                            !org.wso2.identity.webhook.wso2.event.handler.internal,
                             org.wso2.identity.webhook.wso2.event.handler.*; version="${project.version}"
                         </Export-Package>
                         <Import-Package>
@@ -171,7 +172,7 @@
                             com.wso2.identity.asgardeo.event.configuration.mgt.core.service.*; version="${asgardeo.event.configuration.mgt.core.version.range}",
                             org.wso2.identity.webhook.common.event.handler.*;
                             version="${org.wso2.identity.webhook.common.event.handler.version.range}",
-                            org.wso2.identity.event.common.publisher.*;
+                            org.wso2.identity.event.common.publisher;
                             version="${org.wso2.identity.event.publishers.version.range}",
                             org.wso2.identity.event.common.publisher.model;
                             version="${org.wso2.identity.event.publishers.version.range}",
