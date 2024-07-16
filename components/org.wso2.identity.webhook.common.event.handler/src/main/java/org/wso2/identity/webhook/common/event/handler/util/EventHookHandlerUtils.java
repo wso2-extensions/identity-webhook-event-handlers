@@ -140,7 +140,6 @@ public class EventHookHandlerUtils {
         securityEventTokenPayload.setIss(getReference("", ""));
         securityEventTokenPayload.setIat(System.currentTimeMillis());
         securityEventTokenPayload.setJti(UUID.randomUUID().toString());
-        securityEventTokenPayload.setTxn(context.getContextIdentifier());
         securityEventTokenPayload.setRci(getCorrelationID());
         Map<String, EventPayload> eventMap = new HashMap<>();
         eventMap.put(eventUri, eventPayload);
