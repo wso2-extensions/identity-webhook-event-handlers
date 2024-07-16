@@ -25,6 +25,7 @@ public class Constants {
 
     public static final String EVENT_SCHEMA_TYPE_WSO2 = "WSO2";
     public static final String LOGIN_EVENT_HOOK_NAME = "LoginEventHook";
+    public static final String LOGIN_EVENT_HOOK_ENABLED = "LoginEventHook.enable";
     public static final String ENABLE = "enable";
     public static final String SP_TO_CARBON_CLAIM_MAPPING = "SP_TO_CARBON_CLAIM_MAPPING";
 

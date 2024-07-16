@@ -34,6 +34,8 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
+import org.wso2.identity.webhook.common.event.handler.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
 
 /**
  * WSO2 Event Handler service component class.
@@ -50,11 +52,14 @@ public class EventHookHandlerServiceComponent {
 
         try {
             log.debug("Event Handler is activated.");
+            String isLoginEventHandlerEnabled = EventHookHandlerUtils
+                    .getIdentityEventProperty(Constants.LOGIN_EVENT_HOOK_NAME, Constants.LOGIN_EVENT_HOOK_ENABLED);
             BundleContext bundleContext = context.getBundleContext();
-            LoginEventHookHandler loginEventHookHandler = new LoginEventHookHandler();
-            if (loginEventHookHandler.isLoginEventHandlerEnabled()) {
+            if (isLoginEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        loginEventHookHandler, null);
+                        new LoginEventHookHandler(), null);
+            } else {
+                log.error("Login Event Handler is not enabled.");
             }
         } catch (Exception e) {
             log.error("Error while activating event handler.", e);

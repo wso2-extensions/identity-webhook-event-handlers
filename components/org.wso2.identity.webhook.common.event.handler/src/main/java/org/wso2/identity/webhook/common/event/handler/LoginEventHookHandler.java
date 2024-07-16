@@ -110,16 +110,14 @@ public class LoginEventHookHandler extends AbstractEventHandler {
             eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
             eventUri = EventHookHandlerUtils.getEventUri(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT);
             String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-            SecurityEventTokenPayload securityEventTokenPayload = buildSecurityEventToken(eventPayload,
-                    eventData.getAuthenticationContext(), eventUri);
+            SecurityEventTokenPayload securityEventTokenPayload = buildSecurityEventToken(eventPayload, eventUri);
             EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
         } else if (IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name().equals(event.getEventName()) &&
                 loginEventPublisherConfig.isPublishEnabled()) {
             eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
             eventUri = EventHookHandlerUtils.getEventUri(Constants.EventHandlerKey.LOGIN_FAILED_EVENT);
             String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-            SecurityEventTokenPayload securityEventTokenPayload = buildSecurityEventToken(eventPayload,
-                    eventData.getAuthenticationContext(), eventUri);
+            SecurityEventTokenPayload securityEventTokenPayload = buildSecurityEventToken(eventPayload, eventUri);
             EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
         }
     }
