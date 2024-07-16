@@ -33,8 +33,10 @@ import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.User;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
+import org.wso2.carbon.identity.event.IdentityEventConfigBuilder;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.IdentityEventServerException;
+import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
@@ -58,6 +60,30 @@ import static org.wso2.carbon.identity.application.authentication.framework.util
 public class EventHookHandlerUtils {
 
     private static final Log log = LogFactory.getLog(EventHookHandlerUtils.class);
+
+    /**
+     * Get the identity property specified in identity-event.properties
+     *
+     * @param moduleName   The name of the module which the property belongs to
+     * @param propertyName The name of the property which should be fetched
+     * @return The required property
+     */
+    public static String getIdentityEventProperty(String moduleName, String propertyName) {
+
+        // Retrieving properties set in identity event properties
+        String propertyValue = null;
+        try {
+            ModuleConfiguration moduleConfiguration = IdentityEventConfigBuilder.getInstance()
+                    .getModuleConfigurations(moduleName);
+
+            if (moduleConfiguration != null) {
+                propertyValue = moduleConfiguration.getModuleProperties().getProperty(propertyName);
+            }
+        } catch (IdentityEventException e) {
+            log.error("An error occurred while retrieving module properties because " + e.getMessage(), e);
+        }
+        return propertyValue;
+    }
 
     /**
      * Retrieve event uri.
@@ -124,8 +150,7 @@ public class EventHookHandlerUtils {
      * @param eventUri     Event URI.
      * @return Audience string.
      */
-    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload,
-                                                                    AuthenticationContext context, String eventUri)
+    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload, String eventUri)
             throws IdentityEventException {
 
         if (eventPayload == null) {
