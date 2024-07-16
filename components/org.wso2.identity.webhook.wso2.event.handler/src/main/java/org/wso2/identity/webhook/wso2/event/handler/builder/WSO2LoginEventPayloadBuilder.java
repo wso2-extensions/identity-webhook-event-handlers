@@ -84,7 +84,9 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         payload.setTenant(new Organization(
                 String.valueOf(IdentityTenantUtil.getTenantId(authenticationContext.getTenantDomain())),
                 authenticationContext.getTenantDomain()));
-        payload.setUserStore(new UserStore(authenticatedUser.getUserStoreDomain()));
+        if (authenticatedUser.getUserStoreDomain() != null) {
+            payload.setUserStore(new UserStore(authenticatedUser.getUserStoreDomain()));
+        }
         payload.setApplication(new Application(
                 authenticationContext.getServiceProviderResourceId(),
                 authenticationContext.getServiceProviderName()));
@@ -103,12 +105,13 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         User user = new User();
         try {
             if (authenticatedUser != null) {
-                populateUserAttributes(authenticatedUser, user);
                 user.setId(authenticatedUser.getUserId());
                 user.setRef(getReference(Constants.SCIM2_ENDPOINT, authenticatedUser.getUserId()));
                 payload.setUser(user);
-                payload.setUserStore(new UserStore(authenticatedUser.getUserStoreDomain()));
-            } else {
+                if (authenticatedUser.getUserStoreDomain() != null) {
+                    payload.setUserStore(new UserStore(authenticatedUser.getUserStoreDomain()));
+                }
+            } else if (eventData.getLoginIdentifier() != null) {
                 payload.setUserLoginIdentifier(eventData.getLoginIdentifier().getUserName());
                 payload.setUserStore(new UserStore(eventData.getLoginIdentifier().getUserStoreDomain()));
             }
