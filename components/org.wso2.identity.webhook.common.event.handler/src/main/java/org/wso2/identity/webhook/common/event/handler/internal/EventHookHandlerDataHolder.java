@@ -83,21 +83,41 @@ public class EventHookHandlerDataHolder {
         this.loginEventPayloadBuilders = loginEventPayloadBuilders;
     }
 
+    /**
+     * Set the configuration manager.
+     *
+     * @param configurationManager Configuration manager.
+     */
     public void setConfigurationManager(ConfigurationManager configurationManager) {
 
         this.configurationManager = configurationManager;
     }
 
+    /**
+     * Get the configuration manager.
+     *
+     * @return Configuration manager.
+     */
     public ConfigurationManager getConfigurationManager() {
 
         return configurationManager;
     }
 
+    /**
+     * Get the event publisher service.
+     *
+     * @return Event publisher service.
+     */
     public EventPublisherService getEventPublisherService() {
 
         return eventPublisherService;
     }
 
+    /**
+     * Set the event publisher service.
+     *
+     * @param eventPublisherService Event publisher service.
+     */
     public void setEventPublisherService(EventPublisherService eventPublisherService) {
 
         this.eventPublisherService = eventPublisherService;

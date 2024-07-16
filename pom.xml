@@ -93,6 +93,11 @@
                 <version>${carbon.identity.framework.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.organization.management.core</groupId>
+                <artifactId>org.wso2.carbon.identity.organization.management.service</artifactId>
+                <version>${identity.organization.management.core.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.identity.core</artifactId>
                 <version>${carbon.identity.framework.version}</version>
@@ -128,6 +133,11 @@
                 <version>${httpcore.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>
+                <artifactId>org.wso2.carbon.identity.oauth.common</artifactId>
+                <version>${org.wso2.carbon.identity.inbound.auth.oauth2.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.orbit.org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>${httpclient.version}</version>
@@ -136,6 +146,11 @@
                 <groupId>org.wso2.orbit.org.apache.httpcomponents</groupId>
                 <artifactId>httpasyncclient</artifactId>
                 <version>${httpasyncclient.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>${servlet-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.wso2.identity.asgardeo.extensions</groupId>
@@ -176,12 +191,6 @@
                 <groupId>org.wso2.identity.event.publishers</groupId>
                 <artifactId>org.wso2.identity.event.common.publisher</artifactId>
                 <version>${org.wso2.identity.event.publishers.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.identity.organization.management.core</groupId>
-                <artifactId>org.wso2.carbon.identity.organization.management.service</artifactId>
-                <version>${identity.organization.management.core.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.identity.inbound.provisioning.scim2</groupId>
@@ -363,6 +372,8 @@
 
         <identity.asgardeo.config.mapper.imp.pkg.version.range>[1.0.13, 1.2.0)
         </identity.asgardeo.config.mapper.imp.pkg.version.range>
+        <org.wso2.carbon.identity.organization.management.core.version.range>[1.0.0, 2.0.0)
+        </org.wso2.carbon.identity.organization.management.core.version.range>
 
         <!-- Analytics -->
         <carbon.analytics.common.version>5.2.50</carbon.analytics.common.version>
@@ -408,9 +419,11 @@
         <org.apache.commons.logging.range>[1.2.0,2.0.0)</org.apache.commons.logging.range>
 
         <com.fasterxml.jackson.databind.version>2.14.1</com.fasterxml.jackson.databind.version>
+        <servlet-api.version>2.5</servlet-api.version>
+        <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
 
         <!--Web Sub Hub Adapter dependency versions-->
-        <org.wso2.identity.event.publishers.version>1.0.1-SNAPSHOT</org.wso2.identity.event.publishers.version>
+        <org.wso2.identity.event.publishers.version>1.0.1</org.wso2.identity.event.publishers.version>
         <org.wso2.identity.event.publishers.version.range>[1.0.0,2.0.0)
         </org.wso2.identity.event.publishers.version.range>
 
@@ -428,6 +441,8 @@
         </org.wso2.carbon.identity.inbound.provisioning.scim2.version>
 
         <com.wso2.identity.asgardeo.extensions.version>1.0.219</com.wso2.identity.asgardeo.extensions.version>
+        <org.wso2.carbon.identity.inbound.auth.oauth2.version>7.0.114
+        </org.wso2.carbon.identity.inbound.auth.oauth2.version>
 
         <org.wso2.identity.webhook.common.event.handler.version.range>[1.0.0, 2.0.0)
         </org.wso2.identity.webhook.common.event.handler.version.range>

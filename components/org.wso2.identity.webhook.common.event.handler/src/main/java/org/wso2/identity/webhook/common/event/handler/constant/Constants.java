@@ -26,24 +26,12 @@ public class Constants {
     public static final String EVENT_SCHEMA_TYPE_WSO2 = "WSO2";
     public static final String LOGIN_EVENT_HOOK_NAME = "LoginEventHook";
     public static final String ENABLE = "enable";
-    public static final String TENANT_SEPARATOR = "/t/";
     public static final String SP_TO_CARBON_CLAIM_MAPPING = "SP_TO_CARBON_CLAIM_MAPPING";
 
     public static final String WEB_SUB_HUB_CONFIG_RESOURCE_TYPE_NAME = "web-sub-hub-event-publisher";
     public static final String WEB_SUB_HUB_CONFIG_RESOURCE_NAME = "web-sub-hub-event-publisher-configs";
     public static final String RESOURCE_TYPE = "resourceTypeName";
     public static final String RESOURCE_NAME = "resourceName";
-
-    /**
-     * Constants used for event handler topic names.
-     */
-    public static class EventURI {
-        public static final String LOGINS = "schemas.identity.wso2.org/events/logins/event-type/loginSuccess";
-
-        private EventURI() {
-
-        }
-    }
 
     /**
      * Constants for event config names (keys).

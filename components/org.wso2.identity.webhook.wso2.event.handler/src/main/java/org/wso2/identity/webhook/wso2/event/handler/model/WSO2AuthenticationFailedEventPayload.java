@@ -24,6 +24,7 @@ package org.wso2.identity.webhook.wso2.event.handler.model;
 public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
 
     private AuthenticationFailedReason reason;
+    private String userLoginIdentifier;
 
     public AuthenticationFailedReason getReason() {
         return reason;
@@ -31,5 +32,13 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
 
     public void setReason(AuthenticationFailedReason reason) {
         this.reason = reason;
+    }
+
+    public String getUserLoginIdentifier() {
+        return userLoginIdentifier;
+    }
+
+    public void setUserLoginIdentifier(String userLoginIdentifier) {
+        this.userLoginIdentifier = userLoginIdentifier;
     }
 }

@@ -74,6 +74,10 @@
             <artifactId>httpclient</artifactId>
         </dependency>
         <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.orbit.org.apache.httpcomponents</groupId>
             <artifactId>httpasyncclient</artifactId>
         </dependency>
@@ -109,11 +113,6 @@
         <dependency>
             <groupId>org.wso2.identity.event.publishers</groupId>
             <artifactId>org.wso2.identity.event.common.publisher</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.identity.organization.management.core</groupId>
-            <artifactId>org.wso2.carbon.identity.organization.management.service</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity.inbound.provisioning.scim2</groupId>
@@ -165,6 +164,7 @@
                             org.json.simple; version="${com.googlecode.json-simple.wso2.version.range}",
                             org.json.simple.parser; version="${com.googlecode.json-simple.wso2.version.range}",
                             com.wso2.identity.asgardeo.event.configuration.mgt.core.service.*; version="${asgardeo.event.configuration.mgt.core.version.range}",
+                            javax.servlet.http; version="${imp.pkg.version.javax.servlet}",
                             org.wso2.identity.event.common.publisher;
                             version="${org.wso2.identity.event.publishers.version.range}",
                             org.wso2.identity.event.common.publisher.model;

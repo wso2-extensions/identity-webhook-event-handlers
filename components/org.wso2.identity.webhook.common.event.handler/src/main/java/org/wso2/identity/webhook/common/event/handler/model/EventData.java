@@ -18,82 +18,114 @@
 
 package org.wso2.identity.webhook.common.event.handler.model;
 
+import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorStatus;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
-import org.wso2.carbon.identity.data.publisher.authentication.analytics.login.model.AuthenticationData;
+import org.wso2.carbon.identity.application.common.model.User;
 
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
+/**
+ * Event data model.
+ */
 public class EventData {
 
-    private AuthenticationData<?, ?> authenticationData;
-    private AuthenticatedUser authenticatedUser;
-    private AuthStep failedStep;
-    private List<AuthStep> authSteps;
-    private AuthenticationContext authenticationContext;
-    private String tenantDomain;
+    private final String eventName;
+    private final HttpServletRequest request;
+    private final Map<String, Object> eventParams;
+    private final AuthenticationContext authenticationContext;
+    private final AuthenticatorStatus authenticatorStatus;
+    private final AuthenticatedUser authenticatedUser;
+    private final User loginIdentifier;
 
-    public EventData(AuthenticationData<?, ?> authenticationData, AuthenticatedUser authenticatedUser,
-                     AuthStep failedStep, List<AuthStep> authSteps, AuthenticationContext authenticationContext,
-                     String tenantDomain) {
-
-        this.authenticationData = authenticationData;
-        this.authenticatedUser = authenticatedUser;
-        this.failedStep = failedStep;
-        this.authSteps = authSteps;
-        this.authenticationContext = authenticationContext;
-        this.tenantDomain = tenantDomain;
+    private EventData(Builder builder) {
+        this.eventName = builder.eventName;
+        this.request = builder.request;
+        this.eventParams = builder.eventParams;
+        this.authenticationContext = builder.authenticationContext;
+        this.authenticatorStatus = builder.authenticatorStatus;
+        this.authenticatedUser = builder.authenticatedUser;
+        this.loginIdentifier = builder.loginIdentifier;
     }
 
-    public EventData() {
+    public String getEventName() {
+        return eventName;
+    }
+    public HttpServletRequest getRequest() {
+        return request;
     }
 
-    public AuthenticationData<?, ?> getAuthenticationData() {
-        return authenticationData;
-    }
-
-    public void setAuthenticationData(AuthenticationData<?, ?> authenticationData) {
-
-        this.authenticationData = authenticationData;
-    }
-
-    public AuthenticatedUser getAuthenticatedUser() {
-        return authenticatedUser;
-    }
-
-    public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
-
-        this.authenticatedUser = authenticatedUser;
-    }
-
-    public AuthStep getFailedStep() {
-        return failedStep;
-    }
-
-    public void setFailedStep(AuthStep failedStep) {
-        this.failedStep = failedStep;
-    }
-
-    public List<AuthStep> getAuthSteps() {
-        return authSteps;
-    }
-
-    public void setAuthSteps(List<AuthStep> authSteps) {
-        this.authSteps = authSteps;
+    public Map<String, Object> getEventParams() {
+        return eventParams;
     }
 
     public AuthenticationContext getAuthenticationContext() {
         return authenticationContext;
     }
 
-    public void setAuthenticationContext(AuthenticationContext authenticationContext) {
-        this.authenticationContext = authenticationContext;
-    }
-    public String getTenantDomain() {
-        return tenantDomain;
+    public AuthenticatorStatus getAuthenticatorStatus() {
+        return authenticatorStatus;
     }
 
-    public void setTenantDomain(String tenantDomain) {
-        this.tenantDomain = tenantDomain;
+    public AuthenticatedUser getAuthenticatedUser() {
+        return authenticatedUser;
+    }
+
+    public User getLoginIdentifier() {
+        return loginIdentifier;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String eventName;
+        private HttpServletRequest request;
+        private Map<String, Object> eventParams;
+        private AuthenticationContext authenticationContext;
+        private AuthenticatorStatus authenticatorStatus;
+        private AuthenticatedUser authenticatedUser;
+        private User loginIdentifier;
+        public Builder eventName(String eventName) {
+            this.eventName = eventName;
+            return this;
+        }
+
+        public Builder request(HttpServletRequest request) {
+            this.request = request;
+            return this;
+        }
+
+        public Builder eventParams(Map<String, Object> eventParams) {
+            this.eventParams = eventParams;
+            return this;
+        }
+
+        public Builder authenticationContext(AuthenticationContext authenticationContext) {
+            this.authenticationContext = authenticationContext;
+            return this;
+        }
+
+        public Builder authenticatorStatus(AuthenticatorStatus authenticatorStatus) {
+            this.authenticatorStatus = authenticatorStatus;
+            return this;
+        }
+
+        public Builder authenticatedUser(AuthenticatedUser authenticatedUser) {
+            this.authenticatedUser = authenticatedUser;
+            return this;
+        }
+
+        public Builder loginIdentifier(User loginIdentifier) {
+            this.loginIdentifier = loginIdentifier;
+            return this;
+        }
+
+        public EventData build() {
+            return new EventData(this);
+        }
     }
 }
+

@@ -26,7 +26,8 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 
 public class WSO2BaseEventPayload extends EventPayload {
     private User user;
-    private Organization organization;
+    private Organization tenant;
+    private Organization userResidentOrganization;
     private UserStore userStore;
     private Application application;
 
@@ -38,12 +39,12 @@ public class WSO2BaseEventPayload extends EventPayload {
         this.user = user;
     }
 
-    public Organization getOrganization() {
-        return organization;
+    public Organization getTenant() {
+        return tenant;
     }
 
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
+    public void setTenant(Organization tenant) {
+        this.tenant = tenant;
     }
 
     public UserStore getUserStore() {
@@ -60,5 +61,13 @@ public class WSO2BaseEventPayload extends EventPayload {
 
     public void setApplication(Application application) {
         this.application = application;
+    }
+
+    public Organization getUserResidentOrganization() {
+        return userResidentOrganization;
+    }
+
+    public void setUserResidentOrganization(Organization userResidentOrganization) {
+        this.userResidentOrganization = userResidentOrganization;
     }
 }

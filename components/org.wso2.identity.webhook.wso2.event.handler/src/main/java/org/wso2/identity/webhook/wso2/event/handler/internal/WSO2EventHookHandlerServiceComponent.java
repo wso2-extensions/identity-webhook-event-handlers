@@ -18,16 +18,13 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.internal;
 
+import org.osgi.service.component.annotations.*;
+import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.builder.WSO2LoginEventPayloadBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-
-import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.logDebug;
 
 /**
  * WSO2 Event Handler service component class.
@@ -43,7 +40,7 @@ public class WSO2EventHookHandlerServiceComponent {
     protected void activate(ComponentContext context) {
 
         try {
-            logDebug(log, "WSO2 Event Handler is activated.");
+            log.debug("WSO2 Event Handler is activated.");
 
             context.getBundleContext().registerService(LoginEventPayloadBuilder.class.getName(),
                     new WSO2LoginEventPayloadBuilder(), null);
@@ -56,6 +53,21 @@ public class WSO2EventHookHandlerServiceComponent {
     @Deactivate
     protected void deactivate(ComponentContext context) {
 
-        logDebug(log, "WSO2 Event Handler is deactivated.");
+        log.debug("WSO2 Event Handler is deactivated.");
+    }
+
+    @Reference(name = "identity.organization.management.component",
+            service = OrganizationManager.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetOrganizationManager")
+    protected void setOrganizationManager(OrganizationManager organizationManager) {
+
+        WSO2EventHookHandlerDataHolder.getInstance().setOrganizationManager(organizationManager);
+    }
+
+    protected void unsetOrganizationManager(OrganizationManager organizationManager) {
+
+        WSO2EventHookHandlerDataHolder.getInstance().setOrganizationManager(null);
     }
 }

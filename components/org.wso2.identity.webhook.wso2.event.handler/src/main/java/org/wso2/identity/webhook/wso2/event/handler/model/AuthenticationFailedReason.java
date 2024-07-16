@@ -24,8 +24,7 @@ package org.wso2.identity.webhook.wso2.event.handler.model;
 public class AuthenticationFailedReason {
 
     private String id;
-    private String message;
-    private String i18nKey;
+    private FailedStep failedStep;
 
     public String getId() {
         return id;
@@ -35,19 +34,41 @@ public class AuthenticationFailedReason {
         this.id = id;
     }
 
-    public String getMessage() {
-        return message;
+    public FailedStep getFailedStep() {
+        return failedStep;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setFailedStep(FailedStep failedStep) {
+        this.failedStep = failedStep;
     }
 
-    public String getI18nKey() {
-        return i18nKey;
-    }
+    public static class FailedStep {
+        private int step;
+        private String idp;
+        private String authenticator;
 
-    public void setI18nKey(String i18nKey) {
-        this.i18nKey = i18nKey;
+        public int getStep() {
+            return step;
+        }
+
+        public void setStep(int step) {
+            this.step = step;
+        }
+
+        public String getIdp() {
+            return idp;
+        }
+
+        public void setIdp(String idp) {
+            this.idp = idp;
+        }
+
+        public String getAuthenticator() {
+            return authenticator;
+        }
+
+        public void setAuthenticator(String authenticator) {
+            this.authenticator = authenticator;
+        }
     }
 }

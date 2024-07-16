@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.common.event.handler.builder;
 
+import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 
@@ -32,7 +33,7 @@ public interface LoginEventPayloadBuilder {
      * @param eventData         Event data.
      * @return Event payload.
      */
-    EventPayload buildAuthenticationSuccessEvent(EventData eventData);
+    EventPayload buildAuthenticationSuccessEvent(EventData eventData) throws IdentityEventException;
 
     /**
      * Build the authentication failed event.
@@ -40,7 +41,7 @@ public interface LoginEventPayloadBuilder {
      * @param eventData         Event data.
      * @return Event payload.
      */
-    EventPayload buildAuthenticationFailedEvent(EventData eventData);
+    EventPayload buildAuthenticationFailedEvent(EventData eventData) throws IdentityEventException;
 
     /**
      * Get the event schema type.

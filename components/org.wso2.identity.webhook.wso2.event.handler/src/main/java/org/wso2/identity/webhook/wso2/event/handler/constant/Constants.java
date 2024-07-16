@@ -26,4 +26,8 @@ public class Constants {
     public static final String SCIM2_ENDPOINT = "/scim2";
     public static final String WSO2_CLAIM_GROUPS = "http://wso2.org/claims/groups";
     public static final String WSO2_CLAIM_ROLES = "http://wso2.org/claims/roles";
+    public static final String MULTI_ATTRIBUTE_SEPARATOR = "MultiAttributeSeparator";
+    public static final String USER_ORGANIZATION = "user_organization";
+    public static final String CURRENT_AUTHENTICATOR_ERROR_CODE = "currentAuthenticatorErrorCode";
+    public static final String DATA_MAP = "dataMap";
 }

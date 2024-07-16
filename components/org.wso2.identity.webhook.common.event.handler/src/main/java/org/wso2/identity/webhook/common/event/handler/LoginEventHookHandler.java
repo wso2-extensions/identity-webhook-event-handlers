@@ -21,7 +21,6 @@ package org.wso2.identity.webhook.common.event.handler;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.common.event.handler.model.AuthStep;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
 import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.exception.EventConfigurationMgtServerException;
@@ -31,9 +30,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
-import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
-import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Attribute;
@@ -43,26 +39,21 @@ import org.wso2.carbon.identity.configuration.mgt.core.search.Condition;
 import org.wso2.carbon.identity.configuration.mgt.core.search.PrimitiveCondition;
 import org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
-import org.wso2.carbon.identity.data.publisher.authentication.analytics.login.AnalyticsLoginDataPublisherUtils;
-import org.wso2.carbon.identity.data.publisher.authentication.analytics.login.model.AuthenticationData;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
-import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType.PrimitiveOperator.EQUALS;
 import static org.wso2.identity.webhook.common.event.handler.constant.Constants.EVENT_SCHEMA_TYPE_WSO2;
-import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.logDebug;
-import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.logError;
+import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.*;
 
 /**
  * Login Event Hook Handler.
@@ -83,119 +74,66 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
         String eventName = identityContext.getEvent().getEventName();
 
-        if (isSupportedEvent(eventName) && isLoginEventHandlerEnabled()) {
-            logDebug(log, String.format("canHandle() returning True for the event: %s", eventName));
+        if (isSupportedEvent(eventName)) {
+            log.debug("canHandle() returning True for the event: " + eventName);
             return true;
         }
-        logDebug(log, "Login Event Handler is not enabled or unsupported event.");
         return false;
     }
 
     private boolean isSupportedEvent(String eventName) {
 
         return IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name().equals(eventName) ||
-                IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name().equals(eventName);
+                IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name().equals(eventName) ||
+                IdentityEventConstants.EventName.AUTHENTICATION_FAILURE.name().equals(eventName);
     }
 
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
 
-        //TODO: Remove the debug enabled check
-        logDebug(log, String.format("Event: %s received.", event.getEventName()));
+        EventData eventData = buildEventDataProvider(event);
 
-        AuthenticationContext context = getAuthenticationContext(event);
-        if (IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name().equals(event.getEventName())) {
-            handleLoginSuccess(event, context);
-        } else if (IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name().equals(event.getEventName())) {
-            handleLoginFailure(event, context);
-        }
-    }
-
-    private void handleLoginSuccess(Event event, AuthenticationContext context) throws IdentityEventException {
-
-        EventAttribute loginSuccessEventAttribute = getLoginEventPublisherConfigForTenant(
-                context.getLoginTenantDomain(), IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name());
-        if (loginSuccessEventAttribute.isPublishEnabled()) {
-            logDebug(log, String.format("Handling %s event.", event.getEventName()));
-            List<AuthStep> authSteps = convertAuthHistoryToAuthSteps(context.getAuthenticationStepHistory());
-            handleLoginEvent(event, context, authSteps, true);
-        } else {
-            logDebug(log, String.format("Event %s received, but ignored as publishing config is disabled", event.getEventName()));
-        }
-    }
-
-    private void handleLoginFailure(Event event, AuthenticationContext context) throws IdentityEventException {
-
-        EventAttribute eventConfigAttribute = getLoginEventPublisherConfigForTenant(
-                context.getLoginTenantDomain(), IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name());
-        if (eventConfigAttribute.isPublishEnabled()) {
-            logDebug(log, String.format("Handling %s event.", event.getEventName()));
-            AuthStep failedStep = setFailedStep(context);
-            handleLoginEvent(event, context, new ArrayList<>(Arrays.asList(failedStep)), false);
-        } else {
-            logDebug(log, String.format("Event %s received, but ignored as publishing config is disabled", event.getEventName()));
-        }
-    }
-
-    private void handleLoginEvent(Event event, AuthenticationContext context, List<AuthStep> authSteps, boolean isSuccess)
-            throws IdentityEventException {
-
-        //TODO: make this also builder pattern
-        AuthenticationData authenticationData;
-        if (isSuccess) {
-            //TODO: buildAuthnDataForAuthentication to util in common
-            authenticationData = AnalyticsLoginDataPublisherUtils.buildAuthnDataForAuthentication(event);
-        } else {
-            authenticationData = AnalyticsLoginDataPublisherUtils.buildAuthnDataForAuthnStep(event);
-        }
-
-        if (authenticationData.isPassive()) {
+        if (eventData.getAuthenticationContext().isPassiveAuthenticate()) {
             return;
         }
 
-        try {
-            LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getLoginEventPayloadBuilder(EVENT_SCHEMA_TYPE_WSO2);
-            AuthenticatedUser authenticatedUser = EventHookHandlerUtils.getAuthenticatedUserFromEvent(event);
-            EventHookHandlerUtils.setLocalUserClaims(authenticatedUser, context);
-            EventData eventData = new EventData(authenticationData, authenticatedUser, null, authSteps, context,
-                    context.getLoginTenantDomain());
-            EventPayload eventPayload = isSuccess ? payloadBuilder.buildAuthenticationSuccessEvent(eventData)
-                    : payloadBuilder.buildAuthenticationFailedEvent(eventData);
+        //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
+        LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
+                .getLoginEventPayloadBuilder(EVENT_SCHEMA_TYPE_WSO2);
+        EventAttribute loginEventPublisherConfig = getLoginEventPublisherConfigForTenant(
+                eventData.getAuthenticationContext().getLoginTenantDomain(), event.getEventName());
+        EventPayload eventPayload;
+        String eventUri;
 
-            //TODO: Pass the event itself to the publishEventPayload method
-            publishEventPayload(context, eventPayload, isSuccess);
-        } catch (Exception e) {
-            throw new IdentityEventException(String.format("Error while handling %s event.", event.getEventName()), e);
+        if (IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name().equals(event.getEventName()) &&
+                loginEventPublisherConfig.isPublishEnabled()) {
+            eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
+            eventUri = EventHookHandlerUtils.getEventUri(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT);
+            String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
+            SecurityEventTokenPayload securityEventTokenPayload = buildSecurityEventToken(eventPayload,
+                    eventData.getAuthenticationContext(), eventUri);
+            EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+        } else if (IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name().equals(event.getEventName()) &&
+                loginEventPublisherConfig.isPublishEnabled()) {
+            eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
+            eventUri = EventHookHandlerUtils.getEventUri(Constants.EventHandlerKey.LOGIN_FAILED_EVENT);
+            String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
+            SecurityEventTokenPayload securityEventTokenPayload = buildSecurityEventToken(eventPayload,
+                    eventData.getAuthenticationContext(), eventUri);
+            EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
         }
     }
 
-    //TODO: Improve the isSuccess variable name
-    private void publishEventPayload(AuthenticationContext context, EventPayload eventPayload,
-                                     boolean isSuccess) throws Exception {
-
-        String eventUri = EventHookHandlerUtils.getEventUri(isSuccess ? Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT
-                : Constants.EventHandlerKey.LOGIN_FAILED_EVENT);
-        //TODO: remove extensibility of this event context builder
-        EventContext eventContext = EventContext.builder()
-                .tenantDomain(context.getLoginTenantDomain())
-                .eventUri(eventUri)
-                .build();
-        SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.buildSecurityEventToken(eventPayload,
-                context, eventUri, eventContext.getTenantDomain());
-        EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                .publish(securityEventTokenPayload, eventContext);
-    }
-
-    private boolean isLoginEventHandlerEnabled() {
+    /**
+     * Check whether the login event handler is enabled.
+     *
+     * @return True if the login event handler is enabled.
+     */
+    public boolean isLoginEventHandlerEnabled() {
 
         String enablePropertyKey = Constants.LOGIN_EVENT_HOOK_NAME + "." + Constants.ENABLE;
         return this.configs != null && this.configs.getModuleProperties() != null &&
                 Boolean.parseBoolean(configs.getModuleProperties().getProperty(enablePropertyKey));
-    }
-
-    private AuthenticationContext getAuthenticationContext(Event event) {
-
-        return (AuthenticationContext) event.getEventProperties().get(IdentityEventConstants.EventProperty.CONTEXT);
     }
 
     private EventAttribute getLoginEventPublisherConfigForTenant(String tenantDomain, String eventName) {
@@ -211,7 +149,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
             return extractEventAttribute(publisherConfigResource, eventName);
         } catch (ConfigurationManagementException | EventConfigurationMgtServerException e) {
-            logError(log, "Error while retrieving event publisher configuration for tenant.", e);
+            log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }
 
         return new EventAttribute();
@@ -247,33 +185,5 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS, Constants.WEB_SUB_HUB_CONFIG_RESOURCE_TYPE_NAME));
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS, Constants.WEB_SUB_HUB_CONFIG_RESOURCE_NAME));
         return new ComplexCondition(ConditionType.ComplexOperator.AND, conditionList);
-    }
-
-    private List<AuthStep> convertAuthHistoryToAuthSteps(List<AuthHistory> authHistories) {
-
-        List<AuthStep> authStepsList = new ArrayList<>();
-        int authenticationStep = 1;
-
-        if (authHistories != null) {
-            for (AuthHistory authHistory : authHistories) {
-                AuthStep authStep = new AuthStep();
-                authStep.setStep(authenticationStep);
-                authStep.setIdp(authHistory.getIdpName());
-                authStep.setAuthenticator(authHistory.getAuthenticatorName());
-                authStepsList.add(authStep);
-                authenticationStep++;
-            }
-        }
-        return authStepsList;
-    }
-
-    private AuthStep setFailedStep(AuthenticationContext context) {
-
-        AuthStep failedStep = new AuthStep();
-        failedStep.setStep(context.getCurrentStep());
-        failedStep.setAuthenticator(context.getCurrentAuthenticator());
-        failedStep.setIdp(context.getExternalIdP() != null ?
-                context.getExternalIdP().getIdentityProvider().getIdentityProviderName() : null);
-        return failedStep;
     }
 }

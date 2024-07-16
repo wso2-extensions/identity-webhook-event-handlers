@@ -18,12 +18,15 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.internal;
 
+import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
+
 /**
  * A data holder class to keep the data of the event handler component.
  */
 public class WSO2EventHookHandlerDataHolder {
 
     private static final WSO2EventHookHandlerDataHolder instance = new WSO2EventHookHandlerDataHolder();
+    private OrganizationManager organizationManager;
 
     private WSO2EventHookHandlerDataHolder() {
     }
@@ -31,5 +34,25 @@ public class WSO2EventHookHandlerDataHolder {
     public static WSO2EventHookHandlerDataHolder getInstance() {
 
         return instance;
+    }
+
+    /**
+     * Get {@link OrganizationManager}.
+     *
+     * @return organization manager instance {@link OrganizationManager}.
+     */
+    public OrganizationManager getOrganizationManager() {
+
+        return organizationManager;
+    }
+
+    /**
+     * Set {@link OrganizationManager}.
+     *
+     * @param organizationManager Instance of {@link OrganizationManager}.
+     */
+    public void setOrganizationManager(OrganizationManager organizationManager) {
+
+        this.organizationManager = organizationManager;
     }
 }
