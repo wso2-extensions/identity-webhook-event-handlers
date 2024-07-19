@@ -90,15 +90,6 @@
             <artifactId>httpasyncclient</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.wso2.identity.asgardeo.extensions</groupId>
-            <artifactId>com.wso2.identity.asgardeo.event.configuration.mgt.core.service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.wso2.identity.asgardeo.extensions</groupId>
-            <artifactId>com.wso2.identity.asgardeo.config.mapper</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.googlecode.json-simple.wso2</groupId>
             <artifactId>json-simple</artifactId>
         </dependency>
@@ -173,7 +164,6 @@
                             org.wso2.carbon.identity.data.publisher.authentication.analytics.login.*; version="${identity.datapublisher.authentication.version.range}",
                             org.json.simple; version="${com.googlecode.json-simple.wso2.version.range}",
                             org.json.simple.parser; version="${com.googlecode.json-simple.wso2.version.range}",
-                            com.wso2.identity.asgardeo.event.configuration.mgt.core.service.*; version="${asgardeo.event.configuration.mgt.core.version.range}",
                             org.wso2.identity.webhook.common.event.handler.*;
                             version="${org.wso2.identity.webhook.common.event.handler.version.range}",
                             org.wso2.identity.event.common.publisher;

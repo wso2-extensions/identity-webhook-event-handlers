@@ -24,50 +24,30 @@ import org.wso2.identity.webhook.wso2.event.handler.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.model.common.UserStore;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 
-public class WSO2BaseEventPayload extends EventPayload {
-    private User user;
-    private Organization tenant;
-    private Organization userResidentOrganization;
-    private UserStore userStore;
-    private Application application;
+public abstract class WSO2BaseEventPayload extends EventPayload {
+    protected User user;
+    protected Organization tenant;
+    protected Organization userResidentOrganization;
+    protected UserStore userStore;
+    protected Application application;
 
     public User getUser() {
         return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public Organization getTenant() {
         return tenant;
     }
 
-    public void setTenant(Organization tenant) {
-        this.tenant = tenant;
-    }
-
     public UserStore getUserStore() {
         return userStore;
-    }
-
-    public void setUserStore(UserStore userStore) {
-        this.userStore = userStore;
     }
 
     public Application getApplication() {
         return application;
     }
 
-    public void setApplication(Application application) {
-        this.application = application;
-    }
-
     public Organization getUserResidentOrganization() {
         return userResidentOrganization;
-    }
-
-    public void setUserResidentOrganization(Organization userResidentOrganization) {
-        this.userResidentOrganization = userResidentOrganization;
     }
 }

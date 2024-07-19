@@ -24,6 +24,8 @@ import org.wso2.identity.webhook.wso2.event.handler.model.WSO2AuthenticationFail
 import org.wso2.identity.webhook.wso2.event.handler.model.WSO2AuthenticationSuccessEventPayload;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 
+import java.util.ArrayList;
+
 import static org.wso2.identity.webhook.common.event.handler.constant.Constants.EVENT_SCHEMA_TYPE_WSO2;
 
 /**
@@ -35,14 +37,29 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
     public EventPayload buildAuthenticationSuccessEvent(EventData eventData) throws IdentityEventException {
 
         //TODO: Implement the logic to build the authentication success event payload.
-        return new WSO2AuthenticationSuccessEventPayload();
+        return new WSO2AuthenticationSuccessEventPayload.Builder()
+                .user(null)
+                .tenant(null)
+                .userResidentOrganization(null)
+                .userStore(null)
+                .application(null)
+                .authenticationMethods(new ArrayList<>())
+                .build();
     }
 
     @Override
     public EventPayload buildAuthenticationFailedEvent(EventData eventData) throws IdentityEventException {
 
         //TODO: Implement the logic to build the authentication failed event payload.
-        return new WSO2AuthenticationFailedEventPayload();
+        return new WSO2AuthenticationFailedEventPayload.Builder()
+                .user(null)
+                .tenant(null)
+                .userResidentOrganization(null)
+                .userStore(null)
+                .application(null)
+                .reason(null)
+                .userLoginIdentifier(null)
+                .build();
     }
 
     @Override

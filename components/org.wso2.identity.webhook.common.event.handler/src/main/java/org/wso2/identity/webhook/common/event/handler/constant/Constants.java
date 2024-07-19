@@ -25,12 +25,19 @@ public class Constants {
 
     public static final String EVENT_SCHEMA_TYPE_WSO2 = "WSO2";
     public static final String LOGIN_EVENT_HOOK_NAME = "LoginEventHook";
+    public static final String EVENT_SCHEMA_EVENTS_KEY = "events";
     public static final String LOGIN_EVENT_HOOK_ENABLED = "LoginEventHook.enable";
     public static final String ENABLE = "enable";
+    public static final String EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY = "publishEnabled";
+
+    public static final String EVENT_CONFIG_SCHEMA_NAME_KEY = "eventSchema";
+    public static final String EVENT_PUBLISHER_EVENT_SCHEMA_RESOURCE_FILE_PATH =
+            "repository/resources/identity/websubhub/event-schemas.json";
+    public static final String EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PROPERTIES_KEY = "properties";
     public static final String SP_TO_CARBON_CLAIM_MAPPING = "SP_TO_CARBON_CLAIM_MAPPING";
 
-    public static final String WEB_SUB_HUB_CONFIG_RESOURCE_TYPE_NAME = "web-sub-hub-event-publisher";
-    public static final String WEB_SUB_HUB_CONFIG_RESOURCE_NAME = "web-sub-hub-event-publisher-configs";
+    public static final String EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME = "web-sub-hub-event-publisher";
+    public static final String EVENT_PUBLISHER_CONFIG_RESOURCE_NAME = "web-sub-hub-event-publisher-configs";
     public static final String RESOURCE_TYPE = "resourceTypeName";
     public static final String RESOURCE_NAME = "resourceName";
 
