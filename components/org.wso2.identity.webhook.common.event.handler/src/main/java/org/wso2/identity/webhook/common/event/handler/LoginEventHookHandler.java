@@ -21,11 +21,9 @@ package org.wso2.identity.webhook.common.event.handler;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.model.EventAttribute;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
-import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.exception.EventConfigurationMgtServerException;
-import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.model.EventAttribute;
-import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.util.EventConfigurationMgtUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -74,11 +72,9 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
         String eventName = identityContext.getEvent().getEventName();
 
-        if (isSupportedEvent(eventName)) {
-            log.debug("canHandle() returning True for the event: " + eventName);
-            return true;
-        }
-        return false;
+        boolean canHandle = isSupportedEvent(eventName);
+        log.debug("canHandle() returning " + canHandle + " for the event: " + eventName);
+        return canHandle;
     }
 
     private boolean isSupportedEvent(String eventName) {
@@ -122,18 +118,6 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         }
     }
 
-    /**
-     * Check whether the login event handler is enabled.
-     *
-     * @return True if the login event handler is enabled.
-     */
-    public boolean isLoginEventHandlerEnabled() {
-
-        String enablePropertyKey = Constants.LOGIN_EVENT_HOOK_NAME + "." + Constants.ENABLE;
-        return this.configs != null && this.configs.getModuleProperties() != null &&
-                Boolean.parseBoolean(configs.getModuleProperties().getProperty(enablePropertyKey));
-    }
-
     private EventAttribute getLoginEventPublisherConfigForTenant(String tenantDomain, String eventName) {
 
         if (StringUtils.isEmpty(tenantDomain) || MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain)) {
@@ -146,15 +130,14 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                     .getTenantResources(tenantDomain, condition);
 
             return extractEventAttribute(publisherConfigResource, eventName);
-        } catch (ConfigurationManagementException | EventConfigurationMgtServerException e) {
+        } catch (ConfigurationManagementException | IdentityEventException e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }
 
         return new EventAttribute();
     }
 
-    private EventAttribute extractEventAttribute(Resources publisherConfigResource, String eventName)
-            throws EventConfigurationMgtServerException {
+    private EventAttribute extractEventAttribute(Resources publisherConfigResource, String eventName) throws IdentityEventException {
 
         if (CollectionUtils.isNotEmpty(publisherConfigResource.getResources()) &&
                 publisherConfigResource.getResources().get(0) != null &&
@@ -162,7 +145,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
             for (Attribute attribute : publisherConfigResource.getResources().get(0).getAttributes()) {
                 if (isMatchingEventAttribute(attribute, eventName)) {
-                    return EventConfigurationMgtUtils.buildEventAttributeFromJSONString(attribute.getValue());
+                    return EventHookHandlerUtils.buildEventAttributeFromJSONString(attribute.getValue());
                 }
             }
         }
@@ -180,8 +163,8 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     private ComplexCondition createPublisherConfigFilterCondition() {
 
         List<Condition> conditionList = new ArrayList<>();
-        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS, Constants.WEB_SUB_HUB_CONFIG_RESOURCE_TYPE_NAME));
-        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS, Constants.WEB_SUB_HUB_CONFIG_RESOURCE_NAME));
+        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
+        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_NAME));
         return new ComplexCondition(ConditionType.ComplexOperator.AND, conditionList);
     }
 }

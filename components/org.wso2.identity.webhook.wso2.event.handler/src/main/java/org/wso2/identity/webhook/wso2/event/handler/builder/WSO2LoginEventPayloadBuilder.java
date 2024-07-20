@@ -42,6 +42,8 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 
 import java.util.ArrayList;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,6 +95,15 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         payload.setAuthenticationMethods(buildAuthMethods(authenticationContext));
 
         return payload;
+        //TODO: Implement the logic to build the authentication success event payload.
+        return new WSO2AuthenticationSuccessEventPayload.Builder()
+                .user(null)
+                .tenant(null)
+                .userResidentOrganization(null)
+                .userStore(null)
+                .application(null)
+                .authenticationMethods(new ArrayList<>())
+                .build();
     }
 
     @Override
@@ -128,6 +139,16 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         payload.setReason(buildAuthenticationFailedReason(authenticationContext));
 
         return payload;
+        //TODO: Implement the logic to build the authentication failed event payload.
+        return new WSO2AuthenticationFailedEventPayload.Builder()
+                .user(null)
+                .tenant(null)
+                .userResidentOrganization(null)
+                .userStore(null)
+                .application(null)
+                .reason(null)
+                .userLoginIdentifier(null)
+                .build();
     }
 
     @Override
