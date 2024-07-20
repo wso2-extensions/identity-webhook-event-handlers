@@ -18,27 +18,83 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.model;
 
+import org.wso2.identity.webhook.wso2.event.handler.model.common.Application;
+import org.wso2.identity.webhook.wso2.event.handler.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.model.common.User;
+import org.wso2.identity.webhook.wso2.event.handler.model.common.UserStore;
+
 /**
  * Model Class for Authentication Failed Event Payload.
  */
 public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
 
-    private AuthenticationFailedReason reason;
-    private String userLoginIdentifier;
+    private final AuthenticationFailedReason reason;
+    private final String userLoginIdentifier;
+
+    private WSO2AuthenticationFailedEventPayload(Builder builder) {
+        this.user = builder.user;
+        this.tenant = builder.tenant;
+        this.userResidentOrganization = builder.userResidentOrganization;
+        this.userStore = builder.userStore;
+        this.application = builder.application;
+        this.reason = builder.reason;
+        this.userLoginIdentifier = builder.userLoginIdentifier;
+    }
 
     public AuthenticationFailedReason getReason() {
         return reason;
-    }
-
-    public void setReason(AuthenticationFailedReason reason) {
-        this.reason = reason;
     }
 
     public String getUserLoginIdentifier() {
         return userLoginIdentifier;
     }
 
-    public void setUserLoginIdentifier(String userLoginIdentifier) {
-        this.userLoginIdentifier = userLoginIdentifier;
+    public static class Builder {
+        private User user;
+        private Organization tenant;
+        private Organization userResidentOrganization;
+        private UserStore userStore;
+        private Application application;
+        private AuthenticationFailedReason reason;
+        private String userLoginIdentifier;
+
+        public Builder user(User user) {
+            this.user = user;
+            return this;
+        }
+
+        public Builder tenant(Organization tenant) {
+            this.tenant = tenant;
+            return this;
+        }
+
+        public Builder userResidentOrganization(Organization userResidentOrganization) {
+            this.userResidentOrganization = userResidentOrganization;
+            return this;
+        }
+
+        public Builder userStore(UserStore userStore) {
+            this.userStore = userStore;
+            return this;
+        }
+
+        public Builder application(Application application) {
+            this.application = application;
+            return this;
+        }
+
+        public Builder reason(AuthenticationFailedReason reason) {
+            this.reason = reason;
+            return this;
+        }
+
+        public Builder userLoginIdentifier(String userLoginIdentifier) {
+            this.userLoginIdentifier = userLoginIdentifier;
+            return this;
+        }
+
+        public WSO2AuthenticationFailedEventPayload build() {
+            return new WSO2AuthenticationFailedEventPayload(this);
+        }
     }
 }

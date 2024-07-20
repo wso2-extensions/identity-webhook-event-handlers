@@ -21,7 +21,6 @@ package org.wso2.identity.webhook.common.event.handler.model;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorStatus;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
-import org.wso2.carbon.identity.application.common.model.User;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -37,7 +36,6 @@ public class EventData {
     private final AuthenticationContext authenticationContext;
     private final AuthenticatorStatus authenticatorStatus;
     private final AuthenticatedUser authenticatedUser;
-    private final User loginIdentifier;
 
     private EventData(Builder builder) {
         this.eventName = builder.eventName;
@@ -46,7 +44,6 @@ public class EventData {
         this.authenticationContext = builder.authenticationContext;
         this.authenticatorStatus = builder.authenticatorStatus;
         this.authenticatedUser = builder.authenticatedUser;
-        this.loginIdentifier = builder.loginIdentifier;
     }
 
     public String getEventName() {
@@ -72,10 +69,6 @@ public class EventData {
         return authenticatedUser;
     }
 
-    public User getLoginIdentifier() {
-        return loginIdentifier;
-    }
-
     public static Builder builder() {
         return new Builder();
     }
@@ -87,7 +80,6 @@ public class EventData {
         private AuthenticationContext authenticationContext;
         private AuthenticatorStatus authenticatorStatus;
         private AuthenticatedUser authenticatedUser;
-        private User loginIdentifier;
         public Builder eventName(String eventName) {
             this.eventName = eventName;
             return this;
@@ -115,11 +107,6 @@ public class EventData {
 
         public Builder authenticatedUser(AuthenticatedUser authenticatedUser) {
             this.authenticatedUser = authenticatedUser;
-            return this;
-        }
-
-        public Builder loginIdentifier(User loginIdentifier) {
-            this.loginIdentifier = loginIdentifier;
             return this;
         }
 

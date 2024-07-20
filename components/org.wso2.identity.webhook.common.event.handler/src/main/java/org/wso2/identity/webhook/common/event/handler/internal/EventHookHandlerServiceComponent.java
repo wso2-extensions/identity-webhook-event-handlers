@@ -18,9 +18,9 @@
 
 package org.wso2.identity.webhook.common.event.handler.internal;
 
+import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.identity.webhook.common.event.handler.LoginEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
-import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.EventConfigurationMgtService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.BundleContext;
@@ -61,7 +61,7 @@ public class EventHookHandlerServiceComponent {
             } else {
                 log.error("Login Event Handler is not enabled.");
             }
-        } catch (Exception e) {
+        } catch (IdentityEventServerException e) {
             log.error("Error while activating event handler.", e);
         }
     }
@@ -108,23 +108,6 @@ public class EventHookHandlerServiceComponent {
     protected void unregisterConfigurationManager(ConfigurationManager configurationManager) {
 
         EventHookHandlerDataHolder.getInstance().setConfigurationManager(null);
-    }
-
-    @Reference(
-            name = "event.configuration.manager.service",
-            service = EventConfigurationMgtService.class,
-            cardinality = ReferenceCardinality.MANDATORY,
-            policy = ReferencePolicy.DYNAMIC,
-            unbind = "unregisterEventConfigurationManager"
-    )
-    protected void registerEventConfigurationManager(EventConfigurationMgtService eventConfigurationMgtService) {
-        /* Reference EventConfigurationMgtService to guarantee that this component will wait until
-        event configuration core is started */
-    }
-
-    protected void unregisterEventConfigurationManager(EventConfigurationMgtService eventConfigurationMgtService) {
-        /* Reference EventConfigurationMgtService to guarantee that this component will wait until
-        event configuration core is started */
     }
 
     @Reference(

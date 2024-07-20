@@ -18,10 +18,6 @@
 
 package org.wso2.identity.webhook.common.event.handler;
 
-import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.exception.EventConfigurationMgtServerException;
-import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.model.EventAttribute;
-import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.model.ResourceConfig;
-import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.util.EventConfigurationMgtUtils;
 import org.json.simple.parser.ParseException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -43,7 +39,6 @@ import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
-import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.event.common.publisher.model.EventContext;
@@ -52,16 +47,16 @@ import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.model.EventAttribute;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.model.ResourceConfig;
+import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.util.TestUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Properties;
 
-import static com.wso2.identity.asgardeo.event.configuration.mgt.core.service.util.EventConfigurationMgtConstants.EVENT_CONFIG_SCHEMA_NAME_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mockStatic;
@@ -70,14 +65,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+import static org.wso2.identity.webhook.common.event.handler.constant.Constants.EVENT_CONFIG_SCHEMA_NAME_KEY;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockIdentityTenantUtil;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockServiceURLBuilder;
 
 public class LoginEventHookHandlerTest {
 
     private static final String SAMPLE_TENANT_DOMAIN = "myorg";
-    private static final String SAMPLE_EVENT_HANDLER_PROPERTY_KEY = "LoginEventHook.enable";
-    private static final String PROPERTY_VALUE_TRUE = "true";
     private static final String SAMPLE_USER = "user";
     private static final String SAMPLE_EVENT_KEY_LOGIN_SUCCESS = "schemas.identity.wso2.org/events/logins/event-type/loginSuccess";
     private static final String SAMPLE_EVENT_KEY_LOGIN_FAILED = "schemas.identity.wso2.org/events/logins/event-type/loginFailed";
@@ -85,19 +79,14 @@ public class LoginEventHookHandlerTest {
 
     @Mock
     private ConfigurationManager mockedConfigurationManager;
-
     @Mock
     private EventPublisherService mockedEventPublisherService;
     @Mock
     private EventPayload mockedEventPayload;
-
     @InjectMocks
     private LoginEventHookHandler loginEventHookHandler;
-
     @Mock
     private LoginEventPayloadBuilder mockedLoginEventPayloadBuilder;
-
-    private static MockedStatic<EventConfigurationMgtUtils> mockedEventConfigurationMgtUtils;
     private static MockedStatic<PayloadBuilderFactory> mockedPayloadBuilderFactory;
 
     @BeforeClass
@@ -107,7 +96,6 @@ public class LoginEventHookHandlerTest {
         EventHookHandlerDataHolder.getInstance().setConfigurationManager(mockedConfigurationManager);
         EventHookHandlerDataHolder.getInstance().setEventPublisherService(mockedEventPublisherService);
 
-        mockedEventConfigurationMgtUtils = mockStatic(EventConfigurationMgtUtils.class);
         mockedPayloadBuilderFactory = mockStatic(PayloadBuilderFactory.class);
 
         // Register the mocked LoginEventPayloadBuilder for the WSO2 schema
@@ -133,7 +121,6 @@ public class LoginEventHookHandlerTest {
     @AfterClass
     public void tearDownClass() {
 
-        mockedEventConfigurationMgtUtils.close();
         mockedPayloadBuilderFactory.close();
     }
 
@@ -158,7 +145,7 @@ public class LoginEventHookHandlerTest {
 
     @Test(dataProvider = "eventDataProvider")
     public void testHandleEvent(String eventName, String eventHandlerKey, String expectedEventKey)
-            throws ConfigurationManagementException, EventConfigurationMgtServerException, IdentityEventException,
+            throws ConfigurationManagementException, IdentityEventException,
             IOException, ParseException {
 
         HashMap<String, Object> properties = new HashMap<>();
@@ -186,12 +173,12 @@ public class LoginEventHookHandlerTest {
         org.json.simple.JSONObject eventConfig = (org.json.simple.JSONObject) TestUtils.getEventSchemas()
                 .get(eventHandlerKey);
         String eventSchemaUri = (String) eventConfig.get(EVENT_CONFIG_SCHEMA_NAME_KEY);
-        when(EventConfigurationMgtUtils.getEventConfig(eventHandlerKey))
+        when(EventHookHandlerUtils.getEventConfig(eventHandlerKey))
                 .thenReturn(new ResourceConfig(eventConfig));
 
         EventAttribute eventAttribute = new EventAttribute(
                 true, new ResourceConfig(new org.json.simple.JSONObject()));
-        when(EventConfigurationMgtUtils.buildEventAttributeFromJSONString(anyString())).thenReturn(eventAttribute);
+        when(EventHookHandlerUtils.buildEventAttributeFromJSONString(anyString())).thenReturn(eventAttribute);
 
         loginEventHookHandler.handleEvent(event);
 
@@ -200,18 +187,6 @@ public class LoginEventHookHandlerTest {
 
         SecurityEventTokenPayload capturedEventPayload = argumentCaptor.getValue();
         assertEquals(capturedEventPayload.getEvent().keySet().iterator().next(), expectedEventKey);
-    }
-
-    @Test
-    public void testIsLoginEventHandlerEnabled() {
-
-        Properties properties = new Properties();
-        properties.setProperty(SAMPLE_EVENT_HANDLER_PROPERTY_KEY, PROPERTY_VALUE_TRUE);
-        ModuleConfiguration moduleConfiguration = new ModuleConfiguration(properties, Collections.emptyList());
-        loginEventHookHandler.init(moduleConfiguration);
-
-        boolean isEnabled = loginEventHookHandler.isLoginEventHandlerEnabled();
-        assertTrue(isEnabled, "The login event handler should be enabled.");
     }
 
     private AuthenticationContext createAuthenticationContext() {

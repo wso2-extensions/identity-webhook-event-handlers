@@ -153,21 +153,6 @@
                 <version>${servlet-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.wso2.identity.asgardeo.extensions</groupId>
-                <artifactId>com.wso2.identity.asgardeo.event.configuration.mgt.core.service</artifactId>
-                <version>${com.wso2.identity.asgardeo.extensions.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wso2.identity.asgardeo.extensions</groupId>
-                <artifactId>com.wso2.identity.asgardeo.config.mapper</artifactId>
-                <version>${com.wso2.identity.asgardeo.extensions.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.identity.event.publishers</groupId>
-                <artifactId>org.wso2.identity.event.common.publisher</artifactId>
-                <version>${org.wso2.identity.event.publishers.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.googlecode.json-simple.wso2</groupId>
                 <artifactId>json-simple</artifactId>
                 <version>${com.googlecode.json-simple.wso2.version}</version>
@@ -190,6 +175,11 @@
                 <artifactId>mockito-inline</artifactId>
                 <version>${mockito.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.identity.event.publishers</groupId>
+                <artifactId>org.wso2.identity.event.common.publisher</artifactId>
+                <version>${org.wso2.identity.event.publishers.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.identity.inbound.provisioning.scim2</groupId>
@@ -381,8 +371,6 @@
         <identity.governance.version>1.8.60</identity.governance.version>
         <identity.governance.imp.pkg.version.range>[1.3.0, 3.0.0)</identity.governance.imp.pkg.version.range>
 
-        <identity.asgardeo.config.mapper.imp.pkg.version.range>[1.0.13, 1.2.0)
-        </identity.asgardeo.config.mapper.imp.pkg.version.range>
         <org.wso2.carbon.identity.organization.management.core.version.range>[1.0.0, 2.0.0)
         </org.wso2.carbon.identity.organization.management.core.version.range>
 
@@ -446,14 +434,9 @@
         <!-- Org management dependency versions-->
         <identity.organization.management.core.version>1.1.5</identity.organization.management.core.version>
 
-        <!-- Event handler dependency versions-->
-        <asgardeo.event.configuration.mgt.core.version.range>[1.0.0, 2.0.0)
-        </asgardeo.event.configuration.mgt.core.version.range>
-
         <org.wso2.carbon.identity.inbound.provisioning.scim2.version>3.4.72
         </org.wso2.carbon.identity.inbound.provisioning.scim2.version>
 
-        <com.wso2.identity.asgardeo.extensions.version>1.0.219</com.wso2.identity.asgardeo.extensions.version>
         <org.wso2.carbon.identity.inbound.auth.oauth2.version>7.0.114
         </org.wso2.carbon.identity.inbound.auth.oauth2.version>
 

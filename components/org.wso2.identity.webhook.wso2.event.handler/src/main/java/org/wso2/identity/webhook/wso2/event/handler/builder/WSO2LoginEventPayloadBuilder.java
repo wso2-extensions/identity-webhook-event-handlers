@@ -49,7 +49,7 @@ import java.util.Map;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 import static org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants.Error.UNEXPECTED_SERVER_ERROR;
 import static org.wso2.identity.webhook.common.event.handler.constant.Constants.EVENT_SCHEMA_TYPE_WSO2;
-import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.getReference;
+import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.getURL;
 
 /**
  * WSO2 Login Event Payload Builder.
@@ -62,7 +62,6 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
     @Override
     public EventPayload buildAuthenticationSuccessEvent(EventData eventData) throws IdentityEventException {
 
-        WSO2AuthenticationSuccessEventPayload payload = new WSO2AuthenticationSuccessEventPayload();
         AuthenticationContext authenticationContext = eventData.getAuthenticationContext();
         AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
 
@@ -74,60 +73,65 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         try {
             populateUserAttributes(authenticatedUser, user);
             user.setId(authenticatedUser.getUserId());
-            user.setRef(getReference(Constants.SCIM2_ENDPOINT, authenticatedUser.getUserId()));
+            user.setRef(getURL(Constants.SCIM2_ENDPOINT) + "/" + authenticatedUser.getUserId());
         } catch (UserIdNotFoundException e) {
             throw new IdentityEventException("Error while building the event payload", e);
         }
 
-        payload.setUser(user);
-        payload.setUserResidentOrganization(b2bUserResidentOrganization);
-        payload.setTenant(new Organization(
+        Organization tenant = new Organization(
                 String.valueOf(IdentityTenantUtil.getTenantId(authenticationContext.getTenantDomain())),
-                authenticationContext.getTenantDomain()));
+                authenticationContext.getTenantDomain());
+        UserStore userStore = null;
         if (authenticatedUser.getUserStoreDomain() != null) {
-            payload.setUserStore(new UserStore(authenticatedUser.getUserStoreDomain()));
+            userStore = new UserStore(authenticatedUser.getUserStoreDomain());
         }
-        payload.setApplication(new Application(
+        Application application = new Application(
                 authenticationContext.getServiceProviderResourceId(),
-                authenticationContext.getServiceProviderName()));
-        payload.setAuthenticationMethods(buildAuthMethods(authenticationContext));
-
-        return payload;
+                authenticationContext.getServiceProviderName());
+        return new WSO2AuthenticationSuccessEventPayload.Builder()
+                .user(user)
+                .tenant(tenant)
+                .userResidentOrganization(b2bUserResidentOrganization)
+                .userStore(userStore)
+                .application(application)
+                .authenticationMethods(buildAuthMethods(authenticationContext))
+                .build();
     }
 
     @Override
     public EventPayload buildAuthenticationFailedEvent(EventData eventData) throws IdentityEventException {
 
-        WSO2AuthenticationFailedEventPayload payload = new WSO2AuthenticationFailedEventPayload();
         AuthenticationContext authenticationContext = eventData.getAuthenticationContext();
         AuthenticatedUser authenticatedUser = authenticationContext.getSubject();
 
         User user = new User();
+        UserStore userStore = null;
         try {
             if (authenticatedUser != null) {
                 user.setId(authenticatedUser.getUserId());
-                user.setRef(getReference(Constants.SCIM2_ENDPOINT, authenticatedUser.getUserId()));
-                payload.setUser(user);
+                user.setRef(getURL(Constants.SCIM2_ENDPOINT) + "/" + authenticatedUser.getUserId());
                 if (authenticatedUser.getUserStoreDomain() != null) {
-                    payload.setUserStore(new UserStore(authenticatedUser.getUserStoreDomain()));
+                    userStore = new UserStore(authenticatedUser.getUserStoreDomain());
                 }
-            } else if (eventData.getLoginIdentifier() != null) {
-                payload.setUserLoginIdentifier(eventData.getLoginIdentifier().getUserName());
-                payload.setUserStore(new UserStore(eventData.getLoginIdentifier().getUserStoreDomain()));
             }
         } catch (UserIdNotFoundException e) {
             throw new IdentityEventException("Error while building the event payload", e);
         }
 
-        payload.setTenant(new Organization(
+        Organization tenant = new Organization(
                 String.valueOf(IdentityTenantUtil.getTenantId(authenticationContext.getTenantDomain())),
-                authenticationContext.getTenantDomain()));
-        payload.setApplication(new Application(
+                authenticationContext.getTenantDomain());
+        Application application = new Application(
                 authenticationContext.getServiceProviderResourceId(),
-                authenticationContext.getServiceProviderName()));
-        payload.setReason(buildAuthenticationFailedReason(authenticationContext));
-
-        return payload;
+                authenticationContext.getServiceProviderName());
+        return new WSO2AuthenticationFailedEventPayload.Builder()
+                .user(user)
+                .tenant(tenant)
+                .userResidentOrganization(null)
+                .userStore(userStore)
+                .application(application)
+                .reason(buildAuthenticationFailedReason(authenticationContext))
+                .build();
     }
 
     @Override
