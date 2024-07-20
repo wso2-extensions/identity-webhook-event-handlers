@@ -38,6 +38,7 @@ import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
 
 /**
  * WSO2 Event Handler service component class.
@@ -60,7 +61,7 @@ public class EventHookHandlerServiceComponent {
 
             if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new LoginEventHookHandler(), null);
+                        new LoginEventHookHandler(EventHookHandlerUtils.getInstance()), null);
             } else if (isLoginEventHandlerEnabled == null) {
                 log.error("Login Event Handler enabled property is null.");
             } else {
@@ -87,14 +88,14 @@ public class EventHookHandlerServiceComponent {
     protected void addLoginEventPayloadBuilder(LoginEventPayloadBuilder loginEventPayloadBuilder) {
 
         log.debug("Adding the Login Event Payload Builder Service : " +
-                    loginEventPayloadBuilder.getEventSchemaType());
+                loginEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(loginEventPayloadBuilder);
     }
 
     protected void removeLoginEventPayloadBuilder(LoginEventPayloadBuilder loginEventPayloadBuilder) {
 
         log.debug("Removing the Login Event Payload Builder Service : " +
-                    loginEventPayloadBuilder.getEventSchemaType());
+                loginEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().removeLoginEventPayloadBuilder(loginEventPayloadBuilder);
     }
 
