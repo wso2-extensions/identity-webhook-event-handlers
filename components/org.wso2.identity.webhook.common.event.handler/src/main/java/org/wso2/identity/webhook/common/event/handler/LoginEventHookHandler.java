@@ -18,11 +18,16 @@
 
 package org.wso2.identity.webhook.common.event.handler;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.model.EventAttribute;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.model.ResourceConfig;
 import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -145,7 +150,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
             for (Attribute attribute : publisherConfigResource.getResources().get(0).getAttributes()) {
                 if (isMatchingEventAttribute(attribute, eventName)) {
-                    return EventHookHandlerUtils.buildEventAttributeFromJSONString(attribute.getValue());
+                    return buildEventAttributeFromJSONString(attribute.getValue());
                 }
             }
         }
@@ -166,5 +171,50 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_NAME));
         return new ComplexCondition(ConditionType.ComplexOperator.AND, conditionList);
+    }
+
+    /**
+     * This method constructs the EventAttribute object from the json string.
+     *
+     * @param jsonString JSON string.
+     * @return EventAttribute object.
+     */
+    private EventAttribute buildEventAttributeFromJSONString(String jsonString) throws IdentityEventException {
+
+        JSONObject eventJSON = getJSONObject(jsonString);
+        EventAttribute eventAttribute = new EventAttribute();
+        try {
+            if (eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY) instanceof Boolean) {
+                eventAttribute.setPublishEnabled(
+                        (Boolean) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY));
+            } else {
+                eventAttribute.setPublishEnabled(Boolean.parseBoolean(
+                        (String) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY)));
+            }
+            JSONObject propertiesJSON =
+                    (JSONObject) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PROPERTIES_KEY);
+            eventAttribute.setProperties(new ResourceConfig(propertiesJSON));
+
+            return eventAttribute;
+        } catch (ClassCastException e) {
+            throw new IdentityEventException("Error while casting event attribute from JSON string", e);
+        }
+    }
+
+    /**
+     * This method converts the parsed JSON String into a JSONObject.
+     *
+     * @param jsonString JSON string.
+     * @return JSON object.
+     * @throws IdentityEventServerException If an error occurs while constructing the object.
+     */
+    private JSONObject getJSONObject(String jsonString) throws IdentityEventServerException {
+
+        JSONParser jsonParser = new JSONParser();
+        try {
+            return (JSONObject) jsonParser.parse(jsonString);
+        } catch (ParseException | ClassCastException e) {
+            throw new IdentityEventServerException("Error while parsing JSON string", e);
+        }
     }
 }
