@@ -62,8 +62,23 @@ import static org.wso2.carbon.identity.application.authentication.framework.util
 public class EventHookHandlerUtils {
 
     private static final Log log = LogFactory.getLog(EventHookHandlerUtils.class);
-    private static volatile ResourceConfig eventSchema = null;
-    private static final Object lock = new Object();
+    private volatile ResourceConfig eventSchema = null;
+    private final Object lock = new Object();
+    private static volatile EventHookHandlerUtils instance;
+
+    private EventHookHandlerUtils() {}
+
+    public static EventHookHandlerUtils getInstance() {
+
+        if (instance == null) {
+            synchronized (EventHookHandlerUtils.class) {
+                if (instance == null) {
+                    instance = new EventHookHandlerUtils();
+                }
+            }
+        }
+        return instance;
+    }
 
     /**
      * Retrieve event uri.
@@ -72,7 +87,7 @@ public class EventHookHandlerUtils {
      * @return Event uri string.
      * @throws IdentityEventServerException If an error occurs.
      */
-    public static String getEventUri(String eventKey) throws IdentityEventServerException {
+    public String getEventUri(String eventKey) throws IdentityEventServerException {
 
         try {
             ResourceConfig eventConfigObject = getEventConfig(eventKey);
@@ -95,7 +110,7 @@ public class EventHookHandlerUtils {
      * @return Resource config object.
      * @throws IdentityEventServerException If an error occurs.
      */
-    private static ResourceConfig getEventConfig(String eventName) throws IdentityEventServerException {
+    private ResourceConfig getEventConfig(String eventName) throws IdentityEventServerException {
 
         JSONObject eventsConfigObject = (JSONObject) getEventsSchemaResourceFile().getConfigs()
                 .get(Constants.EVENT_SCHEMA_EVENTS_KEY);
@@ -114,7 +129,7 @@ public class EventHookHandlerUtils {
      * @return Config object with content in the resource file.
      * @throws IdentityEventServerException If an error occurs while reading the resource file.
      */
-    private static ResourceConfig getEventsSchemaResourceFile() throws IdentityEventServerException {
+    private ResourceConfig getEventsSchemaResourceFile() throws IdentityEventServerException {
 
         if (eventSchema == null) {
             synchronized (lock) {
@@ -143,29 +158,25 @@ public class EventHookHandlerUtils {
      * @param event Event object.
      * @return Event data object.
      */
-    public static EventData buildEventDataProvider(Event event) throws IdentityEventException {
+    public EventData buildEventDataProvider(Event event) throws IdentityEventException {
 
         Map<String, Object> properties = event.getEventProperties();
-        Map<String, Object> params;
-        AuthenticationContext context;
-        AuthenticatorStatus status;
-        HttpServletRequest request;
-
-        if (properties == null ||
-                (params = (Map<String, Object>) properties.get("params")) == null ||
-                (context = (AuthenticationContext) properties.get("context")) == null ||
-                (status = (AuthenticatorStatus) properties.get("authenticationStatus")) == null ||
-                (request = (HttpServletRequest) params.get("request")) == null) {
-            // Handle the case where any of the required properties are null
-            throw new IdentityEventException("One or more required properties are null");
+        if (properties == null) {
+            throw new IdentityEventException("Properties cannot be null");
         }
 
-        Object user = params.get("user");
-        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        Map<String, Object> params = properties.containsKey("params") ? (Map<String, Object>) properties.get("params") : null;
+        AuthenticationContext context = properties.containsKey("context") ? (AuthenticationContext) properties.get("context") : null;
+        AuthenticatorStatus status = properties.containsKey("authenticationStatus") ? (AuthenticatorStatus) properties.get("authenticationStatus") : null;
+        HttpServletRequest request = params != null ? (HttpServletRequest) params.get("request") : null;
 
-        if (user instanceof AuthenticatedUser){
-            authenticatedUser = (AuthenticatedUser)user;
-            setLocalUserClaimsToAuthenticatedUser(authenticatedUser, context);
+        AuthenticatedUser authenticatedUser = null;
+        if (params != null) {
+            Object user = params.get("user");
+            if (user instanceof AuthenticatedUser) {
+                authenticatedUser = (AuthenticatedUser) user;
+                setLocalUserClaimsToAuthenticatedUser(authenticatedUser, context);
+            }
         }
 
         return EventData.builder()
@@ -184,7 +195,7 @@ public class EventHookHandlerUtils {
      * @param eventUri     Event URI.
      * @return Audience string.
      */
-    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload, String eventUri)
+    public SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload, String eventUri)
             throws IdentityEventException {
 
         if (eventPayload == null) {
@@ -212,7 +223,7 @@ public class EventHookHandlerUtils {
      *
      * @return Correlation id
      */
-    public static String getCorrelationID() {
+    public String getCorrelationID() {
 
         String correlationID = MDC.get(CORRELATION_ID_MDC);
         if (StringUtils.isBlank(correlationID)) {
@@ -222,32 +233,32 @@ public class EventHookHandlerUtils {
         return correlationID;
     }
 
-    private static void setLocalUserClaimsToAuthenticatedUser(AuthenticatedUser authenticatedUser,
+    private void setLocalUserClaimsToAuthenticatedUser(AuthenticatedUser authenticatedUser,
                                                        AuthenticationContext context) {
 
         Map<String, String> claimMappings = (Map<String, String>) context.getParameters()
-                    .get(Constants.SP_TO_CARBON_CLAIM_MAPPING);
+                .get(Constants.SP_TO_CARBON_CLAIM_MAPPING);
 
-            if (claimMappings == null) {
-                log.debug("No local claim mappings found for the authenticated user from the context.");
-                return;
+        if (claimMappings == null) {
+            log.debug("No local claim mappings found for the authenticated user from the context.");
+            return;
+        }
+
+        Map<ClaimMapping, String> userAttributes = authenticatedUser.getUserAttributes();
+
+        if (userAttributes == null) {
+            userAttributes = new HashMap<>();
+        }
+
+        for (Map.Entry<ClaimMapping, String> entry : userAttributes.entrySet()) {
+
+            ClaimMapping claimMapping = entry.getKey();
+            Claim localClaim = claimMapping.getLocalClaim();
+
+            if (claimMappings.containsKey(localClaim.getClaimUri())) {
+                localClaim.setClaimUri(claimMappings.get(localClaim.getClaimUri()));
             }
-
-            Map<ClaimMapping, String> userAttributes = authenticatedUser.getUserAttributes();
-
-            if (userAttributes == null) {
-                userAttributes = new HashMap<>();
-            }
-
-            for (Map.Entry<ClaimMapping, String> entry : userAttributes.entrySet()) {
-
-                ClaimMapping claimMapping = entry.getKey();
-                Claim localClaim = claimMapping.getLocalClaim();
-
-                if (claimMappings.containsKey(localClaim.getClaimUri())) {
-                    localClaim.setClaimUri(claimMappings.get(localClaim.getClaimUri()));
-                }
-            }
+        }
     }
 
     /**
@@ -255,7 +266,7 @@ public class EventHookHandlerUtils {
      *
      * @return Tenant qualified URL.
      */
-    public static String getURL() {
+    public String getURL() {
 
         return getURL(null);
     }
@@ -266,7 +277,7 @@ public class EventHookHandlerUtils {
      * @param endpoint Endpoint.
      * @return Tenant qualified URL.
      */
-    public static String getURL(String endpoint) {
+    public String getURL(String endpoint) {
 
         try {
             ServiceURLBuilder builder = ServiceURLBuilder.create();
@@ -288,8 +299,8 @@ public class EventHookHandlerUtils {
      * @param eventUri                  Event URI.
      * @throws IdentityEventException If an error occurs.
      */
-    public static void publishEventPayload(SecurityEventTokenPayload securityEventTokenPayload, String tenantDomain,
-                                     String eventUri) throws IdentityEventException {
+    public void publishEventPayload(SecurityEventTokenPayload securityEventTokenPayload, String tenantDomain,
+                                    String eventUri) throws IdentityEventException {
 
         try {
             EventContext eventContext = EventContext.builder()
