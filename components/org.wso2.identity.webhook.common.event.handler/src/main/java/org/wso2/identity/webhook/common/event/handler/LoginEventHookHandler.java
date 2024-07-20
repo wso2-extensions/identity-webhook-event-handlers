@@ -18,11 +18,16 @@
 
 package org.wso2.identity.webhook.common.event.handler;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.model.EventAttribute;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.model.ResourceConfig;
 import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -51,7 +56,6 @@ import java.util.List;
 
 import static org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType.PrimitiveOperator.EQUALS;
 import static org.wso2.identity.webhook.common.event.handler.constant.Constants.EVENT_SCHEMA_TYPE_WSO2;
-import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.*;
 
 /**
  * Login Event Hook Handler.
@@ -59,6 +63,11 @@ import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandl
 public class LoginEventHookHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(LoginEventHookHandler.class);
+    private final EventHookHandlerUtils eventHookHandlerUtils;
+
+    public LoginEventHookHandler(EventHookHandlerUtils eventHookHandlerUtils) {
+        this.eventHookHandlerUtils = eventHookHandlerUtils;
+    }
 
     @Override
     public String getName() {
@@ -87,7 +96,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
 
-        EventData eventData = buildEventDataProvider(event);
+        EventData eventData = eventHookHandlerUtils.buildEventDataProvider(event);
 
         if (eventData.getAuthenticationContext().isPassiveAuthenticate()) {
             return;
@@ -104,17 +113,17 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         if (IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name().equals(event.getEventName()) &&
                 loginEventPublisherConfig.isPublishEnabled()) {
             eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
-            eventUri = EventHookHandlerUtils.getEventUri(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT);
+            eventUri = eventHookHandlerUtils.getEventUri(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT);
             String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-            SecurityEventTokenPayload securityEventTokenPayload = buildSecurityEventToken(eventPayload, eventUri);
-            EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+            SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
+            eventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
         } else if (IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name().equals(event.getEventName()) &&
                 loginEventPublisherConfig.isPublishEnabled()) {
             eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
-            eventUri = EventHookHandlerUtils.getEventUri(Constants.EventHandlerKey.LOGIN_FAILED_EVENT);
+            eventUri = eventHookHandlerUtils.getEventUri(Constants.EventHandlerKey.LOGIN_FAILED_EVENT);
             String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-            SecurityEventTokenPayload securityEventTokenPayload = buildSecurityEventToken(eventPayload, eventUri);
-            EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+            SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
+            eventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
         }
     }
 
@@ -145,7 +154,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
             for (Attribute attribute : publisherConfigResource.getResources().get(0).getAttributes()) {
                 if (isMatchingEventAttribute(attribute, eventName)) {
-                    return EventHookHandlerUtils.buildEventAttributeFromJSONString(attribute.getValue());
+                    return buildEventAttributeFromJSONString(attribute.getValue());
                 }
             }
         }
@@ -166,5 +175,50 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_NAME));
         return new ComplexCondition(ConditionType.ComplexOperator.AND, conditionList);
+    }
+
+    /**
+     * This method constructs the EventAttribute object from the json string.
+     *
+     * @param jsonString JSON string.
+     * @return EventAttribute object.
+     */
+    private EventAttribute buildEventAttributeFromJSONString(String jsonString) throws IdentityEventException {
+
+        JSONObject eventJSON = getJSONObject(jsonString);
+        EventAttribute eventAttribute = new EventAttribute();
+        try {
+            if (eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY) instanceof Boolean) {
+                eventAttribute.setPublishEnabled(
+                        (Boolean) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY));
+            } else {
+                eventAttribute.setPublishEnabled(Boolean.parseBoolean(
+                        (String) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY)));
+            }
+            JSONObject propertiesJSON =
+                    (JSONObject) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PROPERTIES_KEY);
+            eventAttribute.setProperties(new ResourceConfig(propertiesJSON));
+
+            return eventAttribute;
+        } catch (ClassCastException e) {
+            throw new IdentityEventException("Error while casting event attribute from JSON string", e);
+        }
+    }
+
+    /**
+     * This method converts the parsed JSON String into a JSONObject.
+     *
+     * @param jsonString JSON string.
+     * @return JSON object.
+     * @throws IdentityEventServerException If an error occurs while constructing the object.
+     */
+    private JSONObject getJSONObject(String jsonString) throws IdentityEventServerException {
+
+        JSONParser jsonParser = new JSONParser();
+        try {
+            return (JSONObject) jsonParser.parse(jsonString);
+        } catch (ParseException | ClassCastException e) {
+            throw new IdentityEventServerException("Error while parsing JSON string", e);
+        }
     }
 }

@@ -18,7 +18,10 @@
 
 package org.wso2.identity.webhook.common.event.handler.internal;
 
+import org.wso2.carbon.identity.event.IdentityEventConfigBuilder;
+import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.IdentityEventServerException;
+import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.identity.webhook.common.event.handler.LoginEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.apache.commons.logging.Log;
@@ -52,12 +55,15 @@ public class EventHookHandlerServiceComponent {
 
         try {
             log.debug("Event Handler is activated.");
-            String isLoginEventHandlerEnabled = EventHookHandlerUtils
-                    .getIdentityEventProperty(Constants.LOGIN_EVENT_HOOK_NAME, Constants.LOGIN_EVENT_HOOK_ENABLED);
+            String isLoginEventHandlerEnabled = getIdentityEventProperty(Constants.LOGIN_EVENT_HOOK_NAME,
+                    Constants.LOGIN_EVENT_HOOK_ENABLED);
             BundleContext bundleContext = context.getBundleContext();
-            if (isLoginEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
+
+            if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new LoginEventHookHandler(), null);
+                        new LoginEventHookHandler(EventHookHandlerUtils.getInstance()), null);
+            } else if (isLoginEventHandlerEnabled == null) {
+                log.error("Login Event Handler enabled property is null.");
             } else {
                 log.error("Login Event Handler is not enabled.");
             }
@@ -82,14 +88,14 @@ public class EventHookHandlerServiceComponent {
     protected void addLoginEventPayloadBuilder(LoginEventPayloadBuilder loginEventPayloadBuilder) {
 
         log.debug("Adding the Login Event Payload Builder Service : " +
-                    loginEventPayloadBuilder.getEventSchemaType());
+                loginEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(loginEventPayloadBuilder);
     }
 
     protected void removeLoginEventPayloadBuilder(LoginEventPayloadBuilder loginEventPayloadBuilder) {
 
         log.debug("Removing the Login Event Payload Builder Service : " +
-                    loginEventPayloadBuilder.getEventSchemaType());
+                loginEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().removeLoginEventPayloadBuilder(loginEventPayloadBuilder);
     }
 
@@ -125,5 +131,30 @@ public class EventHookHandlerServiceComponent {
     protected void unsetEventPublisherService(EventPublisherService eventPublisherService) {
 
         EventHookHandlerDataHolder.getInstance().setEventPublisherService(null);
+    }
+
+    /**
+     * Get the identity property specified in identity-event.properties
+     *
+     * @param moduleName   The name of the module which the property belongs to
+     * @param propertyName The name of the property which should be fetched
+     * @return The required property
+     */
+    private String getIdentityEventProperty(String moduleName, String propertyName) throws IdentityEventServerException {
+
+        // Retrieving properties set in identity event properties
+        String propertyValue = null;
+        try {
+            ModuleConfiguration moduleConfiguration = IdentityEventConfigBuilder.getInstance()
+                    .getModuleConfigurations(moduleName);
+
+            if (moduleConfiguration != null) {
+                propertyValue = moduleConfiguration.getModuleProperties().getProperty(propertyName);
+            }
+        } catch (IdentityEventException e) {
+            throw new IdentityEventServerException("An error occurred while retrieving module properties because " +
+                    e.getMessage());
+        }
+        return propertyValue;
     }
 }

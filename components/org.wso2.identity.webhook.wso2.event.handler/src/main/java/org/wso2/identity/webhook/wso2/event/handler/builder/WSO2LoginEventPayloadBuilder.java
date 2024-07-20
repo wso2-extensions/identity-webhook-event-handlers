@@ -25,6 +25,7 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.wso2.event.handler.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.model.AuthenticationFailedReason;
@@ -49,7 +50,6 @@ import java.util.Map;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 import static org.wso2.carbon.identity.role.v2.mgt.core.RoleConstants.Error.UNEXPECTED_SERVER_ERROR;
 import static org.wso2.identity.webhook.common.event.handler.constant.Constants.EVENT_SCHEMA_TYPE_WSO2;
-import static org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils.getURL;
 
 /**
  * WSO2 Login Event Payload Builder.
@@ -73,7 +73,8 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         try {
             populateUserAttributes(authenticatedUser, user);
             user.setId(authenticatedUser.getUserId());
-            user.setRef(getURL(Constants.SCIM2_ENDPOINT) + "/" + authenticatedUser.getUserId());
+            user.setRef(EventHookHandlerUtils.getInstance().getURL(Constants.SCIM2_ENDPOINT) + "/" +
+                    authenticatedUser.getUserId());
         } catch (UserIdNotFoundException e) {
             throw new IdentityEventException("Error while building the event payload", e);
         }
@@ -109,7 +110,8 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         try {
             if (authenticatedUser != null) {
                 user.setId(authenticatedUser.getUserId());
-                user.setRef(getURL(Constants.SCIM2_ENDPOINT) + "/" + authenticatedUser.getUserId());
+                user.setRef(EventHookHandlerUtils.getInstance().getURL(Constants.SCIM2_ENDPOINT) + "/" +
+                        authenticatedUser.getUserId());
                 if (authenticatedUser.getUserStoreDomain() != null) {
                     userStore = new UserStore(authenticatedUser.getUserStoreDomain());
                 }
