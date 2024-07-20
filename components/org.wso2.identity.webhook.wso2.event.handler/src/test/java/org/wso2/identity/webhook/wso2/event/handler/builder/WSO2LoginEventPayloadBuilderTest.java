@@ -21,8 +21,8 @@ package org.wso2.identity.webhook.wso2.event.handler.builder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.ExternalIdPConfig;
@@ -41,15 +41,20 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.WSO2EventHookHandle
 import org.wso2.identity.webhook.wso2.event.handler.model.WSO2AuthenticationFailedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.model.WSO2AuthenticationSuccessEventPayload;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.*;
-import static org.testng.Assert.*;
-import static org.wso2.identity.webhook.wso2.event.handler.builder.util.TestUtils.*;
+import static org.mockito.Mockito.when;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.wso2.identity.webhook.wso2.event.handler.builder.util.TestUtils.closeMockedIdentityTenantUtil;
+import static org.wso2.identity.webhook.wso2.event.handler.builder.util.TestUtils.closeMockedServiceURLBuilder;
+import static org.wso2.identity.webhook.wso2.event.handler.builder.util.TestUtils.mockIdentityTenantUtil;
+import static org.wso2.identity.webhook.wso2.event.handler.builder.util.TestUtils.mockServiceURLBuilder;
 
+/**
+ * Test class for WSO2LoginEventPayloadBuilder.
+ */
 public class WSO2LoginEventPayloadBuilderTest {
 
     private static final String SAMPLE_TENANT_DOMAIN = "myorg";
@@ -78,7 +83,7 @@ public class WSO2LoginEventPayloadBuilderTest {
     @Mock
     private AuthenticatedUser mockAuthenticatedUser;
 
-    @BeforeMethod
+    @BeforeClass
     public void setup() {
 
         MockitoAnnotations.openMocks(this);
@@ -89,7 +94,7 @@ public class WSO2LoginEventPayloadBuilderTest {
         mockIdentityTenantUtil();
     }
 
-    @AfterMethod
+    @AfterClass
     public void teardown() {
 
         closeMockedServiceURLBuilder();

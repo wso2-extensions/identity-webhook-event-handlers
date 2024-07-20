@@ -36,14 +36,16 @@ public class TestUtils {
     private static final int SAMPLE_TENANT_ID = 100;
     private static MockedStatic<ServiceURLBuilder> mockedStaticServiceURLBuilder;
     private static MockedStatic<IdentityTenantUtil> mockedStaticIdentityTenantUtil;
+    private static ServiceURLBuilder builder;
 
     public static void mockServiceURLBuilder() {
 
-        ServiceURLBuilder builder = new ServiceURLBuilder() {
+        builder = new ServiceURLBuilder() {
             String path = "/t/myorg";
             @Override
             public ServiceURLBuilder addPath(String... strings) {
 
+                this.path = "/t/myorg";
                 Arrays.stream(strings).forEach(x -> {
                     path += x;
                 });

@@ -23,10 +23,14 @@ import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.model.Eve
 import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.model.ResourceConfig;
 import com.wso2.identity.asgardeo.event.configuration.mgt.core.service.util.EventConfigurationMgtUtils;
 import org.json.simple.parser.ParseException;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorStatus;
@@ -61,6 +65,7 @@ import static com.wso2.identity.asgardeo.event.configuration.mgt.core.service.ut
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -96,14 +101,7 @@ public class LoginEventHookHandlerTest {
     private static MockedStatic<PayloadBuilderFactory> mockedPayloadBuilderFactory;
 
     @BeforeClass
-    public void setupClass() {
-
-        mockServiceURLBuilder();
-        mockIdentityTenantUtil();
-    }
-
-    @BeforeMethod
-    public void setup() throws IdentityEventException {
+    public void setupClass() throws IdentityEventException {
 
         MockitoAnnotations.openMocks(this);
         EventHookHandlerDataHolder.getInstance().setConfigurationManager(mockedConfigurationManager);
@@ -122,10 +120,18 @@ public class LoginEventHookHandlerTest {
                 .thenReturn(mockedEventPayload);
         when(mockedLoginEventPayloadBuilder.buildAuthenticationFailedEvent(any(EventData.class)))
                 .thenReturn(mockedEventPayload);
+        mockServiceURLBuilder();
+        mockIdentityTenantUtil();
     }
 
     @AfterMethod
-    public void teardown() {
+    public void tearDownMethod() {
+
+        reset(mockedEventPublisherService);
+    }
+
+    @AfterClass
+    public void tearDownClass() {
 
         mockedEventConfigurationMgtUtils.close();
         mockedPayloadBuilderFactory.close();
@@ -215,4 +221,3 @@ public class LoginEventHookHandlerTest {
         return context;
     }
 }
-
