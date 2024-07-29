@@ -21,9 +21,6 @@ package org.wso2.identity.webhook.common.event.handler.util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.slf4j.MDC;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorStatus;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
@@ -33,7 +30,6 @@ import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
@@ -41,15 +37,8 @@ import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.model.ResourceConfig;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -62,8 +51,6 @@ import static org.wso2.carbon.identity.application.authentication.framework.util
 public class EventHookHandlerUtils {
 
     private static final Log log = LogFactory.getLog(EventHookHandlerUtils.class);
-    private volatile ResourceConfig eventSchema = null;
-    private final Object lock = new Object();
     private static volatile EventHookHandlerUtils instance;
 
     private EventHookHandlerUtils() {}
@@ -78,78 +65,6 @@ public class EventHookHandlerUtils {
             }
         }
         return instance;
-    }
-
-    /**
-     * Retrieve event uri.
-     *
-     * @param eventKey  Event key.
-     * @return Event uri string.
-     * @throws IdentityEventServerException If an error occurs.
-     */
-    public String getEventUri(String eventKey) throws IdentityEventServerException {
-
-        try {
-            ResourceConfig eventConfigObject = getEventConfig(eventKey);
-            if (eventConfigObject.getConfigs() != null &&
-                    eventConfigObject.getConfigs().containsKey(Constants.EVENT_CONFIG_SCHEMA_NAME_KEY)) {
-                return (String) eventConfigObject.getConfigs().get(Constants.EVENT_CONFIG_SCHEMA_NAME_KEY);
-            } else {
-                throw new IdentityEventServerException("Event schema not found in the resource event config " +
-                        "for the eventKey: " + eventKey);
-            }
-        } catch (ClassCastException e) {
-            throw new IdentityEventServerException("Error while casting event config at server side", e);
-        }
-    }
-
-    /**
-     * Retrieve the event config.
-     *
-     * @param eventName Event name.
-     * @return Resource config object.
-     * @throws IdentityEventServerException If an error occurs.
-     */
-    private ResourceConfig getEventConfig(String eventName) throws IdentityEventServerException {
-
-        JSONObject eventsConfigObject = (JSONObject) getEventsSchemaResourceFile().getConfigs()
-                .get(Constants.EVENT_SCHEMA_EVENTS_KEY);
-        if (eventsConfigObject != null && !eventsConfigObject.isEmpty() &&
-                eventsConfigObject.containsKey(eventName)) {
-            return new ResourceConfig((JSONObject) eventsConfigObject.get(eventName));
-        } else {
-            throw new IdentityEventServerException("Event schema not found in the resource event config " +
-                    "for the eventKey: " + eventName);
-        }
-    }
-
-    /**
-     * This method reads the event schema resource file and returns the config object.
-     *
-     * @return Config object with content in the resource file.
-     * @throws IdentityEventServerException If an error occurs while reading the resource file.
-     */
-    private ResourceConfig getEventsSchemaResourceFile() throws IdentityEventServerException {
-
-        if (eventSchema == null) {
-            synchronized (lock) {
-                if (eventSchema == null) {
-                    String resourceFilePath = new File(".").getAbsolutePath() + File.separator +
-                            Constants.EVENT_PUBLISHER_EVENT_SCHEMA_RESOURCE_FILE_PATH;
-                    JSONParser jsonParser = new JSONParser();
-                    try {
-                        JSONObject eventConfigJSON = (JSONObject) jsonParser.parse(new InputStreamReader(
-                                Files.newInputStream(Paths.get(resourceFilePath)), StandardCharsets.UTF_8)
-                        );
-                        eventSchema = new ResourceConfig(eventConfigJSON);
-                    } catch (IOException | ParseException | ClassCastException e) {
-                        throw new IdentityEventServerException("Error while reading the event schema file", e);
-                    }
-                }
-            }
-        }
-
-        return eventSchema;
     }
 
     /**
@@ -175,7 +90,9 @@ public class EventHookHandlerUtils {
             Object user = params.get("user");
             if (user instanceof AuthenticatedUser) {
                 authenticatedUser = (AuthenticatedUser) user;
-                setLocalUserClaimsToAuthenticatedUser(authenticatedUser, context);
+                if (context != null) {
+                    setLocalUserClaimsToAuthenticatedUser(authenticatedUser, context);
+                }
             }
         }
 
