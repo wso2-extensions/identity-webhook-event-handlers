@@ -57,7 +57,6 @@ import static org.wso2.identity.webhook.common.event.handler.constant.Constants.
 public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
     private static final Log log = LogFactory.getLog(WSO2LoginEventPayloadBuilder.class);
-    private Organization b2bUserResidentOrganization;
 
     @Override
     public EventPayload buildAuthenticationSuccessEvent(EventData eventData) throws IdentityEventException {
@@ -85,6 +84,11 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         UserStore userStore = null;
         if (authenticatedUser.getUserStoreDomain() != null) {
             userStore = new UserStore(authenticatedUser.getUserStoreDomain());
+        }
+        Organization b2bUserResidentOrganization = null;
+        if (authenticatedUser.getUserResidentOrganization() != null) {
+            b2bUserResidentOrganization = getUserResidentOrganization(
+                    authenticatedUser.getUserResidentOrganization());
         }
         Application application = new Application(
                 authenticationContext.getServiceProviderResourceId(),
@@ -167,7 +171,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         return failedReason;
     }
 
-    private void populateUserAttributes(AuthenticatedUser authenticatedUser, User user) throws IdentityEventException {
+    private void populateUserAttributes(AuthenticatedUser authenticatedUser, User user) {
 
         if (authenticatedUser == null) {
             return;
@@ -191,7 +195,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                         // Not adding the multi attribute separator to the user claims
                         break;
                     case Constants.USER_ORGANIZATION:
-                        setUserOrganization(claimValue);
+                        // Not adding the user resident organization to the user claims for b2b users
                         break;
                     default:
                         userClaims.add(new UserClaim(claimUri, claimValue));
@@ -202,12 +206,12 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         user.setClaims(userClaims);
     }
 
-    private void setUserOrganization(String claimValue) throws IdentityEventException {
+    private Organization getUserResidentOrganization(String organizationId) throws IdentityEventException {
 
         try {
             String organizationName = WSO2EventHookHandlerDataHolder.getInstance()
-                    .getOrganizationManager().getOrganizationNameById(claimValue);
-            b2bUserResidentOrganization = new Organization(claimValue, organizationName);
+                    .getOrganizationManager().getOrganizationNameById(organizationId);
+            return new Organization(organizationId, organizationName);
         } catch (OrganizationManagementException e) {
             if (ERROR_CODE_INVALID_ORGANIZATION_ID.getCode().equals(e.getErrorCode())) {
                 log.debug("Returning an empty string as the organization name as the name is not returned for the given id.");
