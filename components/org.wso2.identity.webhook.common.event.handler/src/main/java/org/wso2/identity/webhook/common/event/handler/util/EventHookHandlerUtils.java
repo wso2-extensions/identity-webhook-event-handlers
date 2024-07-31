@@ -123,15 +123,16 @@ public class EventHookHandlerUtils {
             throw new IdentityEventException("Invalid event URI input: Event URI input cannot be null or empty.");
         }
 
-        SecurityEventTokenPayload securityEventTokenPayload = new SecurityEventTokenPayload();
-        securityEventTokenPayload.setIss(getURL());
-        securityEventTokenPayload.setIat(System.currentTimeMillis());
-        securityEventTokenPayload.setJti(UUID.randomUUID().toString());
-        securityEventTokenPayload.setRci(getCorrelationID());
         Map<String, EventPayload> eventMap = new HashMap<>();
         eventMap.put(eventUri, eventPayload);
-        securityEventTokenPayload.setEvent(eventMap);
-        return securityEventTokenPayload;
+
+        return SecurityEventTokenPayload.builder()
+                .iss(getURL())
+                .iat(System.currentTimeMillis())
+                .jti(UUID.randomUUID().toString())
+                .rci(getCorrelationID())
+                .event(eventMap)
+                .build();
     }
 
     /**
