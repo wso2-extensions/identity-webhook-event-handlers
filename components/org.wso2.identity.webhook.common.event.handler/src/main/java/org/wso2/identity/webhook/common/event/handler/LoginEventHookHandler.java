@@ -18,24 +18,17 @@
 
 package org.wso2.identity.webhook.common.event.handler;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.model.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.model.ResourceConfig;
 import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
-import org.wso2.carbon.identity.configuration.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
 import org.wso2.carbon.identity.configuration.mgt.core.search.ComplexCondition;
 import org.wso2.carbon.identity.configuration.mgt.core.search.Condition;
@@ -84,7 +77,11 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         String eventName = identityContext.getEvent().getEventName();
 
         boolean canHandle = isSupportedEvent(eventName);
-        log.debug("canHandle() returning " + canHandle + " for the event: " + eventName);
+        if (canHandle) {
+            log.debug(eventName + " event can be handled.");
+        } else {
+            log.debug(eventName + " event cannot be handled.");
+        }
         return canHandle;
     }
 
@@ -146,33 +143,10 @@ public class LoginEventHookHandler extends AbstractEventHandler {
             Condition condition = createPublisherConfigFilterCondition();
             Resources publisherConfigResource = EventHookHandlerDataHolder.getInstance().getConfigurationManager()
                     .getTenantResources(tenantDomain, condition);
-            return extractEventPublisherConfig(publisherConfigResource, eventName);
+            return eventConfigManager.extractEventPublisherConfig(publisherConfigResource, eventName);
         } catch (ConfigurationManagementException | IdentityEventException e) {
             throw new IdentityEventException("Error while retrieving event publisher configuration for tenant.", e);
         }
-    }
-
-    private EventPublisherConfig extractEventPublisherConfig(Resources publisherConfigResource, String eventName) throws IdentityEventException {
-
-        if (CollectionUtils.isNotEmpty(publisherConfigResource.getResources()) &&
-                publisherConfigResource.getResources().get(0) != null &&
-                CollectionUtils.isNotEmpty(publisherConfigResource.getResources().get(0).getAttributes())) {
-
-            for (Attribute attribute : publisherConfigResource.getResources().get(0).getAttributes()) {
-                if (isMatchingEventPublisherConfig(attribute, eventName)) {
-                    return buildEventPublisherConfigFromJSONString(attribute.getValue());
-                }
-            }
-        }
-        return new EventPublisherConfig();
-    }
-
-    private boolean isMatchingEventPublisherConfig(Attribute attribute, String eventName) {
-
-        return (Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT.equals(attribute.getKey()) &&
-                eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name())) ||
-                (Constants.EventHandlerKey.LOGIN_FAILED_EVENT.equals(attribute.getKey()) &&
-                        eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()));
     }
 
     private ComplexCondition createPublisherConfigFilterCondition() {
@@ -181,50 +155,5 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_NAME));
         return new ComplexCondition(ConditionType.ComplexOperator.AND, conditionList);
-    }
-
-    /**
-     * This method constructs the EventPublisherConfig object from the json string.
-     *
-     * @param jsonString JSON string.
-     * @return EventPublisherConfig object.
-     */
-    private EventPublisherConfig buildEventPublisherConfigFromJSONString(String jsonString) throws IdentityEventException {
-
-        JSONObject eventJSON = getJSONObject(jsonString);
-        EventPublisherConfig eventPublisherConfig = new EventPublisherConfig();
-        try {
-            if (eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY) instanceof Boolean) {
-                eventPublisherConfig.setPublishEnabled(
-                        (Boolean) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY));
-            } else {
-                eventPublisherConfig.setPublishEnabled(Boolean.parseBoolean(
-                        (String) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY)));
-            }
-            JSONObject propertiesJSON =
-                    (JSONObject) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PROPERTIES_KEY);
-            eventPublisherConfig.setProperties(new ResourceConfig(propertiesJSON));
-
-            return eventPublisherConfig;
-        } catch (ClassCastException e) {
-            throw new IdentityEventException("Error while casting event attribute from JSON string", e);
-        }
-    }
-
-    /**
-     * This method converts the parsed JSON String into a JSONObject.
-     *
-     * @param jsonString JSON string.
-     * @return JSON object.
-     * @throws IdentityEventServerException If an error occurs while constructing the object.
-     */
-    private JSONObject getJSONObject(String jsonString) throws IdentityEventServerException {
-
-        JSONParser jsonParser = new JSONParser();
-        try {
-            return (JSONObject) jsonParser.parse(jsonString);
-        } catch (ParseException | ClassCastException e) {
-            throw new IdentityEventServerException("Error while parsing JSON string", e);
-        }
     }
 }
