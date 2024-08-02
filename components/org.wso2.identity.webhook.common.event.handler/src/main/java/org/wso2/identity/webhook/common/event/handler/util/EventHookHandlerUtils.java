@@ -127,7 +127,7 @@ public class EventHookHandlerUtils {
         eventMap.put(eventUri, eventPayload);
 
         return SecurityEventTokenPayload.builder()
-                .iss(getURL())
+                .iss(constructBaseURL())
                 .iat(System.currentTimeMillis())
                 .jti(UUID.randomUUID().toString())
                 .rci(getCorrelationID())
@@ -184,9 +184,15 @@ public class EventHookHandlerUtils {
      *
      * @return Tenant qualified URL.
      */
-    public String getURL() {
+    public String constructBaseURL() {
 
-        return getURL(null);
+        try {
+            ServiceURLBuilder builder = ServiceURLBuilder.create();
+            return builder.build().getAbsolutePublicURL();
+        } catch (URLBuilderException e) {
+            log.debug("Error occurred while building the tenant qualified URL.", e);
+        }
+        return null;
     }
 
     /**
@@ -195,18 +201,10 @@ public class EventHookHandlerUtils {
      * @param endpoint Endpoint.
      * @return Tenant qualified URL.
      */
-    public String getURL(String endpoint) {
+    public String constructFullURLWithEndpoint(String endpoint) {
 
-        try {
-            ServiceURLBuilder builder = ServiceURLBuilder.create();
-            if (endpoint != null && !endpoint.isEmpty()) {
-                builder.addPath(endpoint);
-            }
-            return builder.build().getAbsolutePublicURL();
-        } catch (URLBuilderException e) {
-            log.debug("Error occurred while building the endpoint URL with tenant qualified URL.", e);
-        }
-        return endpoint != null ? endpoint : "";
+        endpoint = constructBaseURL() + endpoint;
+        return endpoint;
     }
 
     /**
