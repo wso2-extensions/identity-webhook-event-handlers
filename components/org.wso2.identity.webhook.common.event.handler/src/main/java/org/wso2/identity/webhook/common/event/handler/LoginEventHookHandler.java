@@ -135,6 +135,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     private EventPublisherConfig getLoginEventPublisherConfigForTenant(String tenantDomain, String eventName)
             throws IdentityEventException {
 
+        //TODO: Check the SUPER TENANT Flow and the requirement of this check
         if (StringUtils.isEmpty(tenantDomain) || MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain)) {
             throw new IdentityEventException("Invalid tenant domain: " + tenantDomain);
         }
