@@ -69,13 +69,14 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         }
 
         User user = new User();
+        populateUserAttributes(authenticatedUser, user);
         try {
-            populateUserAttributes(authenticatedUser, user);
             user.setId(authenticatedUser.getUserId());
-            user.setRef(EventHookHandlerUtils.getInstance().getURL(Constants.SCIM2_ENDPOINT) + "/" +
-                    authenticatedUser.getUserId());
+            user.setRef(EventHookHandlerUtils.getInstance().constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT) +
+                    "/" + authenticatedUser.getUserId());
         } catch (UserIdNotFoundException e) {
-            throw new IdentityEventException("Error while building the event payload", e);
+            //TODO: Need to verify when this exception is thrown and handle it accordingly
+            log.debug("Error while building the event payload.", e);
         }
 
         Organization tenant = new Organization(
@@ -114,16 +115,17 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         try {
             if (authenticatedUser != null) {
                 user.setId(authenticatedUser.getUserId());
-                user.setRef(EventHookHandlerUtils.getInstance().getURL(Constants.SCIM2_ENDPOINT) + "/" +
-                        authenticatedUser.getUserId());
-                if (authenticatedUser.getUserStoreDomain() != null) {
-                    userStore = new UserStore(authenticatedUser.getUserStoreDomain());
-                }
+                user.setRef(EventHookHandlerUtils.getInstance().constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT)
+                        + "/" + authenticatedUser.getUserId());
             }
         } catch (UserIdNotFoundException e) {
-            throw new IdentityEventException("Error while building the event payload", e);
+            //TODO: Need to verify when this exception is thrown and handle it accordingly
+            log.debug("Error while building the event payload.", e);
         }
 
+        if (authenticatedUser.getUserStoreDomain() != null) {
+            userStore = new UserStore(authenticatedUser.getUserStoreDomain());
+        }
         Organization tenant = new Organization(
                 String.valueOf(IdentityTenantUtil.getTenantId(authenticationContext.getTenantDomain())),
                 authenticationContext.getTenantDomain());
@@ -206,7 +208,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         user.setClaims(userClaims);
     }
 
-    private Organization getUserResidentOrganization(String organizationId) throws IdentityEventException {
+    private Organization getUserResidentOrganization(String organizationId) {
 
         try {
             String organizationName = WSO2EventHookHandlerDataHolder.getInstance()
@@ -216,8 +218,8 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
             if (ERROR_CODE_INVALID_ORGANIZATION_ID.getCode().equals(e.getErrorCode())) {
                 log.debug("Returning an empty string as the organization name as the name is not returned for the given id.");
             }
-            throw new IdentityEventException(UNEXPECTED_SERVER_ERROR.getCode(),
-                    "Error while retrieving the organization name for the given id.", e);
+            log.debug("Error while retrieving the organization name for the given id.", e);
         }
+        return null;
     }
 }
