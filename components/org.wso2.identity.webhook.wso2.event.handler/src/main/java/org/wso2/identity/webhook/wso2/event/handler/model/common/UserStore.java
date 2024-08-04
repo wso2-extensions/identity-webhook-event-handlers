@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.model.common;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /**
@@ -28,7 +29,7 @@ public class UserStore {
     private String name;
 
     public UserStore(String name) {
-        this.id = Base64.getEncoder().encodeToString(name.getBytes());
+        this.id = Base64.getEncoder().encodeToString(name.getBytes(StandardCharsets.UTF_8));
         this.name = name;
     }
 

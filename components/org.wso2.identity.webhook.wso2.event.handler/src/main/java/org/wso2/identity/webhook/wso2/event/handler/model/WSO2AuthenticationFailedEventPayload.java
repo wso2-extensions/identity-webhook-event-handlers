@@ -49,6 +49,9 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
         return userLoginIdentifier;
     }
 
+    /**
+     * Builder class to build WSO2AuthenticationFailedEventPayload.
+     */
     public static class Builder {
         private User user;
         private Organization tenant;
