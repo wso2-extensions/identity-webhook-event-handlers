@@ -18,12 +18,6 @@
 
 package org.wso2.identity.webhook.common.event.handler;
 
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.common.event.handler.model.EventPublisherConfig;
-import org.wso2.identity.webhook.common.event.handler.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,6 +37,12 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
+import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.model.EventPublisherConfig;
+import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,14 +117,17 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                 eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
                 eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT);
                 String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-                SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
+                SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerUtils
+                        .buildSecurityEventToken(eventPayload, eventUri);
                 eventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-            } else if (IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name().equals(event.getEventName()) &&
+            } else if (IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()
+                    .equals(event.getEventName()) &&
                     loginEventPublisherConfig.isPublishEnabled()) {
                 eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
                 eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.LOGIN_FAILED_EVENT);
                 String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-                SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
+                SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerUtils
+                        .buildSecurityEventToken(eventPayload, eventUri);
                 eventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             }
         } catch (IdentityEventException e) {
@@ -153,8 +156,10 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     private ComplexCondition createPublisherConfigFilterCondition() {
 
         List<Condition> conditionList = new ArrayList<>();
-        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
-        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_NAME));
+        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS,
+                Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
+        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS,
+                Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_NAME));
         return new ComplexCondition(ConditionType.ComplexOperator.AND, conditionList);
     }
 }

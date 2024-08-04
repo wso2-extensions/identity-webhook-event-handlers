@@ -38,10 +38,10 @@ import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils.CORRELATION_ID_MDC;
 
@@ -80,9 +80,12 @@ public class EventHookHandlerUtils {
             throw new IdentityEventException("Properties cannot be null");
         }
 
-        Map<String, Object> params = properties.containsKey("params") ? (Map<String, Object>) properties.get("params") : null;
-        AuthenticationContext context = properties.containsKey("context") ? (AuthenticationContext) properties.get("context") : null;
-        AuthenticatorStatus status = properties.containsKey("authenticationStatus") ? (AuthenticatorStatus) properties.get("authenticationStatus") : null;
+        Map<String, Object> params = properties.containsKey("params") ?
+                (Map<String, Object>) properties.get("params") : null;
+        AuthenticationContext context = properties.containsKey("context") ?
+                (AuthenticationContext) properties.get("context") : null;
+        AuthenticatorStatus status = properties.containsKey("authenticationStatus") ?
+                (AuthenticatorStatus) properties.get("authenticationStatus") : null;
         HttpServletRequest request = params != null ? (HttpServletRequest) params.get("request") : null;
 
         AuthenticatedUser authenticatedUser = null;

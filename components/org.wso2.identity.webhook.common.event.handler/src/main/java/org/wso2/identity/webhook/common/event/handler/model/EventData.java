@@ -22,8 +22,8 @@ import org.wso2.carbon.identity.application.authentication.framework.Authenticat
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Event data model.
@@ -73,6 +73,9 @@ public class EventData {
         return new Builder();
     }
 
+    /**
+     * Builder class to build EventData.
+     */
     public static class Builder {
         private String eventName;
         private HttpServletRequest request;

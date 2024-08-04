@@ -42,6 +42,9 @@ public class AuthenticationFailedReason {
         this.failedStep = failedStep;
     }
 
+    /**
+     * Failed step class.
+     */
     public static class FailedStep {
         private int step;
         private String idp;

@@ -18,11 +18,11 @@
 package org.wso2.identity.webhook.wso2.event.handler.builder;
 
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.model.WSO2AuthenticationFailedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.model.WSO2AuthenticationSuccessEventPayload;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
 
 import java.util.ArrayList;
 

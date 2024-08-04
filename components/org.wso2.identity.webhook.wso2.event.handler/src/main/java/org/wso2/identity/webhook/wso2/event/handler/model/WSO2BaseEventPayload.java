@@ -18,12 +18,15 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.model;
 
+import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.model.common.Organization;
 import org.wso2.identity.webhook.wso2.event.handler.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.model.common.UserStore;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
 
+/**
+ * Base class for WSO2 Event Payload.
+ */
 public abstract class WSO2BaseEventPayload extends EventPayload {
     protected User user;
     protected Organization tenant;
