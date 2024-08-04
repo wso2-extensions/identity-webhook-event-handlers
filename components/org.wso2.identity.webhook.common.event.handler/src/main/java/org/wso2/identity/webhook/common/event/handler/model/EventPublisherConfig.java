@@ -24,7 +24,7 @@ import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 /**
  * Model class representing the event attributes.
  */
-public class EventAttribute {
+public class EventPublisherConfig {
 
     private boolean publishEnabled;
     private ResourceConfig properties;
@@ -32,7 +32,7 @@ public class EventAttribute {
     /**
      * Constructs event attribute with default configs.
      */
-    public EventAttribute() {
+    public EventPublisherConfig() {
 
         this.publishEnabled = false;
         this.properties = new ResourceConfig(new JSONObject());
@@ -44,7 +44,7 @@ public class EventAttribute {
      * @param publishEnabled    Is publishing enabled.
      * @param properties        Event properties.
      */
-    public EventAttribute(boolean publishEnabled, ResourceConfig properties) {
+    public EventPublisherConfig(boolean publishEnabled, ResourceConfig properties) {
 
         this.publishEnabled = publishEnabled;
         this.properties = properties;

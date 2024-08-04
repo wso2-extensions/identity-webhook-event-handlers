@@ -22,6 +22,7 @@ import org.wso2.carbon.identity.event.IdentityEventConfigBuilder;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
+import org.wso2.identity.webhook.common.event.handler.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.LoginEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.apache.commons.logging.Log;
@@ -61,9 +62,8 @@ public class EventHookHandlerServiceComponent {
 
             if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new LoginEventHookHandler(EventHookHandlerUtils.getInstance()), null);
-            } else if (isLoginEventHandlerEnabled == null) {
-                log.error("Login Event Handler enabled property is null.");
+                        new LoginEventHookHandler(EventHookHandlerUtils.getInstance(),
+                                EventConfigManager.getInstance()), null);
             } else {
                 log.error("Login Event Handler is not enabled.");
             }

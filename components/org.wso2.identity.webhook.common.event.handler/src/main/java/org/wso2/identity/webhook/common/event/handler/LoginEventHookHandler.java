@@ -18,24 +18,17 @@
 
 package org.wso2.identity.webhook.common.event.handler;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.common.event.handler.model.EventAttribute;
+import org.wso2.identity.webhook.common.event.handler.model.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.model.ResourceConfig;
 import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
-import org.wso2.carbon.identity.configuration.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
 import org.wso2.carbon.identity.configuration.mgt.core.search.ComplexCondition;
 import org.wso2.carbon.identity.configuration.mgt.core.search.Condition;
@@ -64,9 +57,11 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(LoginEventHookHandler.class);
     private final EventHookHandlerUtils eventHookHandlerUtils;
+    private final EventConfigManager eventConfigManager;
 
-    public LoginEventHookHandler(EventHookHandlerUtils eventHookHandlerUtils) {
+    public LoginEventHookHandler(EventHookHandlerUtils eventHookHandlerUtils,  EventConfigManager eventConfigManager) {
         this.eventHookHandlerUtils = eventHookHandlerUtils;
+        this.eventConfigManager = eventConfigManager;
     }
 
     @Override
@@ -82,7 +77,11 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         String eventName = identityContext.getEvent().getEventName();
 
         boolean canHandle = isSupportedEvent(eventName);
-        log.debug("canHandle() returning " + canHandle + " for the event: " + eventName);
+        if (canHandle) {
+            log.debug(eventName + " event can be handled.");
+        } else {
+            log.debug(eventName + " event cannot be handled.");
+        }
         return canHandle;
     }
 
@@ -105,68 +104,50 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
         LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
                 .getLoginEventPayloadBuilder(EVENT_SCHEMA_TYPE_WSO2);
-        EventAttribute loginEventPublisherConfig = getLoginEventPublisherConfigForTenant(
-                eventData.getAuthenticationContext().getLoginTenantDomain(), event.getEventName());
-        EventPayload eventPayload;
-        String eventUri;
+        EventPublisherConfig loginEventPublisherConfig = null;
+        try {
+            loginEventPublisherConfig = getLoginEventPublisherConfigForTenant(
+                    eventData.getAuthenticationContext().getLoginTenantDomain(), event.getEventName());
 
-        if (IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name().equals(event.getEventName()) &&
-                loginEventPublisherConfig.isPublishEnabled()) {
-            eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
-            eventUri = eventHookHandlerUtils.getEventUri(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT);
-            String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-            SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
-            eventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-        } else if (IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name().equals(event.getEventName()) &&
-                loginEventPublisherConfig.isPublishEnabled()) {
-            eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
-            eventUri = eventHookHandlerUtils.getEventUri(Constants.EventHandlerKey.LOGIN_FAILED_EVENT);
-            String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-            SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
-            eventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+            EventPayload eventPayload;
+            String eventUri;
+
+            if (IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name().equals(event.getEventName()) &&
+                    loginEventPublisherConfig.isPublishEnabled()) {
+                eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
+                eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT);
+                String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
+                SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
+                eventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+            } else if (IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name().equals(event.getEventName()) &&
+                    loginEventPublisherConfig.isPublishEnabled()) {
+                eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
+                eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.LOGIN_FAILED_EVENT);
+                String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
+                SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
+                eventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+            }
+        } catch (IdentityEventException e) {
+            log.error("Error while retrieving event publisher configuration for tenant.", e);
         }
     }
 
-    private EventAttribute getLoginEventPublisherConfigForTenant(String tenantDomain, String eventName) {
+    private EventPublisherConfig getLoginEventPublisherConfigForTenant(String tenantDomain, String eventName)
+            throws IdentityEventException {
 
+        //TODO: Check the SUPER TENANT Flow and the requirement of this check
         if (StringUtils.isEmpty(tenantDomain) || MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain)) {
-            return new EventAttribute();
+            throw new IdentityEventException("Invalid tenant domain: " + tenantDomain);
         }
 
         try {
             Condition condition = createPublisherConfigFilterCondition();
             Resources publisherConfigResource = EventHookHandlerDataHolder.getInstance().getConfigurationManager()
                     .getTenantResources(tenantDomain, condition);
-
-            return extractEventAttribute(publisherConfigResource, eventName);
+            return eventConfigManager.extractEventPublisherConfig(publisherConfigResource, eventName);
         } catch (ConfigurationManagementException | IdentityEventException e) {
-            log.debug("Error while retrieving event publisher configuration for tenant.", e);
+            throw new IdentityEventException("Error while retrieving event publisher configuration for tenant.", e);
         }
-
-        return new EventAttribute();
-    }
-
-    private EventAttribute extractEventAttribute(Resources publisherConfigResource, String eventName) throws IdentityEventException {
-
-        if (CollectionUtils.isNotEmpty(publisherConfigResource.getResources()) &&
-                publisherConfigResource.getResources().get(0) != null &&
-                CollectionUtils.isNotEmpty(publisherConfigResource.getResources().get(0).getAttributes())) {
-
-            for (Attribute attribute : publisherConfigResource.getResources().get(0).getAttributes()) {
-                if (isMatchingEventAttribute(attribute, eventName)) {
-                    return buildEventAttributeFromJSONString(attribute.getValue());
-                }
-            }
-        }
-        return new EventAttribute();
-    }
-
-    private boolean isMatchingEventAttribute(Attribute attribute, String eventName) {
-
-        return (Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT.equals(attribute.getKey()) &&
-                eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name())) ||
-                (Constants.EventHandlerKey.LOGIN_FAILED_EVENT.equals(attribute.getKey()) &&
-                        eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()));
     }
 
     private ComplexCondition createPublisherConfigFilterCondition() {
@@ -175,50 +156,5 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS, Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_NAME));
         return new ComplexCondition(ConditionType.ComplexOperator.AND, conditionList);
-    }
-
-    /**
-     * This method constructs the EventAttribute object from the json string.
-     *
-     * @param jsonString JSON string.
-     * @return EventAttribute object.
-     */
-    private EventAttribute buildEventAttributeFromJSONString(String jsonString) throws IdentityEventException {
-
-        JSONObject eventJSON = getJSONObject(jsonString);
-        EventAttribute eventAttribute = new EventAttribute();
-        try {
-            if (eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY) instanceof Boolean) {
-                eventAttribute.setPublishEnabled(
-                        (Boolean) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY));
-            } else {
-                eventAttribute.setPublishEnabled(Boolean.parseBoolean(
-                        (String) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY)));
-            }
-            JSONObject propertiesJSON =
-                    (JSONObject) eventJSON.get(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PROPERTIES_KEY);
-            eventAttribute.setProperties(new ResourceConfig(propertiesJSON));
-
-            return eventAttribute;
-        } catch (ClassCastException e) {
-            throw new IdentityEventException("Error while casting event attribute from JSON string", e);
-        }
-    }
-
-    /**
-     * This method converts the parsed JSON String into a JSONObject.
-     *
-     * @param jsonString JSON string.
-     * @return JSON object.
-     * @throws IdentityEventServerException If an error occurs while constructing the object.
-     */
-    private JSONObject getJSONObject(String jsonString) throws IdentityEventServerException {
-
-        JSONParser jsonParser = new JSONParser();
-        try {
-            return (JSONObject) jsonParser.parse(jsonString);
-        } catch (ParseException | ClassCastException e) {
-            throw new IdentityEventServerException("Error while parsing JSON string", e);
-        }
     }
 }
