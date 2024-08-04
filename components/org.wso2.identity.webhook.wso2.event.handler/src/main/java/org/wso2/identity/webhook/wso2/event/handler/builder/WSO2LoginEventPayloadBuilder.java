@@ -23,6 +23,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
+import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;

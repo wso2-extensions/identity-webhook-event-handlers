@@ -118,7 +118,8 @@ public class EventConfigManager {
      * @return EventPublisherConfig object.
      * @throws IdentityEventException If an error occurs.
      */
-    public EventPublisherConfig extractEventPublisherConfig(Resources publisherConfigResource, String eventName) throws IdentityEventException {
+    public EventPublisherConfig extractEventPublisherConfig(Resources publisherConfigResource, String eventName)
+            throws IdentityEventException {
 
         if (CollectionUtils.isNotEmpty(publisherConfigResource.getResources()) &&
                 publisherConfigResource.getResources().get(0) != null &&
@@ -141,7 +142,8 @@ public class EventConfigManager {
                         eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()));
     }
 
-    private EventPublisherConfig buildEventPublisherConfigFromJSONString(String jsonString) throws IdentityEventException {
+    private EventPublisherConfig buildEventPublisherConfigFromJSONString(String jsonString)
+            throws IdentityEventException {
 
         JSONObject eventJSON = getJSONObject(jsonString);
         EventPublisherConfig eventPublisherConfig = new EventPublisherConfig();

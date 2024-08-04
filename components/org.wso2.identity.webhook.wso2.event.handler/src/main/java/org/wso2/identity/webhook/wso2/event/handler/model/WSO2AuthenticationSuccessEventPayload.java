@@ -46,6 +46,9 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
         return authenticationMethods;
     }
 
+    /**
+     * Builder class to build WSO2AuthenticationSuccessEventPayload.
+     */
     public static class Builder {
         private User user;
         private Organization tenant;

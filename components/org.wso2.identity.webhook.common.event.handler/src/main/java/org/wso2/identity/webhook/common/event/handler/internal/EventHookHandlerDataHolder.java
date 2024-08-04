@@ -18,9 +18,9 @@
 
 package org.wso2.identity.webhook.common.event.handler.internal;
 
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
+import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 
 import java.util.ArrayList;
 import java.util.List;

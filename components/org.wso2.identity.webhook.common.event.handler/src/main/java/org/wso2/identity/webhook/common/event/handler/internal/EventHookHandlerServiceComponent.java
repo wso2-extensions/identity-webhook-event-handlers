@@ -18,13 +18,6 @@
 
 package org.wso2.identity.webhook.common.event.handler.internal;
 
-import org.wso2.carbon.identity.event.IdentityEventConfigBuilder;
-import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.event.IdentityEventServerException;
-import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
-import org.wso2.identity.webhook.common.event.handler.EventConfigManager;
-import org.wso2.identity.webhook.common.event.handler.LoginEventHookHandler;
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.BundleContext;
@@ -36,8 +29,15 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
+import org.wso2.carbon.identity.event.IdentityEventConfigBuilder;
+import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.event.IdentityEventServerException;
+import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
+import org.wso2.identity.webhook.common.event.handler.EventConfigManager;
+import org.wso2.identity.webhook.common.event.handler.LoginEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
 
@@ -60,7 +60,8 @@ public class EventHookHandlerServiceComponent {
                     Constants.LOGIN_EVENT_HOOK_ENABLED);
             BundleContext bundleContext = context.getBundleContext();
 
-            if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
+            if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled
+                    .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
                         new LoginEventHookHandler(EventHookHandlerUtils.getInstance(),
                                 EventConfigManager.getInstance()), null);
@@ -140,7 +141,8 @@ public class EventHookHandlerServiceComponent {
      * @param propertyName The name of the property which should be fetched
      * @return The required property
      */
-    private String getIdentityEventProperty(String moduleName, String propertyName) throws IdentityEventServerException {
+    private String getIdentityEventProperty(String moduleName, String propertyName)
+            throws IdentityEventServerException {
 
         // Retrieving properties set in identity event properties
         String propertyValue = null;
