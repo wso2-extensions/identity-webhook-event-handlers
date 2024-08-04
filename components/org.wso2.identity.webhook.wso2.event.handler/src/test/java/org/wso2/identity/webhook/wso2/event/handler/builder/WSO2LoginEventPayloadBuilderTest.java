@@ -105,7 +105,8 @@ public class WSO2LoginEventPayloadBuilderTest {
     public Object[][] successEventDataProvider() {
 
         return new Object[][] {
-                {SAMPLE_USER_ID, SAMPLE_USERSTORE_NAME, SAMPLE_SP_ID, SAMPLE_SERVICE_PROVIDER, SAMPLE_TENANT_ID, SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, 1}
+                {SAMPLE_USER_ID, SAMPLE_USERSTORE_NAME, SAMPLE_SP_ID, SAMPLE_SERVICE_PROVIDER, SAMPLE_TENANT_ID,
+                        SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, 1}
         };
     }
 
@@ -143,7 +144,8 @@ public class WSO2LoginEventPayloadBuilderTest {
     public Object[][] failedEventDataProvider() {
 
         return new Object[][] {
-                {SAMPLE_USER_ID, SAMPLE_USERSTORE_NAME, SAMPLE_SP_ID, SAMPLE_SERVICE_PROVIDER, SAMPLE_TENANT_ID, SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, SAMPLE_ERROR_CODE, 2, SAMPLE_IDP, SAMPLE_AUTHENTICATOR}
+                {SAMPLE_USER_ID, SAMPLE_USERSTORE_NAME, SAMPLE_SP_ID, SAMPLE_SERVICE_PROVIDER, SAMPLE_TENANT_ID,
+                        SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, SAMPLE_ERROR_CODE, 2, SAMPLE_IDP, SAMPLE_AUTHENTICATOR}
         };
     }
 
