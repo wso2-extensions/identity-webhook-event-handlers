@@ -131,7 +131,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                 eventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             }
         } catch (IdentityEventException e) {
-            log.error("Error while retrieving event publisher configuration for tenant.", e);
+            log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }
     }
 
