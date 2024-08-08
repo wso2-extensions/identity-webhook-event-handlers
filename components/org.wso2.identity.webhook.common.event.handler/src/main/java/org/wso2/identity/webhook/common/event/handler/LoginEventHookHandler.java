@@ -34,7 +34,6 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
-import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
@@ -138,8 +137,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     private EventPublisherConfig getLoginEventPublisherConfigForTenant(String tenantDomain, String eventName)
             throws IdentityEventException {
 
-        //TODO: Check the SUPER TENANT Flow and the requirement of this check
-        if (StringUtils.isEmpty(tenantDomain) || MultitenantConstants.SUPER_TENANT_DOMAIN_NAME.equals(tenantDomain)) {
+        if (StringUtils.isEmpty(tenantDomain)) {
             throw new IdentityEventException("Invalid tenant domain: " + tenantDomain);
         }
 
