@@ -153,7 +153,10 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         List<String> authMethods = new ArrayList<>();
         for (AuthHistory authHistory : authContext.getAuthenticationStepHistory()) {
             authMethods.add(authHistory.toTranslatableString());
-            //For the B2B user scenario, we skip the authentication methods, since it's coming only 'OrganizationAuthenticator`
+            /*
+             * For the B2B user scenario, we skip the authentication methods, since it's coming only
+             * 'OrganizationAuthenticator`
+             */
             if (authHistory.toTranslatableString().equals(ORGANIZATION_AUTHENTICATOR)) {
                 return null;
             }
