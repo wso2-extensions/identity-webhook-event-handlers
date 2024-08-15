@@ -49,6 +49,7 @@ import java.util.Map;
 
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 import static org.wso2.identity.webhook.common.event.handler.constant.Constants.EVENT_SCHEMA_TYPE_WSO2;
+import static org.wso2.identity.webhook.common.event.handler.constant.Constants.ORGANIZATION_AUTHENTICATOR;
 
 /**
  * WSO2 Login Event Payload Builder.
@@ -152,6 +153,10 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         List<String> authMethods = new ArrayList<>();
         for (AuthHistory authHistory : authContext.getAuthenticationStepHistory()) {
             authMethods.add(authHistory.toTranslatableString());
+            //For the B2B user scenario, we skip the authentication methods, since it's coming only 'OrganizationAuthenticator`
+            if (authHistory.toTranslatableString().equals(ORGANIZATION_AUTHENTICATOR)) {
+                return null;
+            }
         }
         return authMethods;
     }
@@ -195,6 +200,9 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                         break;
                     case Constants.MULTI_ATTRIBUTE_SEPARATOR:
                         // Not adding the multi attribute separator to the user claims
+                        break;
+                    case Constants.IDENTITY_PROVIDER_MAPPED_USER_ROLES:
+                        // Not adding the identity provider mapped user roles to the user claims for federated users
                         break;
                     case Constants.USER_ORGANIZATION:
                         // Not adding the user resident organization to the user claims for b2b users
