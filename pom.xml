@@ -26,14 +26,18 @@
 
     <groupId>org.wso2.identity.webhook.event.handlers</groupId>
     <modelVersion>4.0.0</modelVersion>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <artifactId>identity-webhook-event-handlers</artifactId>
+
     <packaging>pom</packaging>
     <name>Identity Webhook Event Handlers</name>
+    <description>Maintains the event handlers for the Webhook event publisher</description>
+    <url>http://wso2.org</url>
 
     <scm>
         <url>https://github.com/wso2-extensions/identity-webhook-event-handlers.git</url>
-        <developerConnection>scm:git:https://github.com/wso2-extensions/identity-webhook-event-handlers.git</developerConnection>
+        <developerConnection>scm:git:https://github.com/wso2-extensions/identity-webhook-event-handlers.git
+        </developerConnection>
         <connection>scm:git:https://github.com/wso2-extensions/identity-webhook-event-handlers.git</connection>
         <tag>HEAD</tag>
     </scm>
@@ -42,6 +46,19 @@
         <module>components/org.wso2.identity.webhook.common.event.handler</module>
         <module>components/org.wso2.identity.webhook.wso2.event.handler</module>
     </modules>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <name>WSO2 Nexus Release Repository</name>
+            <url>https://maven.wso2.org/nexus/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>wso2.snapshots</id>
+            <name>WSO2 Snapshot Repository</name>
+            <url>https://maven.wso2.org/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <dependencyManagement>
         <dependencies>
