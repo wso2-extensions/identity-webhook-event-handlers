@@ -83,17 +83,13 @@ public class EventConfigManager {
      */
     public String getEventUri(String eventName) throws IdentityEventServerException {
 
-        try {
-            ResourceConfig eventConfigObject = getEventConfig(eventName);
-            if (eventConfigObject.getConfigs() != null &&
-                    eventConfigObject.getConfigs().containsKey(Constants.EVENT_CONFIG_SCHEMA_NAME_KEY)) {
-                return (String) eventConfigObject.getConfigs().get(Constants.EVENT_CONFIG_SCHEMA_NAME_KEY);
-            } else {
-                throw new IdentityEventServerException("Event schema for event name: " + eventName + " not found in " +
-                        Constants.EVENT_PUBLISHER_EVENT_SCHEMA_RESOURCE_FILE_PATH + " file");
-            }
-        } catch (ClassCastException e) {
-            throw new IdentityEventServerException("Error while casting event config at server side", e);
+        ResourceConfig eventConfigObject = getEventConfig(eventName);
+        if (eventConfigObject != null && eventConfigObject.getConfigs() != null &&
+                eventConfigObject.getConfigs().containsKey(Constants.EVENT_CONFIG_SCHEMA_NAME_KEY)) {
+            return (String) eventConfigObject.getConfigs().get(Constants.EVENT_CONFIG_SCHEMA_NAME_KEY);
+        } else {
+            throw new IdentityEventServerException("Event schema for event name: " + eventName + " not found in " +
+                    Constants.EVENT_PUBLISHER_EVENT_SCHEMA_RESOURCE_FILE_PATH + " file");
         }
     }
 
@@ -102,19 +98,16 @@ public class EventConfigManager {
      *
      * @param eventName Event name.
      * @return Resource config object.
-     * @throws IdentityEventServerException If an error occurs.
      */
-    private ResourceConfig getEventConfig(String eventName) throws IdentityEventServerException {
+    private ResourceConfig getEventConfig(String eventName) {
 
         JSONObject eventsConfigObject = (JSONObject) eventSchema.getConfigs()
                 .get(Constants.EVENT_SCHEMA_EVENTS_KEY);
         if (eventsConfigObject != null && !eventsConfigObject.isEmpty() &&
                 eventsConfigObject.containsKey(eventName)) {
             return new ResourceConfig((JSONObject) eventsConfigObject.get(eventName));
-        } else {
-            throw new IdentityEventServerException("Event configs for event name: " + eventName + " not found in " +
-                    Constants.EVENT_PUBLISHER_EVENT_SCHEMA_RESOURCE_FILE_PATH + " file");
         }
+        return null;
     }
 
     /**
