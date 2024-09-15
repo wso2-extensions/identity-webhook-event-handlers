@@ -20,7 +20,7 @@
     <parent>
         <artifactId>identity-webhook-event-handlers</artifactId>
         <groupId>org.wso2.identity.webhook.event.handlers</groupId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.32-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -135,13 +135,11 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>3.2.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-SymbolicName>
-                            ${project.artifactId}
-                        </Bundle-SymbolicName>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Private-Package>
                             org.wso2.identity.webhook.wso2.event.handler.internal
                         </Private-Package>
