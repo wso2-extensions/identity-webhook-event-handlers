@@ -16,11 +16,13 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="ventHookHandlerTestSuite">
-
-    <test name="LoginEventHookHandlerTests">
+<suite name="org.wso2.identity.webhook.common.event.handler">
+    <test name="login-event-hook-handler-tests" preserve-order="true" parallel="false">
         <classes>
+            <class name="org.wso2.identity.webhook.common.event.handler.EventConfigManagerTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtilsTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.LoginEventHookHandlerTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.PayloadBuilderFactoryTest"/>
         </classes>
     </test>
 </suite>

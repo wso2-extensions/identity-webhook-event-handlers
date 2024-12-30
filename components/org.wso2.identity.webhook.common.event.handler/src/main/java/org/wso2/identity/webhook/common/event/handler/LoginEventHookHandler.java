@@ -59,6 +59,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     private final EventConfigManager eventConfigManager;
 
     public LoginEventHookHandler(EventHookHandlerUtils eventHookHandlerUtils,  EventConfigManager eventConfigManager) {
+
         this.eventHookHandlerUtils = eventHookHandlerUtils;
         this.eventConfigManager = eventConfigManager;
     }
@@ -146,7 +147,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
             Resources publisherConfigResource = EventHookHandlerDataHolder.getInstance().getConfigurationManager()
                     .getTenantResources(tenantDomain, condition);
             return eventConfigManager.extractEventPublisherConfig(publisherConfigResource, eventName);
-        } catch (ConfigurationManagementException | IdentityEventException e) {
+        } catch (ConfigurationManagementException e) {
             throw new IdentityEventException("Error while retrieving event publisher configuration for tenant.", e);
         }
     }
