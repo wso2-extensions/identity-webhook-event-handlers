@@ -46,7 +46,7 @@ public class EventConfigManager {
     private final ResourceConfig eventSchema;
     private static volatile EventConfigManager instance;
 
-    private EventConfigManager() throws IdentityEventServerException {
+    EventConfigManager() throws IdentityEventServerException {
 
         String resourceFilePath = new File(".").getAbsolutePath() + File.separator +
                 Constants.EVENT_PUBLISHER_EVENT_SCHEMA_RESOURCE_FILE_PATH;
