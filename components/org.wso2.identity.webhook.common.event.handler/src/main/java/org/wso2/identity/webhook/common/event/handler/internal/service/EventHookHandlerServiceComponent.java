@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.internal;
+package org.wso2.identity.webhook.common.event.handler.internal.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,17 +35,18 @@ import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
-import org.wso2.identity.webhook.common.event.handler.EventConfigManager;
-import org.wso2.identity.webhook.common.event.handler.LoginEventHookHandler;
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.api.util.EventHookHandlerUtils;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerInternalUtils;
 
 /**
  * WSO2 Event Handler service component class.
  */
 @Component(
-        name = "org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerServiceComponent",
+        name = "org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerServiceComponent",
         immediate = true)
 public class EventHookHandlerServiceComponent {
 
@@ -63,7 +64,7 @@ public class EventHookHandlerServiceComponent {
             if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled
                     .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new LoginEventHookHandler(EventHookHandlerUtils.getInstance(),
+                        new LoginEventHookHandler(EventHookHandlerInternalUtils.getInstance(),
                                 EventConfigManager.getInstance()), null);
             } else {
                 log.error("Login Event Handler is not enabled.");

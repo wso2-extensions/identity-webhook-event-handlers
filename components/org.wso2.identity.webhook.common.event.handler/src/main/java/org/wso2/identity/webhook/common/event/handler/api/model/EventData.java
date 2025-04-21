@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.model;
+package org.wso2.identity.webhook.common.event.handler.api.model;
 
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorStatus;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;

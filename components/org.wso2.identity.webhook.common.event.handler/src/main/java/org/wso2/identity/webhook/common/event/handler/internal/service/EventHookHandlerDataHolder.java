@@ -16,11 +16,11 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.internal;
+package org.wso2.identity.webhook.common.event.handler.internal.service;
 
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 
 import java.util.ArrayList;
 import java.util.List;

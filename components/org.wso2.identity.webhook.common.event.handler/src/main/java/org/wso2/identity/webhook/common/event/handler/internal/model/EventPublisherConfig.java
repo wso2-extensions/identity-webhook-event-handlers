@@ -16,10 +16,10 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.model;
+package org.wso2.identity.webhook.common.event.handler.internal.model;
 
 import org.json.simple.JSONObject;
-import org.wso2.identity.webhook.common.event.handler.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
 
 /**
  * Model class representing the event attributes.

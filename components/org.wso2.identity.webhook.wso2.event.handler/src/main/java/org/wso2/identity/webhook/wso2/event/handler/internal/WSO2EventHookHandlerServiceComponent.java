@@ -28,7 +28,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.builder.WSO2LoginEventPayloadBuilder;
 
 /**

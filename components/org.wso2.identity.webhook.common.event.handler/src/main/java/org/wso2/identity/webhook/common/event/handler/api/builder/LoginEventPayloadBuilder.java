@@ -16,11 +16,11 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.builder;
+package org.wso2.identity.webhook.common.event.handler.api.builder;
 
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.webhook.common.event.handler.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
 /**
  * Interface for Login Event Payload Builder.

@@ -16,10 +16,10 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler;
+package org.wso2.identity.webhook.common.event.handler.internal.util;
 
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerDataHolder;
 
 import java.util.List;
 

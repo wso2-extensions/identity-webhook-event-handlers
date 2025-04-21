@@ -28,9 +28,9 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
+import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.wso2.event.handler.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.model.AuthenticationFailedReason;
@@ -48,8 +48,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
-import static org.wso2.identity.webhook.common.event.handler.constant.Constants.EVENT_SCHEMA_TYPE_WSO2;
-import static org.wso2.identity.webhook.common.event.handler.constant.Constants.ORGANIZATION_AUTHENTICATOR;
+import static org.wso2.identity.webhook.common.event.handler.api.constant.Constants.EVENT_SCHEMA_TYPE_WSO2;
+import static org.wso2.identity.webhook.common.event.handler.api.constant.Constants.ORGANIZATION_AUTHENTICATOR;
 
 /**
  * WSO2 Login Event Payload Builder.
