@@ -44,7 +44,6 @@ import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.model.EventPublisherConfig;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventHookHandlerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,7 +148,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
             Resources publisherConfigResource = EventHookHandlerDataHolder.getInstance().getConfigurationManager()
                     .getTenantResources(tenantDomain, condition);
             return eventConfigManager.extractEventPublisherConfig(publisherConfigResource, eventName);
-        } catch (ConfigurationManagementException | IdentityEventException e) {
+        } catch (ConfigurationManagementException e) {
             throw new IdentityEventException("Error while retrieving event publisher configuration for tenant.", e);
         }
     }
