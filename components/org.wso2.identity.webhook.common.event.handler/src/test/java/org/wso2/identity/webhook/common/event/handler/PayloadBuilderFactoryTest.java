@@ -21,8 +21,10 @@ package org.wso2.identity.webhook.common.event.handler;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
 import java.util.List;
 
@@ -43,7 +45,7 @@ public class PayloadBuilderFactoryTest {
     public void setup() {
 
         mockBuilder = Mockito.mock(LoginEventPayloadBuilder.class);
-        Mockito.when(mockBuilder.getEventSchemaType()).thenReturn("WSO2");
+        Mockito.when(mockBuilder.getEventSchemaType()).thenReturn(Constants.EVENT_SCHEMA_TYPE_WSO2);
 
         EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(mockBuilder);
     }
@@ -62,9 +64,9 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetLoginEventPayloadBuilderReturnsRegisteredBuilder() {
 
-        LoginEventPayloadBuilder builder = PayloadBuilderFactory.getLoginEventPayloadBuilder("WSO2");
+        LoginEventPayloadBuilder builder = PayloadBuilderFactory.getLoginEventPayloadBuilder(Constants.EVENT_SCHEMA_TYPE_WSO2);
         assertNotNull(builder, "The builder should not be null.");
-        assertEquals(builder.getEventSchemaType(), "WSO2", "The schema type should match 'WSO2'.");
+        assertEquals(builder.getEventSchemaType(), Constants.EVENT_SCHEMA_TYPE_WSO2, "The schema type should match 'WSO2'.");
     }
 
     @Test

@@ -47,13 +47,16 @@ import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.common.event.handler.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.model.EventPublisherConfig;
-import org.wso2.identity.webhook.common.event.handler.model.ResourceConfig;
-import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
+import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.internal.model.EventPublisherConfig;
+import org.wso2.identity.webhook.common.event.handler.internal.model.ResourceConfig;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerInternalUtils;
+import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -105,7 +108,7 @@ public class LoginEventHookHandlerTest {
     @Mock
     private LoginEventPayloadBuilder mockedLoginEventPayloadBuilder;
     @Mock
-    private EventHookHandlerUtils mockedEventHookHandlerUtils;
+    private EventHookHandlerInternalUtils mockedEventHookHandlerInternalUtils;
     @Mock
     private EventConfigManager mockedEventConfigManager;
 
@@ -223,9 +226,9 @@ public class LoginEventHookHandlerTest {
 
         mockServiceURLBuilder();
         mockIdentityTenantUtil();
-        mockedEventHookHandlerUtils = mock(EventHookHandlerUtils.class, withSettings()
+        mockedEventHookHandlerInternalUtils = mock(EventHookHandlerInternalUtils.class, withSettings()
                 .defaultAnswer(CALLS_REAL_METHODS));
-        loginEventHookHandler = new LoginEventHookHandler(mockedEventHookHandlerUtils,
+        loginEventHookHandler = new LoginEventHookHandler(mockedEventHookHandlerInternalUtils,
                 mockedEventConfigManager);
     }
 
