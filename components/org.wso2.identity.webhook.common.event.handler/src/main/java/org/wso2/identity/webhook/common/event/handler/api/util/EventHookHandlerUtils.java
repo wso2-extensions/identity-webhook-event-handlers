@@ -51,7 +51,9 @@ public class EventHookHandlerUtils {
      * @return Tenant qualified URL.
      */
     public String constructFullURLWithEndpoint(String endpoint) {
-
+        if (endpoint == null) {
+            throw new IllegalArgumentException("Endpoint cannot be null.");
+        }
         endpoint = EventHookHandlerInternalUtils.getInstance().constructBaseURL() + endpoint;
         return endpoint;
     }
