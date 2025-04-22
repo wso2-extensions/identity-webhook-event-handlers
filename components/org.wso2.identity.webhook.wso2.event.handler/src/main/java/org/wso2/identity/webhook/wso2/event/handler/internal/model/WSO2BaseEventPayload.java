@@ -16,13 +16,13 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.model;
+package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 
 import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.Application;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.Organization;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.User;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.UserStore;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
 /**
  * Base class for WSO2 Event Payload.

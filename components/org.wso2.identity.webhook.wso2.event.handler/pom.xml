@@ -131,11 +131,11 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Private-Package>
-                            org.wso2.identity.webhook.wso2.event.handler.internal
+                            org.wso2.identity.webhook.wso2.event.handler.internal.*
                         </Private-Package>
                         <Export-Package>
-                            !org.wso2.identity.webhook.wso2.event.handler.internal,
-                            org.wso2.identity.webhook.wso2.event.handler.*; version="${project.version}"
+                            !org.wso2.identity.webhook.wso2.event.handler.internal.*,
+                            org.wso2.identity.webhook.wso2.event.handler.api.*; version="${project.version}"
                         </Export-Package>
                         <Import-Package>
                             org.apache.commons.lang; version="${commons-lang.wso2.osgi.version.range}",

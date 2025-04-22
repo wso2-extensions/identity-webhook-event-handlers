@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.internal;
+package org.wso2.identity.webhook.wso2.event.handler.internal.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,13 +29,13 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.wso2.event.handler.builder.WSO2LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2LoginEventPayloadBuilder;
 
 /**
  * WSO2 Event Handler service component class.
  */
 @Component(
-        name = "org.wso2.identity.webhook.wso2.event.handler.internal.WSO2EventHookHandlerServiceComponent",
+        name = "org.wso2.identity.webhook.wso2.event.handler.internal.service.WSO2EventHookHandlerServiceComponent",
         immediate = true)
 public class WSO2EventHookHandlerServiceComponent {
 

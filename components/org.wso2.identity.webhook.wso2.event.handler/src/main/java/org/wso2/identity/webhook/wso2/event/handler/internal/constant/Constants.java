@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.constant;
+package org.wso2.identity.webhook.wso2.event.handler.internal.constant;
 
 /**
  * Constants class.

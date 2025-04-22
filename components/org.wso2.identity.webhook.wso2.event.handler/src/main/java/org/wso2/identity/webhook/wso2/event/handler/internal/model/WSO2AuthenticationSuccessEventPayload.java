@@ -16,41 +16,38 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.model;
+package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 
-import org.wso2.identity.webhook.wso2.event.handler.model.common.Application;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.Organization;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.User;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.UserStore;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Model Class for Authentication Failed Event Payload.
+ * Model Class for Authentication Success Event Payload.
  */
-public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
+public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload {
 
-    private final AuthenticationFailedReason reason;
-    private final String userLoginIdentifier;
+    private List<String> authenticationMethods = new ArrayList<>();
 
-    private WSO2AuthenticationFailedEventPayload(Builder builder) {
+    private WSO2AuthenticationSuccessEventPayload(Builder builder) {
         this.user = builder.user;
         this.tenant = builder.tenant;
         this.userResidentOrganization = builder.userResidentOrganization;
         this.userStore = builder.userStore;
         this.application = builder.application;
-        this.reason = builder.reason;
-        this.userLoginIdentifier = builder.userLoginIdentifier;
+        this.authenticationMethods = builder.authenticationMethods;
     }
 
-    public AuthenticationFailedReason getReason() {
-        return reason;
-    }
-
-    public String getUserLoginIdentifier() {
-        return userLoginIdentifier;
+    public List<String> getAuthenticationMethods() {
+        return authenticationMethods;
     }
 
     /**
-     * Builder class to build WSO2AuthenticationFailedEventPayload.
+     * Builder class to build WSO2AuthenticationSuccessEventPayload.
      */
     public static class Builder {
         private User user;
@@ -58,8 +55,7 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
         private Organization userResidentOrganization;
         private UserStore userStore;
         private Application application;
-        private AuthenticationFailedReason reason;
-        private String userLoginIdentifier;
+        private List<String> authenticationMethods = new ArrayList<>();
 
         public Builder user(User user) {
             this.user = user;
@@ -86,18 +82,18 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public Builder reason(AuthenticationFailedReason reason) {
-            this.reason = reason;
+        public Builder authenticationMethods(List<String> authenticationMethods) {
+            this.authenticationMethods = authenticationMethods;
             return this;
         }
 
-        public Builder userLoginIdentifier(String userLoginIdentifier) {
-            this.userLoginIdentifier = userLoginIdentifier;
+        public Builder addAuthenticationMethod(String authenticationMethod) {
+            this.authenticationMethods.add(authenticationMethod);
             return this;
         }
 
-        public WSO2AuthenticationFailedEventPayload build() {
-            return new WSO2AuthenticationFailedEventPayload(this);
+        public WSO2AuthenticationSuccessEventPayload build() {
+            return new WSO2AuthenticationSuccessEventPayload(this);
         }
     }
 }

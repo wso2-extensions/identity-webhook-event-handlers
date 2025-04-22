@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.model;
+package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 
 /**
  * Authentication failed reason class.

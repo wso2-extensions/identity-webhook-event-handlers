@@ -16,17 +16,20 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.model.common;
+package org.wso2.identity.webhook.wso2.event.handler.internal.model.common;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
- * Application class.
+ * User store class.
  */
-public class Application {
+public class UserStore {
     private String id;
     private String name;
 
-    public Application(String id, String name) {
-        this.id = id;
+    public UserStore(String name) {
+        this.id = Base64.getEncoder().encodeToString(name.getBytes(StandardCharsets.UTF_8));
         this.name = name;
     }
 

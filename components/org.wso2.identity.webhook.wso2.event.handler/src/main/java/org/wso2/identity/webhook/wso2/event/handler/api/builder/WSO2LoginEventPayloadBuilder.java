@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.builder;
+package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,16 +31,16 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventHookHandlerUtils;
-import org.wso2.identity.webhook.wso2.event.handler.constant.Constants;
-import org.wso2.identity.webhook.wso2.event.handler.internal.WSO2EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.wso2.event.handler.model.AuthenticationFailedReason;
-import org.wso2.identity.webhook.wso2.event.handler.model.WSO2AuthenticationFailedEventPayload;
-import org.wso2.identity.webhook.wso2.event.handler.model.WSO2AuthenticationSuccessEventPayload;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.Application;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.Organization;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.User;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.UserClaim;
-import org.wso2.identity.webhook.wso2.event.handler.model.common.UserStore;
+import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.wso2.event.handler.internal.service.WSO2EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.AuthenticationFailedReason;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationFailedEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationSuccessEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
 import java.util.ArrayList;
 import java.util.HashMap;

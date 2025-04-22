@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.internal;
+package org.wso2.identity.webhook.wso2.event.handler.internal.service;
 
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 

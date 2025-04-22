@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.model.common;
+package org.wso2.identity.webhook.wso2.event.handler.internal.model.common;
 
 import java.util.ArrayList;
 import java.util.List;

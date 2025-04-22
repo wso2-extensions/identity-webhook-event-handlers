@@ -16,16 +16,16 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.model.common;
+package org.wso2.identity.webhook.wso2.event.handler.internal.model.common;
 
 /**
- * Organization class.
+ * Application class.
  */
-public class Organization {
+public class Application {
     private String id;
     private String name;
 
-    public Organization(String id, String name) {
+    public Application(String id, String name) {
         this.id = id;
         this.name = name;
     }
