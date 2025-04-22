@@ -86,6 +86,7 @@ public class WSO2LoginEventPayloadBuilderTest {
 
     @BeforeClass
     public void setup() {
+        // Setup Mock objects
 
         MockitoAnnotations.openMocks(this);
         WSO2EventHookHandlerDataHolder.getInstance().setOrganizationManager(mockOrganizationManager);
