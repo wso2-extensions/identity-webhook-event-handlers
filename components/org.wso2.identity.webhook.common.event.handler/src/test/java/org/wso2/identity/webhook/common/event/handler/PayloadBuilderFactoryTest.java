@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -45,7 +45,7 @@ public class PayloadBuilderFactoryTest {
     public void setup() {
 
         mockBuilder = Mockito.mock(LoginEventPayloadBuilder.class);
-        Mockito.when(mockBuilder.getEventSchemaType()).thenReturn(Constants.EVENT_SCHEMA_TYPE_WSO2);
+        Mockito.when(mockBuilder.getEventSchemaType()).thenReturn(Constants.WSO2_EVENT_SCHEMA);
 
         EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(mockBuilder);
     }
@@ -64,9 +64,9 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetLoginEventPayloadBuilderReturnsRegisteredBuilder() {
 
-        LoginEventPayloadBuilder builder = PayloadBuilderFactory.getLoginEventPayloadBuilder(Constants.EVENT_SCHEMA_TYPE_WSO2);
+        LoginEventPayloadBuilder builder = PayloadBuilderFactory.getLoginEventPayloadBuilder(Constants.WSO2_EVENT_SCHEMA);
         assertNotNull(builder, "The builder should not be null.");
-        assertEquals(builder.getEventSchemaType(), Constants.EVENT_SCHEMA_TYPE_WSO2, "The schema type should match 'WSO2'.");
+        assertEquals(builder.getEventSchemaType(), Constants.WSO2_EVENT_SCHEMA, "The schema type should match 'WSO2'.");
     }
 
     @Test

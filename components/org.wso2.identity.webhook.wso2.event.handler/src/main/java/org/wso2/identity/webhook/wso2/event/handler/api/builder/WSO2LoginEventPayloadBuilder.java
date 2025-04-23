@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -32,7 +32,6 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayl
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
-import org.wso2.identity.webhook.wso2.event.handler.internal.service.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.AuthenticationFailedReason;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationFailedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationSuccessEventPayload;
@@ -41,6 +40,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organi
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
+import org.wso2.identity.webhook.wso2.event.handler.internal.service.WSO2EventHookHandlerDataHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
-import static org.wso2.identity.webhook.common.event.handler.api.constant.Constants.EVENT_SCHEMA_TYPE_WSO2;
+import static org.wso2.identity.webhook.common.event.handler.api.constant.Constants.WSO2_EVENT_SCHEMA;
 import static org.wso2.identity.webhook.common.event.handler.api.constant.Constants.ORGANIZATION_AUTHENTICATOR;
 
 /**
@@ -145,7 +145,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
     @Override
     public String getEventSchemaType() {
-        return EVENT_SCHEMA_TYPE_WSO2;
+        return WSO2_EVENT_SCHEMA;
     }
 
     private List<String> buildAuthMethods(AuthenticationContext authContext) {
