@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -23,7 +23,7 @@ package org.wso2.identity.webhook.common.event.handler.api.constant;
  */
 public class Constants {
 
-    public static final String EVENT_SCHEMA_TYPE_WSO2 = "WSO2";
+    public static final String WSO2_EVENT_SCHEMA = "WSO2";
     public static final String LOGIN_EVENT_HOOK_NAME = "LoginEventHook";
     public static final String EVENT_SCHEMA_EVENTS_KEY = "events";
     public static final String LOGIN_EVENT_HOOK_ENABLED = "LoginEventHook.enable";

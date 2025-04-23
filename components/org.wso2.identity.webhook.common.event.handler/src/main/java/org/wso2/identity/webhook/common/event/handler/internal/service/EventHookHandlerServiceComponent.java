@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -35,11 +35,10 @@ import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
-import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventHookHandlerUtils;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerInternalUtils;
 
 /**
@@ -136,7 +135,7 @@ public class EventHookHandlerServiceComponent {
     }
 
     /**
-     * Get the identity property specified in identity-event.properties
+     * Get the identity property specified in identity-event.properties.
      *
      * @param moduleName   The name of the module which the property belongs to
      * @param propertyName The name of the property which should be fetched

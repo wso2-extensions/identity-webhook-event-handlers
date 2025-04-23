@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -36,20 +36,20 @@ import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
+import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.internal.model.EventPublisherConfig;
+import org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerInternalUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
-import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.internal.model.EventPublisherConfig;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType.PrimitiveOperator.EQUALS;
-import static org.wso2.identity.webhook.common.event.handler.api.constant.Constants.EVENT_SCHEMA_TYPE_WSO2;
+import static org.wso2.identity.webhook.common.event.handler.api.constant.Constants.WSO2_EVENT_SCHEMA;
 
 /**
  * Login Event Hook Handler.
@@ -60,7 +60,8 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     private final EventHookHandlerInternalUtils eventHookHandlerInternalUtils;
     private final EventConfigManager eventConfigManager;
 
-    public LoginEventHookHandler(EventHookHandlerInternalUtils eventHookHandlerInternalUtils,  EventConfigManager eventConfigManager) {
+    public LoginEventHookHandler(EventHookHandlerInternalUtils eventHookHandlerInternalUtils,
+                                 EventConfigManager eventConfigManager) {
         this.eventHookHandlerInternalUtils = eventHookHandlerInternalUtils;
         this.eventConfigManager = eventConfigManager;
     }
@@ -104,7 +105,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
         //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
         LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                .getLoginEventPayloadBuilder(EVENT_SCHEMA_TYPE_WSO2);
+                .getLoginEventPayloadBuilder(WSO2_EVENT_SCHEMA);
         EventPublisherConfig loginEventPublisherConfig = null;
         try {
             loginEventPublisherConfig = getLoginEventPublisherConfigForTenant(
