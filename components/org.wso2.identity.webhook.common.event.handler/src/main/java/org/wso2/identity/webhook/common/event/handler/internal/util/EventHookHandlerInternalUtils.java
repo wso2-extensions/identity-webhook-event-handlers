@@ -115,7 +115,7 @@ public class EventHookHandlerInternalUtils {
                 .iat(System.currentTimeMillis())
                 .jti(UUID.randomUUID().toString())
                 .rci(getCorrelationID())
-                .event(eventMap)
+                .events(eventMap)
                 .build();
     }
 
