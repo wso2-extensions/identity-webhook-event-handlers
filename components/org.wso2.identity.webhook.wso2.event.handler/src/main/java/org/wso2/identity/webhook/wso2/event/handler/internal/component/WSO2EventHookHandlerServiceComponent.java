@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.internal.service;
+package org.wso2.identity.webhook.wso2.event.handler.internal.component;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

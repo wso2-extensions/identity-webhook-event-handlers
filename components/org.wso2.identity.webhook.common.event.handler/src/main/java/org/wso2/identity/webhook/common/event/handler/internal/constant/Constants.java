@@ -40,7 +40,6 @@ public class Constants {
     public static final String EVENT_PUBLISHER_CONFIG_RESOURCE_NAME = "web-sub-hub-event-publisher-configs";
     public static final String RESOURCE_TYPE = "resourceTypeName";
     public static final String RESOURCE_NAME = "resourceName";
-    public static final String ORGANIZATION_AUTHENTICATOR = "OrganizationAuthenticator";
 
     /**
      * Constants for event config names (keys).

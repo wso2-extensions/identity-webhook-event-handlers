@@ -31,6 +31,7 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventHookHandlerUtils;
+import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.AuthenticationFailedReason;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationFailedEventPayload;
@@ -40,7 +41,6 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organi
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
-import org.wso2.identity.webhook.wso2.event.handler.internal.service.WSO2EventHookHandlerDataHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
-import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.ORGANIZATION_AUTHENTICATOR;
 
 /**
  * WSO2 Login Event Payload Builder.
@@ -156,7 +155,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
              * For the B2B user scenario, we skip the authentication methods, since it's coming only
              * 'OrganizationAuthenticator`
              */
-            if (authHistory.toTranslatableString().equals(ORGANIZATION_AUTHENTICATOR)) {
+            if (authHistory.toTranslatableString().equals(Constants.ORGANIZATION_AUTHENTICATOR)) {
                 return null;
             }
         }
