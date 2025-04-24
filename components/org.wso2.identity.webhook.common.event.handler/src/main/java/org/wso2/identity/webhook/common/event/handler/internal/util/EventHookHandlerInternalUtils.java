@@ -110,12 +110,15 @@ public class EventHookHandlerInternalUtils {
         Map<String, EventPayload> eventMap = new HashMap<>();
         eventMap.put(eventUri, eventPayload);
 
+        // TODO : Add the audience and txn to the event payload.
         return SecurityEventTokenPayload.builder()
                 .iss(constructBaseURL())
+                .aud("aud")
                 .iat(System.currentTimeMillis())
                 .jti(UUID.randomUUID().toString())
                 .rci(getCorrelationID())
-                .event(eventMap)
+                .txn("txn")
+                .events(eventMap)
                 .build();
     }
 

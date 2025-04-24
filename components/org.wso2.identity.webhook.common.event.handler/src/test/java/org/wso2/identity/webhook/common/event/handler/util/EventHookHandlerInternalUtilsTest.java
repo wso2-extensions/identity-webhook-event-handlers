@@ -130,7 +130,7 @@ public class EventHookHandlerInternalUtilsTest {
                     .aud("https://audience.example.com")
                     .txn("transaction-id-12345")
                     .rci("request-correlation-id-12345")
-                    .event(eventMap)
+                    .events(eventMap)
                     .build();
 
             String tenantDomain = "sampleTenant";
@@ -153,7 +153,7 @@ public class EventHookHandlerInternalUtilsTest {
             assertEquals(capturedContext.getTenantDomain(), tenantDomain);
             assertEquals(capturedContext.getEventUri(), eventUri);
 
-            assertEquals(capturedPayload.getEvent(), eventMap);
+            assertEquals(capturedPayload.getEvents(), eventMap);
         }
     }
 
