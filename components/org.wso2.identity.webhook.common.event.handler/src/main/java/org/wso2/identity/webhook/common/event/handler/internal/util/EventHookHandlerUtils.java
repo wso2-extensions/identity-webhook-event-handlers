@@ -28,23 +28,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils.CORRELATION_ID_MDC;
 
-public class EventHookHandlerInternalUtils {
+public class EventHookHandlerUtils {
 
-    private static final Log log = LogFactory.getLog(EventHookHandlerInternalUtils.class);
-    private static volatile EventHookHandlerInternalUtils instance;
+    private static final Log log = LogFactory.getLog(EventHookHandlerUtils.class);
 
-    private EventHookHandlerInternalUtils() {}
-
-    public static EventHookHandlerInternalUtils getInstance() {
-
-        if (instance == null) {
-            synchronized (EventHookHandlerInternalUtils.class) {
-                if (instance == null) {
-                    instance = new EventHookHandlerInternalUtils();
-                }
-            }
-        }
-        return instance;
+    private EventHookHandlerUtils() {
     }
 
     /**
@@ -53,7 +41,7 @@ public class EventHookHandlerInternalUtils {
      * @param event Event object.
      * @return Event data object.
      */
-    public EventData buildEventDataProvider(Event event) throws IdentityEventException {
+    public static EventData buildEventDataProvider(Event event) throws IdentityEventException {
 
         Map<String, Object> properties = event.getEventProperties();
         if (properties == null) {
@@ -93,10 +81,10 @@ public class EventHookHandlerInternalUtils {
     /**
      * Retrieve the audience.
      *
-     * @param eventUri     Event URI.
+     * @param eventUri Event URI.
      * @return Audience string.
      */
-    public SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload, String eventUri)
+    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload, String eventUri)
             throws IdentityEventException {
 
         if (eventPayload == null) {
@@ -128,7 +116,7 @@ public class EventHookHandlerInternalUtils {
      *
      * @return Correlation id
      */
-    public String getCorrelationID() {
+    public static String getCorrelationID() {
 
         String correlationID = MDC.get(CORRELATION_ID_MDC);
         if (StringUtils.isBlank(correlationID)) {
@@ -139,11 +127,8 @@ public class EventHookHandlerInternalUtils {
     }
 
 
-
-
-
-    private void setLocalUserClaimsToAuthenticatedUser(AuthenticatedUser authenticatedUser,
-                                                       AuthenticationContext context) {
+    private static void setLocalUserClaimsToAuthenticatedUser(AuthenticatedUser authenticatedUser,
+                                                              AuthenticationContext context) {
 
         Map<String, String> claimMappings = (Map<String, String>) context.getParameters()
                 .get(Constants.SP_TO_CARBON_CLAIM_MAPPING);
@@ -175,7 +160,7 @@ public class EventHookHandlerInternalUtils {
      *
      * @return Tenant qualified URL.
      */
-    public String constructBaseURL() {
+    public static String constructBaseURL() {
 
         try {
             ServiceURLBuilder builder = ServiceURLBuilder.create();
@@ -195,8 +180,8 @@ public class EventHookHandlerInternalUtils {
      * @param eventUri                  Event URI.
      * @throws IdentityEventException If an error occurs.
      */
-    public void publishEventPayload(SecurityEventTokenPayload securityEventTokenPayload, String tenantDomain,
-                                    String eventUri) throws IdentityEventException {
+    public static void publishEventPayload(SecurityEventTokenPayload securityEventTokenPayload, String tenantDomain,
+                                           String eventUri) throws IdentityEventException {
 
         try {
             EventContext eventContext = EventContext.builder()

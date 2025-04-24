@@ -42,7 +42,7 @@ import org.wso2.identity.webhook.common.event.handler.internal.component.EventHo
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerInternalUtils;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
 import java.util.ArrayList;
@@ -57,12 +57,10 @@ import static org.wso2.identity.webhook.common.event.handler.internal.constant.C
 public class LoginEventHookHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(LoginEventHookHandler.class);
-    private final EventHookHandlerInternalUtils eventHookHandlerInternalUtils;
     private final EventConfigManager eventConfigManager;
 
-    public LoginEventHookHandler(EventHookHandlerInternalUtils eventHookHandlerInternalUtils,
+    public LoginEventHookHandler(
                                  EventConfigManager eventConfigManager) {
-        this.eventHookHandlerInternalUtils = eventHookHandlerInternalUtils;
         this.eventConfigManager = eventConfigManager;
     }
 
@@ -97,7 +95,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
 
-        EventData eventData = eventHookHandlerInternalUtils.buildEventDataProvider(event);
+        EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
         if (eventData.getAuthenticationContext().isPassiveAuthenticate()) {
             return;
@@ -119,18 +117,18 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                 eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
                 eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT);
                 String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-                SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerInternalUtils
+                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                         .buildSecurityEventToken(eventPayload, eventUri);
-                eventHookHandlerInternalUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             } else if (IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()
                     .equals(event.getEventName()) &&
                     loginEventPublisherConfig.isPublishEnabled()) {
                 eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
                 eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.LOGIN_FAILED_EVENT);
                 String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-                SecurityEventTokenPayload securityEventTokenPayload = eventHookHandlerInternalUtils
+                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                         .buildSecurityEventToken(eventPayload, eventUri);
-                eventHookHandlerInternalUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             }
         } catch (IdentityEventException e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);

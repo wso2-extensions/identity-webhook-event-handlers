@@ -38,7 +38,7 @@ public interface LoginEventPayloadBuilder {
     /**
      * Build the authentication failed event.
      *
-     * @param eventData         Event data.
+     * @param eventData Event data.
      * @return Event payload.
      */
     EventPayload buildAuthenticationFailedEvent(EventData eventData) throws IdentityEventException;

@@ -22,8 +22,8 @@ import org.mockito.Mockito;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
 import java.util.List;
@@ -33,6 +33,7 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertThrows;
 import static org.testng.Assert.assertTrue;
+
 
 /**
  * Test class for PayloadBuilderFactory.
@@ -64,9 +65,11 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetLoginEventPayloadBuilderReturnsRegisteredBuilder() {
 
-        LoginEventPayloadBuilder builder = PayloadBuilderFactory.getLoginEventPayloadBuilder(Constants.WSO2_EVENT_SCHEMA);
+        LoginEventPayloadBuilder builder =
+                PayloadBuilderFactory.getLoginEventPayloadBuilder(Constants.WSO2_EVENT_SCHEMA);
         assertNotNull(builder, "The builder should not be null.");
-        assertEquals(builder.getEventSchemaType(), Constants.WSO2_EVENT_SCHEMA, "The schema type should match 'WSO2'.");
+        assertEquals(builder.getEventSchemaType(),
+                Constants.WSO2_EVENT_SCHEMA, "The schema type should match 'WSO2'.");
     }
 
     @Test

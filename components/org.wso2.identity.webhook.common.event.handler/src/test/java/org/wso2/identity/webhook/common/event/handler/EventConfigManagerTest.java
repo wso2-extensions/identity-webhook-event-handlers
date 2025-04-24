@@ -10,9 +10,9 @@ import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.IdentityEventServerException;
+import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
-import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.util.TestUtils;
 
 import java.io.ByteArrayInputStream;
@@ -34,8 +34,8 @@ import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.clos
 
 public class EventConfigManagerTest {
 
-    private EventConfigManager eventConfigManager;
     private static MockedStatic<Files> mockedFiles;
+    private EventConfigManager eventConfigManager;
 
     @BeforeClass
     public void setup() throws IdentityEventServerException {

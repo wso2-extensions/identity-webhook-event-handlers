@@ -41,8 +41,8 @@ public class EventPublisherConfig {
     /**
      * Construct event attribute.
      *
-     * @param publishEnabled    Is publishing enabled.
-     * @param properties        Event properties.
+     * @param publishEnabled Is publishing enabled.
+     * @param properties     Event properties.
      */
     public EventPublisherConfig(boolean publishEnabled, ResourceConfig properties) {
 
@@ -81,6 +81,6 @@ public class EventPublisherConfig {
         jsonObject.put(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY, publishEnabled);
         jsonObject.put(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PROPERTIES_KEY, properties.getConfigs());
 
-        return  jsonObject.toJSONString();
+        return jsonObject.toJSONString();
     }
 }

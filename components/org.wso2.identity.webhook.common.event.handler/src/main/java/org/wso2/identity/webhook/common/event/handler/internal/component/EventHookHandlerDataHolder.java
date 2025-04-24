@@ -54,6 +54,16 @@ public class EventHookHandlerDataHolder {
     }
 
     /**
+     * Set a list of login event payload builders.
+     *
+     * @param loginEventPayloadBuilders List of login event payload builders.
+     */
+    public void setLoginEventPayloadBuilders(List<LoginEventPayloadBuilder> loginEventPayloadBuilders) {
+
+        this.loginEventPayloadBuilders = loginEventPayloadBuilders;
+    }
+
+    /**
      * Add login event payload builder implementation.
      *
      * @param loginEventPayloadBuilder Login event payload builder implementation.
@@ -74,13 +84,13 @@ public class EventHookHandlerDataHolder {
     }
 
     /**
-     * Set a list of login event payload builders.
+     * Get the configuration manager.
      *
-     * @param loginEventPayloadBuilders List of login event payload builders.
+     * @return Configuration manager.
      */
-    public void setLoginEventPayloadBuilders(List<LoginEventPayloadBuilder> loginEventPayloadBuilders) {
+    public ConfigurationManager getConfigurationManager() {
 
-        this.loginEventPayloadBuilders = loginEventPayloadBuilders;
+        return configurationManager;
     }
 
     /**
@@ -91,16 +101,6 @@ public class EventHookHandlerDataHolder {
     public void setConfigurationManager(ConfigurationManager configurationManager) {
 
         this.configurationManager = configurationManager;
-    }
-
-    /**
-     * Get the configuration manager.
-     *
-     * @return Configuration manager.
-     */
-    public ConfigurationManager getConfigurationManager() {
-
-        return configurationManager;
     }
 
     /**

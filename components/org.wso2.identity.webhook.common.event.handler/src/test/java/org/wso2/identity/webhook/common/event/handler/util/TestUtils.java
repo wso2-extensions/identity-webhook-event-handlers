@@ -25,9 +25,7 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 
 import java.util.Arrays;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Common utility methods for tests.
@@ -46,6 +44,7 @@ public class TestUtils {
 
         ServiceURLBuilder builder = new ServiceURLBuilder() {
             String path = "";
+
             @Override
             public ServiceURLBuilder addPath(String... strings) {
 

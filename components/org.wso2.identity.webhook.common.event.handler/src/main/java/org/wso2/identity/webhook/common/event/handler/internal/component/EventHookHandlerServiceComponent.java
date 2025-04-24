@@ -39,7 +39,6 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayl
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerInternalUtils;
 
 /**
  * WSO2 Event Handler service component class.
@@ -63,8 +62,7 @@ public class EventHookHandlerServiceComponent {
             if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled
                     .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new LoginEventHookHandler(EventHookHandlerInternalUtils.getInstance(),
-                                EventConfigManager.getInstance()), null);
+                        new LoginEventHookHandler(EventConfigManager.getInstance()), null);
             } else {
                 log.error("Login Event Handler is not enabled.");
             }

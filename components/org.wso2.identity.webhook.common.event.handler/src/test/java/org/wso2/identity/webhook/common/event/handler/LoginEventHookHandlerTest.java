@@ -46,23 +46,24 @@ import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
-import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.config.ResourceConfig;
+import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerInternalUtils;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import javax.servlet.http.HttpServletRequest;
 
+import static org.mockito.Answers.CALLS_REAL_METHODS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.reset;
@@ -73,7 +74,6 @@ import static org.mockito.Mockito.withSettings;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.assertSame;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockIdentityTenantUtil;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockServiceURLBuilder;
 
@@ -100,7 +100,7 @@ public class LoginEventHookHandlerTest {
     @Mock
     private LoginEventPayloadBuilder mockedLoginEventPayloadBuilder;
     @Mock
-    private EventHookHandlerInternalUtils mockedEventHookHandlerInternalUtils;
+    private EventHookHandlerUtils mockedEventHookHandlerUtils;
     @Mock
     private EventConfigManager mockedEventConfigManager;
 
@@ -218,10 +218,9 @@ public class LoginEventHookHandlerTest {
 
         mockServiceURLBuilder();
         mockIdentityTenantUtil();
-        mockedEventHookHandlerInternalUtils = mock(EventHookHandlerInternalUtils.class, withSettings()
+        mockedEventHookHandlerUtils = mock(EventHookHandlerUtils.class, withSettings()
                 .defaultAnswer(CALLS_REAL_METHODS));
-        loginEventHookHandler = new LoginEventHookHandler(mockedEventHookHandlerInternalUtils,
-                mockedEventConfigManager);
+        loginEventHookHandler = new LoginEventHookHandler(mockedEventConfigManager);
     }
 
     private Event createEvent(String eventName) {

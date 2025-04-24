@@ -30,7 +30,7 @@ import org.wso2.carbon.identity.organization.management.service.exception.Organi
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventHookHandlerUtils;
+import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.AuthenticationFailedReason;
@@ -70,7 +70,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         populateUserAttributes(authenticatedUser, user);
         try {
             user.setId(authenticatedUser.getUserId());
-            user.setRef(EventHookHandlerUtils.getInstance().constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT) +
+            user.setRef(EventPayloadUtils.getInstance().constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT) +
                     "/" + authenticatedUser.getUserId());
         } catch (UserIdNotFoundException e) {
             //TODO: Need to verify when this exception is thrown and handle it accordingly
@@ -116,12 +116,12 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                 userStore = new UserStore(authenticatedUser.getUserStoreDomain());
             }
             try {
-            user.setId(authenticatedUser.getUserId());
-            user.setRef(EventHookHandlerUtils.getInstance().constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT)
-                    + "/" + authenticatedUser.getUserId());
+                user.setId(authenticatedUser.getUserId());
+                user.setRef(EventPayloadUtils.getInstance().constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT)
+                        + "/" + authenticatedUser.getUserId());
             } catch (UserIdNotFoundException e) {
-            //TODO: Need to verify when this exception is thrown and handle it accordingly
-            log.debug("Error while resolving user id.", e);
+                //TODO: Need to verify when this exception is thrown and handle it accordingly
+                log.debug("Error while resolving user id.", e);
             }
         }
 

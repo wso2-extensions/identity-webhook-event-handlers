@@ -47,9 +47,14 @@ public class EventData {
         this.authenticatedUser = builder.authenticatedUser;
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public String getEventName() {
         return eventName;
     }
+
     public HttpServletRequest getRequest() {
         return request;
     }
@@ -70,10 +75,6 @@ public class EventData {
         return authenticatedUser;
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
     /**
      * Builder class to build EventData.
      */
@@ -84,6 +85,7 @@ public class EventData {
         private AuthenticationContext authenticationContext;
         private AuthenticatorStatus authenticatorStatus;
         private AuthenticatedUser authenticatedUser;
+
         public Builder eventName(String eventName) {
             this.eventName = eventName;
             return this;

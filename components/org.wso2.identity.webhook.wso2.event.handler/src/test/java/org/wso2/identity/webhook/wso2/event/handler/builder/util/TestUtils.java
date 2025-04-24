@@ -44,6 +44,7 @@ public class TestUtils {
 
         builder = new ServiceURLBuilder() {
             String path = "/t/myorg";
+
             @Override
             public ServiceURLBuilder addPath(String... strings) {
 

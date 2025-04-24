@@ -43,8 +43,8 @@ import java.nio.file.Paths;
  */
 public class EventConfigManager {
 
-    private final ResourceConfig eventSchema;
     private static volatile EventConfigManager instance;
+    private final ResourceConfig eventSchema;
 
     EventConfigManager() throws IdentityEventServerException {
 

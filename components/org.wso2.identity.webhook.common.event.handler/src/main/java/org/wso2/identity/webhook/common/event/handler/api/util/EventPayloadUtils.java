@@ -20,28 +20,16 @@ package org.wso2.identity.webhook.common.event.handler.api.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerInternalUtils;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 
 /**
  * This class contains the utility method implementations.
  */
-public class EventHookHandlerUtils {
+public class EventPayloadUtils {
 
-    private static final Log log = LogFactory.getLog(EventHookHandlerUtils.class);
-    private static volatile EventHookHandlerUtils instance;
+    private static final Log log = LogFactory.getLog(EventPayloadUtils.class);
 
-    private EventHookHandlerUtils() {}
-
-    public static EventHookHandlerUtils getInstance() {
-
-        if (instance == null) {
-            synchronized (EventHookHandlerUtils.class) {
-                if (instance == null) {
-                    instance = new EventHookHandlerUtils();
-                }
-            }
-        }
-        return instance;
+    private EventPayloadUtils() {
     }
 
     /**
@@ -50,11 +38,11 @@ public class EventHookHandlerUtils {
      * @param endpoint Endpoint.
      * @return Tenant qualified URL.
      */
-    public String constructFullURLWithEndpoint(String endpoint) {
+    public static String constructFullURLWithEndpoint(String endpoint) {
         if (endpoint == null) {
             throw new IllegalArgumentException("Endpoint cannot be null.");
         }
-        endpoint = EventHookHandlerInternalUtils.getInstance().constructBaseURL() + endpoint;
+        endpoint = EventHookHandlerUtils.constructBaseURL() + endpoint;
         return endpoint;
     }
 
