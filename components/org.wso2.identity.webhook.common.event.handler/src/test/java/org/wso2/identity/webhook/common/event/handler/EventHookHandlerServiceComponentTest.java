@@ -22,7 +22,7 @@ import org.mockito.MockedStatic;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerServiceComponent;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerServiceComponent;
 
 import static org.mockito.Mockito.*;
 import static org.testng.Assert.assertNotNull;

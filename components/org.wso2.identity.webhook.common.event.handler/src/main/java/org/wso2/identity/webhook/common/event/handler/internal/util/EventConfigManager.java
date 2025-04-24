@@ -27,9 +27,9 @@ import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.IdentityEventServerException;
-import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.model.EventPublisherConfig;
-import org.wso2.identity.webhook.common.event.handler.internal.model.ResourceConfig;
+import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
+import org.wso2.identity.webhook.common.event.handler.internal.config.ResourceConfig;
 
 import java.io.File;
 import java.io.IOException;

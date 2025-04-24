@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.internal.service;
+package org.wso2.identity.webhook.common.event.handler.internal.component;
 
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.identity.event.common.publisher.EventPublisherService;

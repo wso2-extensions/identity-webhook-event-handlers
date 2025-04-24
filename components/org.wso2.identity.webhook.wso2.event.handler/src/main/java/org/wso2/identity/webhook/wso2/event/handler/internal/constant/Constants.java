@@ -31,4 +31,5 @@ public class Constants {
     public static final String USER_ORGANIZATION = "user_organization";
     public static final String CURRENT_AUTHENTICATOR_ERROR_CODE = "currentAuthenticatorErrorCode";
     public static final String DATA_MAP = "dataMap";
+    public static final String WSO2_EVENT_SCHEMA = "WSO2";
 }

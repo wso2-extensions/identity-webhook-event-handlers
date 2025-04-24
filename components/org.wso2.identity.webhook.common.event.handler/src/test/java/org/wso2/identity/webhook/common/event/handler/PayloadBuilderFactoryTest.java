@@ -22,8 +22,8 @@ import org.mockito.Mockito;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
 import java.util.List;
