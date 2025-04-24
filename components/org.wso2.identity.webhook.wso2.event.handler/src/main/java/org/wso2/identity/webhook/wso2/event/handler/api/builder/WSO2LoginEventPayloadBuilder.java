@@ -32,6 +32,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayl
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.AuthenticationFailedStep;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationFailedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationSuccessEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
@@ -195,11 +196,12 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         reason.setMessage(message);
 
         Map<String, Object> context = new HashMap<>();
-        context.put("failedStep", authContext.getCurrentStep());
-        context.put("authenticator", authContext.getCurrentAuthenticator());
-        context.put("idp", authContext.getExternalIdP() != null ?
+        AuthenticationFailedStep failedStep = new AuthenticationFailedStep();
+        failedStep.setStep(authContext.getCurrentStep());
+        failedStep.setAuthenticator(authContext.getCurrentAuthenticator());
+        failedStep.setIdp(authContext.getExternalIdP() != null ?
                 authContext.getExternalIdP().getIdentityProvider().getIdentityProviderName() : null);
-
+        context.put("failedStep", failedStep);
         reason.setContext(context);
         return reason;
     }
