@@ -16,9 +16,9 @@ import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
-import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -110,11 +110,14 @@ public class EventHookHandlerInternalUtils {
         Map<String, EventPayload> eventMap = new HashMap<>();
         eventMap.put(eventUri, eventPayload);
 
+        // TODO : Add the audience and txn to the event payload.
         return SecurityEventTokenPayload.builder()
                 .iss(constructBaseURL())
+                .aud("aud")
                 .iat(System.currentTimeMillis())
                 .jti(UUID.randomUUID().toString())
                 .rci(getCorrelationID())
+                .txn("txn")
                 .events(eventMap)
                 .build();
     }

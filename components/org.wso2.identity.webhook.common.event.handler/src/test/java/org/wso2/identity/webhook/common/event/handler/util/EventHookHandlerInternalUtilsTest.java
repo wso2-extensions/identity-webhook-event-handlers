@@ -33,7 +33,7 @@ import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
-import org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerInternalUtils;
 
 import java.util.HashMap;
@@ -130,7 +130,7 @@ public class EventHookHandlerInternalUtilsTest {
                     .aud("https://audience.example.com")
                     .txn("transaction-id-12345")
                     .rci("request-correlation-id-12345")
-                    .event(eventMap)
+                    .events(eventMap)
                     .build();
 
             String tenantDomain = "sampleTenant";
@@ -153,7 +153,7 @@ public class EventHookHandlerInternalUtilsTest {
             assertEquals(capturedContext.getTenantDomain(), tenantDomain);
             assertEquals(capturedContext.getEventUri(), eventUri);
 
-            assertEquals(capturedPayload.getEvent(), eventMap);
+            assertEquals(capturedPayload.getEvents(), eventMap);
         }
     }
 

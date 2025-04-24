@@ -48,8 +48,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
-import static org.wso2.identity.webhook.common.event.handler.api.constant.Constants.WSO2_EVENT_SCHEMA;
-import static org.wso2.identity.webhook.common.event.handler.api.constant.Constants.ORGANIZATION_AUTHENTICATOR;
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.ORGANIZATION_AUTHENTICATOR;
 
 /**
  * WSO2 Login Event Payload Builder.
@@ -145,7 +144,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
     @Override
     public String getEventSchemaType() {
-        return WSO2_EVENT_SCHEMA;
+        return Constants.WSO2_EVENT_SCHEMA;
     }
 
     private List<String> buildAuthMethods(AuthenticationContext authContext) {

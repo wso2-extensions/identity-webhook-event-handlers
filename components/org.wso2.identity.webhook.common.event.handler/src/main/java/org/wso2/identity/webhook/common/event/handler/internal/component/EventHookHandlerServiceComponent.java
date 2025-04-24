@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.internal.service;
+package org.wso2.identity.webhook.common.event.handler.internal.component;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,7 +36,7 @@ import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerInternalUtils;

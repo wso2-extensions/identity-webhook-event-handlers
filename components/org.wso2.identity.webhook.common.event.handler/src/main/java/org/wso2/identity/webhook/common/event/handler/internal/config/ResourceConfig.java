@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.internal.model;
+package org.wso2.identity.webhook.common.event.handler.internal.config;
 
 import org.json.simple.JSONObject;
 

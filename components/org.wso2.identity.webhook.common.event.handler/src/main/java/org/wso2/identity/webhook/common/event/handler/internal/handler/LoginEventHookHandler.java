@@ -37,10 +37,10 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.internal.model.EventPublisherConfig;
-import org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerInternalUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType.PrimitiveOperator.EQUALS;
-import static org.wso2.identity.webhook.common.event.handler.api.constant.Constants.WSO2_EVENT_SCHEMA;
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.WSO2_EVENT_SCHEMA;
 
 /**
  * Login Event Hook Handler.
