@@ -29,6 +29,7 @@ public class WSO2EventHookHandlerDataHolder {
     private OrganizationManager organizationManager;
 
     private WSO2EventHookHandlerDataHolder() {
+
     }
 
     public static WSO2EventHookHandlerDataHolder getInstance() {

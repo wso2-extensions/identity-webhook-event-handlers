@@ -182,7 +182,6 @@ public class EventHookHandlerUtilsTest {
         }
     }
 
-
     @Test
     public void testGetCorrelationIDWithoutExistingCorrelationID() {
 
@@ -190,7 +189,6 @@ public class EventHookHandlerUtilsTest {
         String correlationID = EventHookHandlerUtils.getCorrelationID();
         assertNotNull(correlationID, "A new correlation ID should be generated");
     }
-
 
     @Test
     public void testGetCorrelationIDWhenMDCNotSet() {
@@ -201,6 +199,4 @@ public class EventHookHandlerUtilsTest {
         assertTrue(correlationID.matches(
                 "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
     }
-
-
 }

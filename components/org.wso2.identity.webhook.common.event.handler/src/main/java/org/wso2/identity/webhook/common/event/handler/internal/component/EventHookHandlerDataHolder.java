@@ -40,6 +40,7 @@ public class EventHookHandlerDataHolder {
     private List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
+
     }
 
     public static EventHookHandlerDataHolder getInstance() {

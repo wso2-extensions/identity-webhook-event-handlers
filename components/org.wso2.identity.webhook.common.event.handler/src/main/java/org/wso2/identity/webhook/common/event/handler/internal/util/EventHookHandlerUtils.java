@@ -63,6 +63,7 @@ public class EventHookHandlerUtils {
     private static final Log log = LogFactory.getLog(EventHookHandlerUtils.class);
 
     private EventHookHandlerUtils() {
+
     }
 
     /**
@@ -112,7 +113,6 @@ public class EventHookHandlerUtils {
                 .build();
     }
 
-
     /**
      * Retrieve the audience.
      *
@@ -161,7 +161,6 @@ public class EventHookHandlerUtils {
         return correlationID;
     }
 
-
     private static void setLocalUserClaimsToAuthenticatedUser(AuthenticatedUser authenticatedUser,
                                                               AuthenticationContext context) {
 
@@ -205,7 +204,6 @@ public class EventHookHandlerUtils {
         }
         return null;
     }
-
 
     /**
      * Publish the event payload.
@@ -298,5 +296,4 @@ public class EventHookHandlerUtils {
         }
         return null;
     }
-
 }

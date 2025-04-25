@@ -143,6 +143,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
     @Override
     public String getEventSchemaType() {
+
         return Constants.WSO2_EVENT_SCHEMA;
     }
 
