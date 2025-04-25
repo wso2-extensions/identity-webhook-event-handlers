@@ -21,9 +21,11 @@ package org.wso2.identity.webhook.caep.event.handler.internal.model.common;
 public class SimpleSubject extends Subject {
 
     private SimpleSubject() {
+
     }
 
     public static SimpleSubject createEmailSubject(String email) {
+
         SimpleSubject subject = new SimpleSubject();
         subject.setFormat("email");
         subject.addProperty("email", email);
@@ -31,6 +33,7 @@ public class SimpleSubject extends Subject {
     }
 
     public static SimpleSubject createPhoneSubject(String phoneNumber) {
+
         SimpleSubject subject = new SimpleSubject();
         subject.setFormat("phone_number");
         subject.addProperty("phone_number", phoneNumber);
@@ -38,6 +41,7 @@ public class SimpleSubject extends Subject {
     }
 
     public static SimpleSubject createAccountSubject(String uri) {
+
         SimpleSubject subject = new SimpleSubject();
         subject.setFormat("account");
         subject.addProperty("uri", uri);
@@ -45,6 +49,7 @@ public class SimpleSubject extends Subject {
     }
 
     public static SimpleSubject createIssSubSubject(String iss, String sub) {
+
         SimpleSubject subject = new SimpleSubject();
         subject.setFormat("iss_sub");
         subject.addProperty("iss", iss);
@@ -53,6 +58,7 @@ public class SimpleSubject extends Subject {
     }
 
     public static SimpleSubject createOpaqueSubject(String id) {
+
         SimpleSubject subject = new SimpleSubject();
         subject.setFormat("opaque");
         subject.addProperty("id", id);
@@ -60,6 +66,7 @@ public class SimpleSubject extends Subject {
     }
 
     public static SimpleSubject createDIDSubject(String url) {
+
         SimpleSubject subject = new SimpleSubject();
         subject.setFormat("did");
         subject.addProperty("did", url);
@@ -67,11 +74,11 @@ public class SimpleSubject extends Subject {
     }
 
     public static SimpleSubject createURISubject(String uri) {
+
         SimpleSubject subject = new SimpleSubject();
         subject.setFormat("uri");
         subject.addProperty("uri", uri);
         return subject;
     }
-
 
 }

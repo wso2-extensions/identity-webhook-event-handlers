@@ -11,9 +11,11 @@ public class CAEPEventHookHandlerDataHolder {
     private OrganizationManager organizationManager;
 
     private CAEPEventHookHandlerDataHolder() {
+
     }
 
     public static CAEPEventHookHandlerDataHolder getInstance() {
+
         return instance;
     }
 
@@ -36,6 +38,5 @@ public class CAEPEventHookHandlerDataHolder {
 
         this.organizationManager = organizationManager;
     }
-
 
 }

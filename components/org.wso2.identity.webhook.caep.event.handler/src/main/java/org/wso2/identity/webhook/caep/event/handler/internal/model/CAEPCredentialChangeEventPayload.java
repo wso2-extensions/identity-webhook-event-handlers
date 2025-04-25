@@ -25,6 +25,7 @@ import java.util.Map;
 public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
 
     private CAEPCredentialChangeEventPayload(Builder builder) {
+
         this.initiatingEntity = builder.initiatingEntity;
         this.eventTimeStamp = builder.eventTimeStamp;
         this.reasonAdmin = builder.reasonAdmin;
@@ -46,31 +47,37 @@ public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
     private final String fidoAaguid;
 
     public String getCredentialType() {
+
         return credentialType;
     }
 
     public String getChangeType() {
+
         return changeType;
     }
 
     public String getFriendlyName() {
+
         return friendlyName;
     }
 
     public String getX509Issuer() {
+
         return x509Issuer;
     }
 
     public String getX509Serial() {
+
         return x509Serial;
     }
 
     public String getFidoAaguid() {
+
         return fidoAaguid;
     }
 
-
     public static class Builder {
+
         private long eventTimeStamp;
         private String initiatingEntity;
         private Map<String, String> reasonAdmin;
@@ -84,61 +91,73 @@ public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
         private String fidoAaguid;
 
         public Builder eventTimeStamp(long eventTimeStamp) {
+
             this.eventTimeStamp = eventTimeStamp;
             return this;
         }
 
         public Builder initiatingEntity(String initiatingEntity) {
+
             this.initiatingEntity = initiatingEntity;
             return this;
         }
 
         public Builder reasonAdmin(Map<String, String> reasonAdmin) {
+
             this.reasonAdmin = reasonAdmin;
             return this;
         }
 
         public Builder reasonUser(Map<String, String> reasonUser) {
+
             this.reasonUser = reasonUser;
             return this;
         }
 
         public Builder subject(Subject subject) {
+
             this.subject = subject;
             return this;
         }
 
         public Builder credentialType(String credentialType) {
+
             this.credentialType = credentialType;
             return this;
         }
 
         public Builder changeType(String changeType) {
+
             this.changeType = changeType;
             return this;
         }
 
         public Builder friendlyName(String friendlyName) {
+
             this.friendlyName = friendlyName;
             return this;
         }
 
         public Builder x509Issuer(String x509Issuer) {
+
             this.x509Issuer = x509Issuer;
             return this;
         }
 
         public Builder x509Serial(String x509Serial) {
+
             this.x509Serial = x509Serial;
             return this;
         }
 
         public Builder fidoAaguid(String fidoAaguid) {
+
             this.fidoAaguid = fidoAaguid;
             return this;
         }
 
         public CAEPCredentialChangeEventPayload build() {
+
             return new CAEPCredentialChangeEventPayload(this);
         }
     }

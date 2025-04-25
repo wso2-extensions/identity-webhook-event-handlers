@@ -40,11 +40,13 @@ public class SessionEventHookHandler extends AbstractEventHandler {
     private final EventConfigManager eventConfigManager;
 
     public SessionEventHookHandler(EventConfigManager eventConfigManager) {
+
         this.eventConfigManager = eventConfigManager;
     }
 
     @Override
     public String getName() {
+
         return Constants.SESSION_EVENT_HOOK_NAME;
     }
 
@@ -119,14 +121,10 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             }
 
-
         } catch (IdentityEventException e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }
 
-
     }
-
-
 
 }

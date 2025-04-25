@@ -101,7 +101,6 @@ public class EventHookHandlerUtils {
         SessionContext sessionContext = properties.containsKey("sessionContext") ?
                 (SessionContext) properties.get("sessionContext") : null;
 
-
         return EventData.builder()
                 .eventName(event.getEventName())
                 .request(request)
@@ -230,15 +229,16 @@ public class EventHookHandlerUtils {
     }
 
     /**
-     *  Returns Event Publisher Configs of the Tenant.
+     * Returns Event Publisher Configs of the Tenant.
      *
-     * @param tenantDomain          Tenant Domain
-     * @param eventName             Event Name
-     * @param eventConfigManager    Event Configuration Manager
+     * @param tenantDomain       Tenant Domain
+     * @param eventName          Event Name
+     * @param eventConfigManager Event Configuration Manager
      * @throws IdentityEventException if any error occurs
      */
     public static EventPublisherConfig getEventPublisherConfigForTenant
     (String tenantDomain, String eventName, EventConfigManager eventConfigManager) throws IdentityEventException {
+
         if (StringUtils.isEmpty(tenantDomain)) {
             throw new IdentityEventException("Invalid tenant domain: " + tenantDomain);
         }
@@ -257,6 +257,7 @@ public class EventHookHandlerUtils {
      * Helper function for getEventPublisherConfigForTenant.
      */
     private static ComplexCondition createPublisherConfigFilterCondition() {
+
         List<Condition> conditionList = new ArrayList<>();
         conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS,
                 Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
@@ -273,6 +274,7 @@ public class EventHookHandlerUtils {
      * @return Event URI.
      */
     public static String resolveEventHandlerKey(String eventSchema, IdentityEventConstants.EventName eventName) {
+
         switch (eventSchema) {
             case Constants.WSO2_EVENT_SCHEMA:
                 switch (eventName) {

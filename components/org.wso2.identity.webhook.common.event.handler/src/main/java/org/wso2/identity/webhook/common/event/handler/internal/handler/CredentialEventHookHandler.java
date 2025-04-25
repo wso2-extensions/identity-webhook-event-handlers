@@ -42,11 +42,13 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
     private final EventConfigManager eventConfigManager;
 
     public CredentialEventHookHandler(EventConfigManager eventConfigManager) {
+
         this.eventConfigManager = eventConfigManager;
     }
 
     @Override
     public String getName() {
+
         return Constants.CREDENTIAL_EVENT_HOOK_NAME;
     }
 
@@ -89,7 +91,6 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
 
             EventPayload eventPayload = null;
             String eventUri = null;
-
 
         } catch (Exception e) {
             throw new IdentityEventException("Error occurred while building event payload", e);

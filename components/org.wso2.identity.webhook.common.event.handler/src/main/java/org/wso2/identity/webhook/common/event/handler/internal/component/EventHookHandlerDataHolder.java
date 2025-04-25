@@ -48,23 +48,28 @@ public class EventHookHandlerDataHolder {
         return instance;
     }
 
-
-     /** Get the list of credential event payload builder implementations available.
+    /**
+     * Get the list of credential event payload builder implementations available.
      *
      * @return List of credential event payload builder implementations.
      */
     public List<CredentialEventPayloadBuilder> getCredentialEventPayloadBuilders() {
-        return credentialEventPayloadBuilders; }
+
+        return credentialEventPayloadBuilders;
+    }
 
     public void addCredentialEventPayloadBuilder(CredentialEventPayloadBuilder credentialEventPayloadBuilder) {
+
         credentialEventPayloadBuilders.add(credentialEventPayloadBuilder);
     }
 
     public void removeCredentialEventPayloadBuilder(CredentialEventPayloadBuilder credentialEventPayloadBuilder) {
+
         credentialEventPayloadBuilders.remove(credentialEventPayloadBuilder);
     }
 
     public void setCredentialEventPayloadBuilders(List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders) {
+
         this.credentialEventPayloadBuilders = credentialEventPayloadBuilders;
     }
 
@@ -74,18 +79,22 @@ public class EventHookHandlerDataHolder {
      * @return List of session event payload builder implementations.
      */
     public List<SessionEventPayloadBuilder> getSessionEventPayloadBuilders() {
+
         return sessionEventPayloadBuilders;
     }
 
     public void addSessionEventPayloadBuilder(SessionEventPayloadBuilder sessionEventPayloadBuilder) {
+
         sessionEventPayloadBuilders.add(sessionEventPayloadBuilder);
     }
 
     public void removeSessionEventPayloadBuilder(SessionEventPayloadBuilder sessionEventPayloadBuilder) {
+
         sessionEventPayloadBuilders.remove(sessionEventPayloadBuilder);
     }
 
     public void setSessionEventPayloadBuilders(List<SessionEventPayloadBuilder> sessionEventPayloadBuilders) {
+
         this.sessionEventPayloadBuilders = sessionEventPayloadBuilders;
     }
 

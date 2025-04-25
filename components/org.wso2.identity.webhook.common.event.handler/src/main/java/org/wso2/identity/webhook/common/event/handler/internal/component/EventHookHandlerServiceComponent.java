@@ -112,12 +112,14 @@ public class EventHookHandlerServiceComponent {
             unbind = "removeCredentialEventPayloadBuilder"
     )
     protected void addCredentialEventPayloadBuilder(CredentialEventPayloadBuilder credentialEventPayloadBuilder) {
+
         log.debug("Add Credential Event Payload Builder service " +
                 credentialEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().addCredentialEventPayloadBuilder(credentialEventPayloadBuilder);
     }
 
     protected void removeCredentialEventPayloadBuilder(CredentialEventPayloadBuilder credentialEventPayloadBuilder) {
+
         log.debug("Remove credential event payload builder service " +
                 credentialEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().removeCredentialEventPayloadBuilder(credentialEventPayloadBuilder);
@@ -131,17 +133,18 @@ public class EventHookHandlerServiceComponent {
             unbind = "removeSessionEventPayloadBuilder"
     )
     protected void addSessionEventPayloadBuilder(SessionEventPayloadBuilder sessionEventPayloadBuilder) {
+
         log.debug("Add session event payload builder service" +
                 sessionEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().addSessionEventPayloadBuilder(sessionEventPayloadBuilder);
     }
 
     protected void removeSessionEventPayloadBuilder(SessionEventPayloadBuilder sessionEventPayloadBuilder) {
+
         log.debug("Remove session event payload builder service" +
                 sessionEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().removeSessionEventPayloadBuilder(sessionEventPayloadBuilder);
     }
-
 
     @Reference(
             name = "login.event.payload.builder",

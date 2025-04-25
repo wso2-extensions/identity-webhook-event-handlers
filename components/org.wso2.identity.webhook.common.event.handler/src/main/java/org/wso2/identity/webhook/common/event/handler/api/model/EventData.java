@@ -82,10 +82,12 @@ public class EventData {
     }
 
     public SessionContext getSessionContext() {
+
         return sessionContext;
     }
 
     public static Builder builder() {
+
         return new Builder();
     }
 
@@ -101,6 +103,7 @@ public class EventData {
         private AuthenticatorStatus authenticatorStatus;
         private AuthenticatedUser authenticatedUser;
         private SessionContext sessionContext;
+
         public Builder eventName(String eventName) {
 
             this.eventName = eventName;
@@ -138,6 +141,7 @@ public class EventData {
         }
 
         public Builder sessionContext(SessionContext sessionContext) {
+
             this.sessionContext = sessionContext;
             return this;
         }

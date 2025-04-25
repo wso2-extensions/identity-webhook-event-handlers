@@ -64,7 +64,6 @@ public interface SessionEventPayloadBuilder {
      */
     EventPayload buildSessionExtendEvent(EventData eventData) throws IdentityEventException;
 
-
     /**
      * Get the event schema type.
      *

@@ -44,7 +44,6 @@ public class Constants {
     public static final String RESOURCE_TYPE = "resourceTypeName";
     public static final String RESOURCE_NAME = "resourceName";
 
-
     public static final String SESSION_EVENT_HOOK_NAME = "SessionEventHook";
     public static final String SESSION_EVENT_HOOK_ENABLED = "SessionEventHook.enable";
 
@@ -58,10 +57,13 @@ public class Constants {
     public static class EventHandlerKey {
 
         public static class WSO2 {
+
             public static final String LOGIN_SUCCESS_EVENT = "logins.loginSuccess";
             public static final String LOGIN_FAILED_EVENT = "logins.loginFailed";
 
-            private WSO2() {}
+            private WSO2() {
+
+            }
         }
 
         public static class CAEP {
@@ -72,7 +74,9 @@ public class Constants {
 
             public static final String CREDENTIAL_CHANGE_EVENT = "caep.credentialChange";
 
-            private CAEP() {}
+            private CAEP() {
+
+            }
         }
 
         private EventHandlerKey() {

@@ -39,12 +39,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilder {
 
     private static final Log log = LogFactory.getLog(CAEPSessionEventPayloadBuilder.class);
 
     private long extractEventTimeStamp(Map<String, Object> params) {
+
         return params.containsKey(Constants.CAEPMapParams.EVENT_TIME_STAMP) ?
                 Long.parseLong(params.get(Constants.CAEPMapParams.EVENT_TIME_STAMP).toString()) :
                 System.currentTimeMillis();
@@ -52,6 +52,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
     }
 
     private AuthenticatedUser extractAuthenticatedUser(EventData eventData) throws IdentityEventException {
+
         AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
         try {
             if (authenticatedUser == null) {
@@ -70,7 +71,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 params.get(FrameworkConstants.AnalyticsAttributes.SESSION_ID) != null) {
             return params.get(FrameworkConstants.AnalyticsAttributes.SESSION_ID).toString();
         } else if (eventData.getAuthenticationContext() != null) {
-             return eventData.getAuthenticationContext().getSessionIdentifier();
+            return eventData.getAuthenticationContext().getSessionIdentifier();
         }
         return null;
     }
@@ -84,10 +85,8 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Map<String, String> reasonAdmin = null;
         Map<String, String> reasonUser = null;
 
-
         AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);
         String sessionId = extractSessionId(eventData, params);
-
 
         if (authenticatedUser == null || sessionId == null) {
             log.debug("No Authenticated User or Session ID found");
@@ -96,12 +95,12 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
 
         try {
             // If logout
-            if (eventData.getAuthenticationContext().isLogoutRequest())  {
-                    initiatingEntity = "user";
-                    reasonAdmin = new HashMap<>();
-                    reasonAdmin.put("en", "User logout");
-                    reasonUser = new HashMap<>();
-                    reasonUser.put("en", "User Logged out");
+            if (eventData.getAuthenticationContext().isLogoutRequest()) {
+                initiatingEntity = "user";
+                reasonAdmin = new HashMap<>();
+                reasonAdmin.put("en", "User logout");
+                reasonUser = new HashMap<>();
+                reasonUser.put("en", "User Logged out");
 
             }
 
@@ -113,7 +112,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         subject.addProperty("user", SimpleSubject.createEmailSubject(authenticatedUser.getUserName()));
         subject.addProperty("tenant", SimpleSubject.createURISubject(authenticatedUser.getTenantDomain()));
         subject.addProperty("session", SimpleSubject.createOpaqueSubject(sessionId));
-
 
         return new CAEPSessionRevokedEventPayload.Builder()
                 .eventTimeStamp(eventTimeStamp)
@@ -132,6 +130,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
      */
     @Override
     public EventPayload buildSessionCreateEvent(EventData eventData) throws IdentityEventException {
+
         SessionContext sessionContext = eventData.getSessionContext();
         final Map<String, Object> params = eventData.getEventParams();
         long eventTimeStamp;
@@ -153,7 +152,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
 
         AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);
         String sessionId = extractSessionId(eventData, params);
-
 
         if (authenticatedUser == null || sessionId == null) {
             log.debug("No Authenticated User or Session ID found");
@@ -210,6 +208,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
      */
     @Override
     public EventPayload buildSessionUpdateEvent(EventData eventData) throws IdentityEventException {
+
         return null;
     }
 
@@ -221,6 +220,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
      */
     @Override
     public EventPayload buildSessionExpireEvent(EventData eventData) throws IdentityEventException {
+
         final Map<String, Object> params = eventData.getEventParams();
         long eventTimeStamp = extractEventTimeStamp(params);
         String initiatingEntity = "system";
@@ -232,18 +232,15 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);
         String sessionId = extractSessionId(eventData, params);
 
-
         if (authenticatedUser == null || sessionId == null) {
             log.debug("No Authenticated User or Session ID found");
             throw new IdentityEventException("Authenticated User or Session ID cannot be null");
         }
 
-
         Subject subject = new ComplexSubject();
         subject.addProperty("user", SimpleSubject.createEmailSubject(authenticatedUser.getUserName()));
         subject.addProperty("tenant", SimpleSubject.createURISubject(authenticatedUser.getTenantDomain()));
         subject.addProperty("session", SimpleSubject.createOpaqueSubject(sessionId));
-
 
         return new CAEPSessionRevokedEventPayload.Builder()
                 .eventTimeStamp(eventTimeStamp)
@@ -262,12 +259,13 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
      */
     @Override
     public EventPayload buildSessionExtendEvent(EventData eventData) throws IdentityEventException {
+
         return null;
     }
 
-
     @Override
     public String getEventSchemaType() {
+
         return Constants.CAEP_EVENT_SCHEMA;
     }
 }

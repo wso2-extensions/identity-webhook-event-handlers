@@ -55,6 +55,7 @@ public class PayloadBuilderFactory {
      * @return Session event payload builder.
      */
     public static SessionEventPayloadBuilder getSessionEventPayloadBuilder(String eventSchemaType) {
+
         List<SessionEventPayloadBuilder> sessionEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getSessionEventPayloadBuilders();
         for (SessionEventPayloadBuilder sessionEventPayloadBuilder : sessionEventPayloadBuilders) {
@@ -73,6 +74,7 @@ public class PayloadBuilderFactory {
      */
     public static CredentialEventPayloadBuilder getCredentialEventPayloadBuilder(
             String eventSchemaType) {
+
         List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getCredentialEventPayloadBuilders();
         for (CredentialEventPayloadBuilder credentialEventPayloadBuilder : credentialEventPayloadBuilders) {

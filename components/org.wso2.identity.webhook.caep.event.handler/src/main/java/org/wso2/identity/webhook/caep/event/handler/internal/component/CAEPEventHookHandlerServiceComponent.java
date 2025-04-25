@@ -13,7 +13,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPa
  * CAEP Event Handler Service Component.
  */
 @Component(
-        name = "org.wso2.identity.webhook.caep.event.handler.internal.service.CAEPEventHookHandlerServiceComponent",
+        name = "org.wso2.identity.webhook.caep.event.handler.internal.component.CAEPEventHookHandlerServiceComponent",
         immediate = true)
 public class CAEPEventHookHandlerServiceComponent {
 
@@ -21,12 +21,12 @@ public class CAEPEventHookHandlerServiceComponent {
 
     @Activate
     protected void activate(ComponentContext context) {
+
         try {
             log.debug("WSO2 CAEP Event Handler is activated.");
 
             context.getBundleContext().registerService(SessionEventPayloadBuilder.class.getName(),
                     new CAEPSessionEventPayloadBuilder(), null);
-
 
         } catch (Exception e) {
             log.error("Error while activating CAEP event handler.", e);
