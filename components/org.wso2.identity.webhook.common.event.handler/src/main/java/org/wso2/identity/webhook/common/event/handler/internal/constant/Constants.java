@@ -24,6 +24,9 @@ package org.wso2.identity.webhook.common.event.handler.internal.constant;
 public class Constants {
 
     public static final String WSO2_EVENT_SCHEMA = "WSO2";
+    public static final String CAEP_EVENT_SCHEMA = "CAEP";
+    public static final String RISC_EVENT_SCHEMA = "RISC";
+
     public static final String LOGIN_EVENT_HOOK_NAME = "LoginEventHook";
     public static final String EVENT_SCHEMA_EVENTS_KEY = "events";
     public static final String LOGIN_EVENT_HOOK_ENABLED = "LoginEventHook.enable";
@@ -41,17 +44,48 @@ public class Constants {
     public static final String RESOURCE_TYPE = "resourceTypeName";
     public static final String RESOURCE_NAME = "resourceName";
 
+
+    public static final String SESSION_EVENT_HOOK_NAME = "SessionEventHook";
+    public static final String SESSION_EVENT_HOOK_ENABLED = "SessionEventHook.enable";
+
+    public static final String CREDENTIAL_EVENT_HOOK_NAME = "CredentialEventHook";
+    public static final String CREDENTIAL_EVENT_HOOK_ENABLED = "CredentialEventHook.enable";
+
     /**
      * Constants for event config names (keys).
      * These names will be equal to the config attribute keys stored in the core config store.
      */
     public static class EventHandlerKey {
 
-        public static final String LOGIN_SUCCESS_EVENT = "logins.loginSuccess";
-        public static final String LOGIN_FAILED_EVENT = "logins.loginFailed";
+        public static class WSO2 {
+            public static final String LOGIN_SUCCESS_EVENT = "logins.loginSuccess";
+            public static final String LOGIN_FAILED_EVENT = "logins.loginFailed";
+
+            private WSO2() {}
+        }
+
+        public static class CAEP {
+
+            public static final String SESSION_REVOKED_EVENT = "caep.sessionRevoked";
+            public static final String SESSION_ESTABLISHED_EVENT = "caep.sessionEstablished";
+            public static final String SESSION_PRESENTED_EVENT = "caep.sessionPresented";
+
+            public static final String CREDENTIAL_CHANGE_EVENT = "caep.credentialChange";
+
+            private CAEP() {}
+        }
 
         private EventHandlerKey() {
 
         }
     }
+
+//    public enum EventSchema {
+//        WSO2,
+//        CAEP,
+//        RISC;
+//
+//        EventSchema() {
+//        }
+//    }
 }

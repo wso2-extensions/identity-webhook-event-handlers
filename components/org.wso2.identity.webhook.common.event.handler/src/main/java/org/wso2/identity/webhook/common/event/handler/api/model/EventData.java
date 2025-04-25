@@ -20,6 +20,7 @@ package org.wso2.identity.webhook.common.event.handler.api.model;
 
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorStatus;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
+import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 
 import java.util.Map;
@@ -37,6 +38,7 @@ public class EventData {
     private final AuthenticationContext authenticationContext;
     private final AuthenticatorStatus authenticatorStatus;
     private final AuthenticatedUser authenticatedUser;
+    private final SessionContext sessionContext;
 
     private EventData(Builder builder) {
         this.eventName = builder.eventName;
@@ -45,10 +47,7 @@ public class EventData {
         this.authenticationContext = builder.authenticationContext;
         this.authenticatorStatus = builder.authenticatorStatus;
         this.authenticatedUser = builder.authenticatedUser;
-    }
-
-    public static Builder builder() {
-        return new Builder();
+        this.sessionContext = builder.sessionContext;
     }
 
     public String getEventName() {
@@ -75,6 +74,14 @@ public class EventData {
         return authenticatedUser;
     }
 
+    public SessionContext getSessionContext() {
+        return sessionContext;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
     /**
      * Builder class to build EventData.
      */
@@ -85,7 +92,7 @@ public class EventData {
         private AuthenticationContext authenticationContext;
         private AuthenticatorStatus authenticatorStatus;
         private AuthenticatedUser authenticatedUser;
-
+        private SessionContext sessionContext;
         public Builder eventName(String eventName) {
             this.eventName = eventName;
             return this;
@@ -113,6 +120,11 @@ public class EventData {
 
         public Builder authenticatedUser(AuthenticatedUser authenticatedUser) {
             this.authenticatedUser = authenticatedUser;
+            return this;
+        }
+
+        public Builder sessionContext(SessionContext sessionContext) {
+            this.sessionContext = sessionContext;
             return this;
         }
 

@@ -35,9 +35,13 @@ import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
+import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.CredentialEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.SessionEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 
 /**
@@ -66,6 +70,29 @@ public class EventHookHandlerServiceComponent {
             } else {
                 log.error("Login Event Handler is not enabled.");
             }
+
+            String isSessionEventHandlerEnabled = getIdentityEventProperty(Constants.SESSION_EVENT_HOOK_NAME,
+                    Constants.SESSION_EVENT_HOOK_ENABLED);
+            if (isSessionEventHandlerEnabled != null &&
+                    isSessionEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
+                log.info("Session Event Handler is enabled.");
+                bundleContext.registerService(AbstractEventHandler.class.getName(),
+                        new SessionEventHookHandler(EventConfigManager.getInstance()), null);
+            } else {
+                log.error("Session Event Handler is not enabled.");
+            }
+
+            String isCredentialEventHandlerEnabled = getIdentityEventProperty(Constants.CREDENTIAL_EVENT_HOOK_NAME,
+                    Constants.CREDENTIAL_EVENT_HOOK_ENABLED);
+            if (isCredentialEventHandlerEnabled != null &&
+                    isCredentialEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
+                log.info("Credentials Event Handler is enabled.");
+                bundleContext.registerService(AbstractEventHandler.class.getName(),
+                        new CredentialEventHookHandler(EventConfigManager.getInstance()), null);
+            } else {
+                log.error("Credential Event Handler is not enabled.");
+            }
+
         } catch (IdentityEventServerException e) {
             log.error("Error while activating event handler.", e);
         }
@@ -76,6 +103,45 @@ public class EventHookHandlerServiceComponent {
 
         log.debug("Event Handler is deactivated.");
     }
+
+    @Reference(
+            name = "credential.event.payload.builder",
+            service = CredentialEventPayloadBuilder.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeCredentialEventPayloadBuilder"
+    )
+    protected void addCredentialEventPayloadBuilder(CredentialEventPayloadBuilder credentialEventPayloadBuilder) {
+        log.debug("Add Credential Event Payload Builder service " +
+                credentialEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().addCredentialEventPayloadBuilder(credentialEventPayloadBuilder);
+    }
+
+    protected void removeCredentialEventPayloadBuilder(CredentialEventPayloadBuilder credentialEventPayloadBuilder) {
+        log.debug("Remove credential event payload builder service " +
+                credentialEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().removeCredentialEventPayloadBuilder(credentialEventPayloadBuilder);
+    }
+
+    @Reference(
+            name = "session.event.payload.builder",
+            service = SessionEventPayloadBuilder.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeSessionEventPayloadBuilder"
+    )
+    protected void addSessionEventPayloadBuilder(SessionEventPayloadBuilder sessionEventPayloadBuilder) {
+        log.debug("Add session event payload builder service" +
+                sessionEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().addSessionEventPayloadBuilder(sessionEventPayloadBuilder);
+    }
+
+    protected void removeSessionEventPayloadBuilder(SessionEventPayloadBuilder sessionEventPayloadBuilder) {
+        log.debug("Remove session event payload builder service" +
+                sessionEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().removeSessionEventPayloadBuilder(sessionEventPayloadBuilder);
+    }
+
 
     @Reference(
             name = "login.event.payload.builder",
