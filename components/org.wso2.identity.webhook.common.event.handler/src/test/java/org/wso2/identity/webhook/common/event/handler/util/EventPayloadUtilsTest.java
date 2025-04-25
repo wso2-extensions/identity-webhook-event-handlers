@@ -13,6 +13,7 @@ public class EventPayloadUtilsTest {
 
     @BeforeClass
     public void setup() {
+
         MockitoAnnotations.openMocks(this);
     }
 
@@ -24,6 +25,7 @@ public class EventPayloadUtilsTest {
 
     @Test
     public void constructFullURLWithEndpointReturnsCorrectURL() {
+
         String endpoint = "/api/events";
         String expectedURL = "https://localhost:9443/api/events";
 
@@ -35,6 +37,7 @@ public class EventPayloadUtilsTest {
 
     @Test
     public void constructFullURLWithEndpointHandlesEmptyEndpoint() {
+
         String endpoint = "";
         String expectedURL = "https://localhost:9443";
 
@@ -46,6 +49,7 @@ public class EventPayloadUtilsTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void constructFullURLWithEndpointThrowsExceptionForNullEndpoint() {
+
         TestUtils.mockServiceURLBuilder();
         EventPayloadUtils.constructFullURLWithEndpoint(null);
         closeMockedServiceURLBuilder();

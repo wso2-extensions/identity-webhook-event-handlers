@@ -44,7 +44,7 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigM
  * WSO2 Event Handler service component class.
  */
 @Component(
-        name = "org.wso2.identity.webhook.common.event.handler.internal.service.EventHookHandlerServiceComponent",
+        name = "org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerServiceComponent",
         immediate = true)
 public class EventHookHandlerServiceComponent {
 

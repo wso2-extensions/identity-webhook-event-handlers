@@ -165,6 +165,7 @@ public class EventConfigManagerTest {
     }
 
     private Resources createResourcesWithNoAttributes() {
+
         Resources resources = new Resources();
         List<Resource> resourceList = new ArrayList<>();
         Resource resource = new Resource();

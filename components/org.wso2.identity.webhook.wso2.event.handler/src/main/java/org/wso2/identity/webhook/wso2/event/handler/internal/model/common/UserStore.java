@@ -25,27 +25,33 @@ import java.util.Base64;
  * User store class.
  */
 public class UserStore {
+
     private String id;
     private String name;
 
     public UserStore(String name) {
+
         this.id = Base64.getEncoder().encodeToString(name.getBytes(StandardCharsets.UTF_8));
         this.name = name;
     }
 
     public String getId() {
+
         return id;
     }
 
     public void setId(String id) {
+
         this.id = id;
     }
 
     public String getName() {
+
         return name;
     }
 
     public void setName(String name) {
+
         this.name = name;
     }
 }

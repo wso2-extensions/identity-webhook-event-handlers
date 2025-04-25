@@ -28,6 +28,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
  * Base class for WSO2 Event Payload.
  */
 public abstract class WSO2BaseEventPayload extends EventPayload {
+
     protected User user;
     protected Organization tenant;
     protected Organization userResidentOrganization;
@@ -35,22 +36,27 @@ public abstract class WSO2BaseEventPayload extends EventPayload {
     protected Application application;
 
     public User getUser() {
+
         return user;
     }
 
     public Organization getTenant() {
+
         return tenant;
     }
 
     public UserStore getUserStore() {
+
         return userStore;
     }
 
     public Application getApplication() {
+
         return application;
     }
 
     public Organization getUserResidentOrganization() {
+
         return userResidentOrganization;
     }
 }

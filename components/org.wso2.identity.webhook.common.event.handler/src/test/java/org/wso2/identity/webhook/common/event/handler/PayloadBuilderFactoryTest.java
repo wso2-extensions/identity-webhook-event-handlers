@@ -34,7 +34,6 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertThrows;
 import static org.testng.Assert.assertTrue;
 
-
 /**
  * Test class for PayloadBuilderFactory.
  */

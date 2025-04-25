@@ -32,6 +32,7 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
     private final String userLoginIdentifier;
 
     private WSO2AuthenticationFailedEventPayload(Builder builder) {
+
         this.user = builder.user;
         this.tenant = builder.tenant;
         this.userResidentOrganization = builder.userResidentOrganization;
@@ -42,10 +43,12 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
     }
 
     public AuthenticationFailedReason getReason() {
+
         return reason;
     }
 
     public String getUserLoginIdentifier() {
+
         return userLoginIdentifier;
     }
 
@@ -53,6 +56,7 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
      * Builder class to build WSO2AuthenticationFailedEventPayload.
      */
     public static class Builder {
+
         private User user;
         private Organization tenant;
         private Organization userResidentOrganization;
@@ -62,41 +66,49 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
         private String userLoginIdentifier;
 
         public Builder user(User user) {
+
             this.user = user;
             return this;
         }
 
         public Builder tenant(Organization tenant) {
+
             this.tenant = tenant;
             return this;
         }
 
         public Builder userResidentOrganization(Organization userResidentOrganization) {
+
             this.userResidentOrganization = userResidentOrganization;
             return this;
         }
 
         public Builder userStore(UserStore userStore) {
+
             this.userStore = userStore;
             return this;
         }
 
         public Builder application(Application application) {
+
             this.application = application;
             return this;
         }
 
         public Builder reason(AuthenticationFailedReason reason) {
+
             this.reason = reason;
             return this;
         }
 
         public Builder userLoginIdentifier(String userLoginIdentifier) {
+
             this.userLoginIdentifier = userLoginIdentifier;
             return this;
         }
 
         public WSO2AuthenticationFailedEventPayload build() {
+
             return new WSO2AuthenticationFailedEventPayload(this);
         }
     }

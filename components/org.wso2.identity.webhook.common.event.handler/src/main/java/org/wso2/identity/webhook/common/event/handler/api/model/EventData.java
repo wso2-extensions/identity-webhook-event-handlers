@@ -39,6 +39,7 @@ public class EventData {
     private final AuthenticatedUser authenticatedUser;
 
     private EventData(Builder builder) {
+
         this.eventName = builder.eventName;
         this.request = builder.request;
         this.eventParams = builder.eventParams;
@@ -48,30 +49,37 @@ public class EventData {
     }
 
     public static Builder builder() {
+
         return new Builder();
     }
 
     public String getEventName() {
+
         return eventName;
     }
 
     public HttpServletRequest getRequest() {
+
         return request;
     }
 
     public Map<String, Object> getEventParams() {
+
         return eventParams;
     }
 
     public AuthenticationContext getAuthenticationContext() {
+
         return authenticationContext;
     }
 
     public AuthenticatorStatus getAuthenticatorStatus() {
+
         return authenticatorStatus;
     }
 
     public AuthenticatedUser getAuthenticatedUser() {
+
         return authenticatedUser;
     }
 
@@ -79,6 +87,7 @@ public class EventData {
      * Builder class to build EventData.
      */
     public static class Builder {
+
         private String eventName;
         private HttpServletRequest request;
         private Map<String, Object> eventParams;
@@ -87,36 +96,43 @@ public class EventData {
         private AuthenticatedUser authenticatedUser;
 
         public Builder eventName(String eventName) {
+
             this.eventName = eventName;
             return this;
         }
 
         public Builder request(HttpServletRequest request) {
+
             this.request = request;
             return this;
         }
 
         public Builder eventParams(Map<String, Object> eventParams) {
+
             this.eventParams = eventParams;
             return this;
         }
 
         public Builder authenticationContext(AuthenticationContext authenticationContext) {
+
             this.authenticationContext = authenticationContext;
             return this;
         }
 
         public Builder authenticatorStatus(AuthenticatorStatus authenticatorStatus) {
+
             this.authenticatorStatus = authenticatorStatus;
             return this;
         }
 
         public Builder authenticatedUser(AuthenticatedUser authenticatedUser) {
+
             this.authenticatedUser = authenticatedUser;
             return this;
         }
 
         public EventData build() {
+
             return new EventData(this);
         }
     }

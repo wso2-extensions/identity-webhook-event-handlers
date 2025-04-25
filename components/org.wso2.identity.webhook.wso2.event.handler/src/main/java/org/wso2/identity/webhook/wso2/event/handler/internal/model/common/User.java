@@ -25,6 +25,7 @@ import java.util.List;
  * User class.
  */
 public class User {
+
     private String id;
     private List<UserClaim> claims;
     private String ref;
@@ -32,50 +33,62 @@ public class User {
     private List<String> roles = new ArrayList<>();
 
     public List<String> getGroups() {
+
         return groups;
     }
 
     public void setGroups(List<String> groups) {
+
         this.groups = groups;
     }
 
     public void addGroup(String group) {
+
         this.groups.add(group);
     }
 
     public List<String> getRoles() {
+
         return roles;
     }
 
     public void setRoles(List<String> roles) {
+
         this.roles = roles;
     }
 
     public void addRole(String role) {
+
         this.roles.add(role);
     }
 
     public String getId() {
+
         return id;
     }
 
     public void setId(String id) {
+
         this.id = id;
     }
 
     public List<UserClaim> getClaims() {
+
         return claims;
     }
 
     public void setClaims(List<UserClaim> claims) {
+
         this.claims = claims;
     }
 
     public String getRef() {
+
         return ref;
     }
 
     public void setRef(String ref) {
+
         this.ref = ref;
     }
 }

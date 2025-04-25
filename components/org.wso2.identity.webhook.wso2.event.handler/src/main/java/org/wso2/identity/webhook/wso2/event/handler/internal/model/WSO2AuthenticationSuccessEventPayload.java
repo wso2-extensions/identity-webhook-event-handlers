@@ -34,6 +34,7 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
     private List<String> authenticationMethods = new ArrayList<>();
 
     private WSO2AuthenticationSuccessEventPayload(Builder builder) {
+
         this.user = builder.user;
         this.tenant = builder.tenant;
         this.userResidentOrganization = builder.userResidentOrganization;
@@ -43,6 +44,7 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
     }
 
     public List<String> getAuthenticationMethods() {
+
         return authenticationMethods;
     }
 
@@ -50,6 +52,7 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
      * Builder class to build WSO2AuthenticationSuccessEventPayload.
      */
     public static class Builder {
+
         private User user;
         private Organization tenant;
         private Organization userResidentOrganization;
@@ -58,41 +61,49 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
         private List<String> authenticationMethods = new ArrayList<>();
 
         public Builder user(User user) {
+
             this.user = user;
             return this;
         }
 
         public Builder tenant(Organization tenant) {
+
             this.tenant = tenant;
             return this;
         }
 
         public Builder userResidentOrganization(Organization userResidentOrganization) {
+
             this.userResidentOrganization = userResidentOrganization;
             return this;
         }
 
         public Builder userStore(UserStore userStore) {
+
             this.userStore = userStore;
             return this;
         }
 
         public Builder application(Application application) {
+
             this.application = application;
             return this;
         }
 
         public Builder authenticationMethods(List<String> authenticationMethods) {
+
             this.authenticationMethods = authenticationMethods;
             return this;
         }
 
         public Builder addAuthenticationMethod(String authenticationMethod) {
+
             this.authenticationMethods.add(authenticationMethod);
             return this;
         }
 
         public WSO2AuthenticationSuccessEventPayload build() {
+
             return new WSO2AuthenticationSuccessEventPayload(this);
         }
     }

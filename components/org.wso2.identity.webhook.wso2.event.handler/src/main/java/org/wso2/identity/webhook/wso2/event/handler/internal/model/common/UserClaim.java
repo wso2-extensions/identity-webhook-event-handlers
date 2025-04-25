@@ -22,27 +22,33 @@ package org.wso2.identity.webhook.wso2.event.handler.internal.model.common;
  * User claim class.
  */
 public class UserClaim {
+
     private String uri;
     private String value;
 
     public UserClaim(String uri, String value) {
+
         this.uri = uri;
         this.value = value;
     }
 
     public String getUri() {
+
         return uri;
     }
 
     public void setUri(String uri) {
+
         this.uri = uri;
     }
 
     public String getValue() {
+
         return value;
     }
 
     public void setValue(String value) {
+
         this.value = value;
     }
 }

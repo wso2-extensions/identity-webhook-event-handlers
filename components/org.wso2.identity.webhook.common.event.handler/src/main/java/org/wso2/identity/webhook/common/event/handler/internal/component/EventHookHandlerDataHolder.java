@@ -36,6 +36,7 @@ public class EventHookHandlerDataHolder {
     private List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
+
     }
 
     public static EventHookHandlerDataHolder getInstance() {

@@ -60,7 +60,8 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     private final EventConfigManager eventConfigManager;
 
     public LoginEventHookHandler(
-                                 EventConfigManager eventConfigManager) {
+            EventConfigManager eventConfigManager) {
+
         this.eventConfigManager = eventConfigManager;
     }
 

@@ -36,16 +36,19 @@ public class EventHookHandlerServiceComponentTest {
 
     @BeforeClass
     public void setup() {
+
         mockedServiceComponent = mockStatic(EventHookHandlerServiceComponent.class);
     }
 
     @AfterClass
     public void tearDown() {
+
         mockedServiceComponent.close();
     }
 
     @Test
     public void getInstanceReturnsNonNullInstance() {
+
         EventHookHandlerServiceComponent instance = new EventHookHandlerServiceComponent();
         assertNotNull(instance, "getInstance() should return a non-null instance.");
     }

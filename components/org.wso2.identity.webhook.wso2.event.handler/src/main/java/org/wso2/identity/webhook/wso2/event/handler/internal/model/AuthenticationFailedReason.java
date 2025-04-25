@@ -27,18 +27,22 @@ public class AuthenticationFailedReason {
     private FailedStep failedStep;
 
     public String getId() {
+
         return id;
     }
 
     public void setId(String id) {
+
         this.id = id;
     }
 
     public FailedStep getFailedStep() {
+
         return failedStep;
     }
 
     public void setFailedStep(FailedStep failedStep) {
+
         this.failedStep = failedStep;
     }
 
@@ -46,31 +50,38 @@ public class AuthenticationFailedReason {
      * Failed step class.
      */
     public static class FailedStep {
+
         private int step;
         private String idp;
         private String authenticator;
 
         public int getStep() {
+
             return step;
         }
 
         public void setStep(int step) {
+
             this.step = step;
         }
 
         public String getIdp() {
+
             return idp;
         }
 
         public void setIdp(String idp) {
+
             this.idp = idp;
         }
 
         public String getAuthenticator() {
+
             return authenticator;
         }
 
         public void setAuthenticator(String authenticator) {
+
             this.authenticator = authenticator;
         }
     }
