@@ -193,5 +193,4 @@ public class EventHookHandlerUtils {
                     eventUri), e);
         }
     }
-
 }

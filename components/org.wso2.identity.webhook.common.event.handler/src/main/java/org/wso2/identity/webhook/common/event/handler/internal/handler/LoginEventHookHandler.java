@@ -59,8 +59,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
     private static final Log log = LogFactory.getLog(LoginEventHookHandler.class);
     private final EventConfigManager eventConfigManager;
 
-    public LoginEventHookHandler(
-            EventConfigManager eventConfigManager) {
+    public LoginEventHookHandler(EventConfigManager eventConfigManager) {
 
         this.eventConfigManager = eventConfigManager;
     }
