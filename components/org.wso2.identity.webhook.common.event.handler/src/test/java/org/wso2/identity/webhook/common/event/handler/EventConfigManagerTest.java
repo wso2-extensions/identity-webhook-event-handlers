@@ -86,7 +86,7 @@ public class EventConfigManagerTest {
     @Test
     public void testExtractEventPublisherConfig() throws IdentityEventException {
 
-        Resources resources = createResourcesWithAttributes(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT,
+        Resources resources = createResourcesWithAttributes(Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT,
                 "{\"publishEnabled\":true}");
         EventPublisherConfig config = eventConfigManager.extractEventPublisherConfig(resources,
                 IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name());
@@ -99,7 +99,7 @@ public class EventConfigManagerTest {
         Resources resources = new Resources();
         resources.setResources(new ArrayList<>());
         EventPublisherConfig config = eventConfigManager.extractEventPublisherConfig(resources,
-                Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT);
+                Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT);
         assertFalse(config.isPublishEnabled(), "Publish should be disabled for empty resources.");
     }
 
@@ -108,20 +108,20 @@ public class EventConfigManagerTest {
 
         Resources resources = createResourcesWithNoAttributes();
         EventPublisherConfig config = eventConfigManager.extractEventPublisherConfig(resources,
-                Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT);
+                Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT);
         assertFalse(config.isPublishEnabled(), "Publish should be disabled when there are no attributes.");
     }
 
     @Test
     public void testPublishEnabledValue() throws IdentityEventException {
 
-        Resources resources = createResourcesWithAttributes(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT,
+        Resources resources = createResourcesWithAttributes(Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT,
                 "{\"publishEnabled\":true}");
         EventPublisherConfig config = eventConfigManager.extractEventPublisherConfig(resources,
                 IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name());
         assertTrue(config.isPublishEnabled(), "Publish should be enabled.");
 
-        resources = createResourcesWithAttributes(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT,
+        resources = createResourcesWithAttributes(Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT,
                 "{\"publishEnabled\":false}");
         config = eventConfigManager.extractEventPublisherConfig(resources,
                 IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name());
@@ -131,7 +131,7 @@ public class EventConfigManagerTest {
     @Test
     public void testResourceConfigValues() throws IdentityEventException {
 
-        Resources resources = createResourcesWithAttributes(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT,
+        Resources resources = createResourcesWithAttributes(Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT,
                 "{ \"properties\": { \"property1\": \"value1\", \"property2\": \"value2\" } }");
         EventPublisherConfig config = eventConfigManager.extractEventPublisherConfig(resources,
                 IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name());
