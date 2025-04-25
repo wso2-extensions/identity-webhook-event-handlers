@@ -70,7 +70,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         populateUserAttributes(authenticatedUser, user);
         try {
             user.setId(authenticatedUser.getUserId());
-            user.setRef(EventPayloadUtils.getInstance().constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT) +
+            user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT) +
                     "/" + authenticatedUser.getUserId());
         } catch (UserIdNotFoundException e) {
             //TODO: Need to verify when this exception is thrown and handle it accordingly
@@ -117,7 +117,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
             }
             try {
                 user.setId(authenticatedUser.getUserId());
-                user.setRef(EventPayloadUtils.getInstance().constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT)
+                user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT)
                         + "/" + authenticatedUser.getUserId());
             } catch (UserIdNotFoundException e) {
                 //TODO: Need to verify when this exception is thrown and handle it accordingly

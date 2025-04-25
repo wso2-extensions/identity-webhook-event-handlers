@@ -25,7 +25,9 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 
 import java.util.Arrays;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * Common utility methods for tests.
