@@ -25,7 +25,9 @@ import org.slf4j.MDC;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorStatus;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
+import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
@@ -36,12 +38,16 @@ import org.wso2.carbon.identity.configuration.mgt.core.search.PrimitiveCondition
 import org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
+import org.wso2.identity.event.common.publisher.model.common.ComplexSubject;
+import org.wso2.identity.event.common.publisher.model.common.SimpleSubject;
+import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
@@ -64,6 +70,50 @@ public class EventHookHandlerUtils {
 
     private EventHookHandlerUtils() {
 
+    }
+
+    private static AuthenticatedUser extractAuthenticatedUser(EventData eventData) throws IdentityEventException {
+
+        AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
+        try {
+            if (authenticatedUser == null) {
+                authenticatedUser = (AuthenticatedUser) eventData.getEventParams().
+                        get(FrameworkConstants.AnalyticsAttributes.USER);
+            }
+            return authenticatedUser;
+        } catch (ClassCastException e) {
+            throw new IdentityEventException("Error occurred while retrieving authenticated user", e);
+        }
+    }
+
+    private static String extractSessionId(EventData eventData)
+            throws IdentityEventException {
+
+        if (eventData.getEventParams().containsKey("sessionId") &&
+                eventData.getEventParams().get("sessionId") != null) {
+            return eventData.getEventParams().get("sessionId").toString();
+        } else if (eventData.getAuthenticationContext() != null) {
+            return eventData.getAuthenticationContext().getSessionIdentifier();
+        }
+        return null;
+    }
+
+    public static Subject extractSubjectFromEventData(EventData eventData) throws IdentityEventException {
+
+        AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);
+        String sessionId = extractSessionId(eventData);
+
+        Subject subject = new ComplexSubject();
+        try {
+            subject.addProperty("user", SimpleSubject.createOpaqueSubject(authenticatedUser.getUserId()));
+        } catch (UserIdNotFoundException e) {
+            throw new IdentityEventException("Error occurred while retrieving user id", e);
+        }
+        subject.addProperty("tenant", SimpleSubject.createOpaqueSubject(String.valueOf(
+                IdentityTenantUtil.getTenantId(authenticatedUser.getTenantDomain()))));
+        subject.addProperty("session", SimpleSubject.createOpaqueSubject(sessionId));
+
+        return subject;
     }
 
     /**
@@ -115,10 +165,25 @@ public class EventHookHandlerUtils {
     /**
      * Retrieve the audience.
      *
+     * @param eventPayload
+     * @param eventUri     Event URI.
+     * @return Audience string.
+     */
+    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload,
+                                                                    String eventUri)
+            throws IdentityEventException {
+
+        return buildSecurityEventToken(eventPayload, eventUri, null);
+    }
+
+    /**
+     * Retrieve the audience.
+     *
      * @param eventUri Event URI.
      * @return Audience string.
      */
-    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload, String eventUri)
+    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload,
+                                                                    String eventUri, Subject subId)
             throws IdentityEventException {
 
         if (eventPayload == null) {
@@ -140,6 +205,7 @@ public class EventHookHandlerUtils {
                 .jti(UUID.randomUUID().toString())
                 .rci(getCorrelationID())
                 .txn("txn")
+                .subId(subId)
                 .events(eventMap)
                 .build();
     }

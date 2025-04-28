@@ -26,6 +26,7 @@ import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
+import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
@@ -50,35 +51,11 @@ public class SessionEventHookHandler extends AbstractEventHandler {
         return Constants.SESSION_EVENT_HOOK_NAME;
     }
 
-//    @Override
-//    public boolean canHandle(MessageContext messageContext) throws IdentityRuntimeException {
-//        IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
-//        String eventName = identityContext.getEvent().getEventName();
-//        boolean canHandle = super.canHandle()
-//        if (canHandle) {
-//            log.debug(eventName + " event can be handled by CAEP Session Event Handler");
-//        } else {
-//            log.debug(eventName + " event cannot be handled by CAEP Session Event Handler");
-//        }
-//        return canHandle;
-//    }
-//
-//    private boolean isSupportedEvent(String eventName) {
-//        return (eventName.equals(IdentityEventConstants.EventName.SESSION_TERMINATE.name()) ||
-//                eventName.equals(IdentityEventConstants.EventName.SESSION_EXPIRE.name()) ||
-//                eventName.equals(IdentityEventConstants.EventName.SESSION_CREATE.name()) ||
-//                eventName.equals(IdentityEventConstants.EventName.SESSION_UPDATE.name()) ||
-//                eventName.equals(IdentityEventConstants.EventName.SESSION_EXTEND.name()));
-//    }
-
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
 
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
-//        if (eventData.getAuthenticationContext().isPassiveAuthenticate()) {
-//            return;
-//        }
         // TODO: Get the schema type from tenant configuration
         String schema = Constants.CAEP_EVENT_SCHEMA;
         SessionEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getSessionEventPayloadBuilder(schema);
@@ -116,8 +93,12 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                             resolveEventHandlerKey(schema, IdentityEventConstants.EventName.SESSION_EXTEND));
                 }
                 String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
+                Subject subject = null;
+                if (schema.equals(Constants.CAEP_EVENT_SCHEMA)) {
+                    subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
+                }
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
+                        .buildSecurityEventToken(eventPayload, eventUri, subject);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             }
 

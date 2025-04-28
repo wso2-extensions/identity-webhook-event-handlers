@@ -18,13 +18,15 @@
 
 package org.wso2.identity.webhook.caep.event.handler.internal.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
-import org.wso2.identity.webhook.caep.event.handler.internal.model.common.Subject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEventPayload {
 
     private CAEPSessionEstablishedAndPresentedEventPayload(Builder builder) {
@@ -33,7 +35,6 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
         this.eventTimeStamp = builder.eventTimeStamp;
         this.reasonAdmin = builder.reasonAdmin;
         this.reasonUser = builder.reasonUser;
-        this.subject = builder.subject;
         this.ips = builder.ips;
         this.fpUa = builder.fpUa;
         this.acr = builder.acr;
@@ -42,9 +43,12 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
     }
 
     private List<String> ips = new ArrayList<>();
+
+    @JsonProperty("fp_ua")
     private final String fpUa;
     private final AuthenticationContext acr;
     private List<String> amr = new ArrayList<>();
+    @JsonProperty("ext_id")
     private final String extId;
 
     public String getExtId() {
@@ -78,7 +82,6 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
         private String initiatingEntity;
         private Map<String, String> reasonAdmin;
         private Map<String, String> reasonUser;
-        private Subject subject;
         private List<String> ips;
         private String fpUa;
         private AuthenticationContext acr;
@@ -106,12 +109,6 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
         public Builder reasonUser(Map<String, String> reasonUser) {
 
             this.reasonUser = reasonUser;
-            return this;
-        }
-
-        public Builder subject(Subject subject) {
-
-            this.subject = subject;
             return this;
         }
 

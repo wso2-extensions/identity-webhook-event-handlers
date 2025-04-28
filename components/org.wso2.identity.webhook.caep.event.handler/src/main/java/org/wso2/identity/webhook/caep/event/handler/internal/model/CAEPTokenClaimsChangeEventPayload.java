@@ -18,8 +18,6 @@
 
 package org.wso2.identity.webhook.caep.event.handler.internal.model;
 
-import org.wso2.identity.webhook.caep.event.handler.internal.model.common.Subject;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +29,6 @@ public class CAEPTokenClaimsChangeEventPayload extends CAEPBaseEventPayload {
         this.eventTimeStamp = builder.eventTimeStamp;
         this.reasonAdmin = builder.reasonAdmin;
         this.reasonUser = builder.reasonUser;
-        this.subject = builder.subject;
         this.claims = builder.claims;
     }
 
@@ -43,7 +40,6 @@ public class CAEPTokenClaimsChangeEventPayload extends CAEPBaseEventPayload {
         private String initiatingEntity;
         private Map<String, String> reasonAdmin;
         private Map<String, String> reasonUser;
-        private Subject subject;
         private Map<String, String> claims = new HashMap<>();
 
         public Builder eventTimeStamp(long eventTimeStamp) {
@@ -67,12 +63,6 @@ public class CAEPTokenClaimsChangeEventPayload extends CAEPBaseEventPayload {
         public Builder reasonUser(Map<String, String> reasonUser) {
 
             this.reasonUser = reasonUser;
-            return this;
-        }
-
-        public Builder subject(Subject subject) {
-
-            this.subject = subject;
             return this;
         }
 

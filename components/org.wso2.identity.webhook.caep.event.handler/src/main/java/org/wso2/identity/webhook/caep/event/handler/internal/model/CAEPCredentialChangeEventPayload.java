@@ -18,7 +18,7 @@
 
 package org.wso2.identity.webhook.caep.event.handler.internal.model;
 
-import org.wso2.identity.webhook.caep.event.handler.internal.model.common.Subject;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
 
@@ -30,7 +30,6 @@ public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
         this.eventTimeStamp = builder.eventTimeStamp;
         this.reasonAdmin = builder.reasonAdmin;
         this.reasonUser = builder.reasonUser;
-        this.subject = builder.subject;
         this.credentialType = builder.credentialType;
         this.changeType = builder.changeType;
         this.friendlyName = builder.friendlyName;
@@ -39,11 +38,22 @@ public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
         this.fidoAaguid = builder.fidoAaguid;
     }
 
+    @JsonProperty("credential_type")
     private final String credentialType;
+
+    @JsonProperty("change_type")
     private final String changeType;
+
+    @JsonProperty("friendly_name")
     private final String friendlyName;
+
+    @JsonProperty("x509_issuer")
     private final String x509Issuer;
+
+    @JsonProperty("x509_serial")
     private final String x509Serial;
+
+    @JsonProperty("fido_aaguid")
     private final String fidoAaguid;
 
     public String getCredentialType() {
@@ -82,7 +92,6 @@ public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
         private String initiatingEntity;
         private Map<String, String> reasonAdmin;
         private Map<String, String> reasonUser;
-        private Subject subject;
         private String credentialType;
         private String changeType;
         private String friendlyName;
@@ -111,12 +120,6 @@ public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
         public Builder reasonUser(Map<String, String> reasonUser) {
 
             this.reasonUser = reasonUser;
-            return this;
-        }
-
-        public Builder subject(Subject subject) {
-
-            this.subject = subject;
             return this;
         }
 
