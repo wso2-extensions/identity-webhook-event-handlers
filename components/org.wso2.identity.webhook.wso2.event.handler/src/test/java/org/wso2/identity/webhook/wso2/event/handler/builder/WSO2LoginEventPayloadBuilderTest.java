@@ -64,7 +64,6 @@ public class WSO2LoginEventPayloadBuilderTest {
     private static final String SAMPLE_USERSTORE_NAME = "DEFAULT";
     private static final String SAMPLE_SERVICE_PROVIDER = "test-app";
     private static final String SAMPLE_IDP = "LOCAL";
-    private static final String SAMPLE_MESSAGE = "Invalid Credentials";
     private static final String SAMPLE_AUTHENTICATOR = "sms-otp-authenticator";
     private static final String SAMPLE_SP_ID = "f27178f9-984b-41df-aee5-372de8ef327f";
     private static final String SAMPLE_TENANT_ID = "100";
@@ -190,14 +189,14 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         WSO2AuthenticationFailedEventPayload failedPayload = (WSO2AuthenticationFailedEventPayload) eventPayload;
 
-        assertEquals(failedPayload.getApplication().getId(), SAMPLE_SP_ID);
-        assertEquals(failedPayload.getApplication().getName(), SAMPLE_SERVICE_PROVIDER);
-        assertEquals(failedPayload.getTenant().getId(), SAMPLE_TENANT_ID);
-        assertEquals(failedPayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
-        assertEquals(failedPayload.getReason().getId(), SAMPLE_ERROR_CODE);
-        assertEquals(failedPayload.getReason().getFailedStep().getStep(), 2);
-        assertEquals(failedPayload.getReason().getFailedStep().getIdp(), SAMPLE_IDP);
-        assertEquals(failedPayload.getReason().getFailedStep().getAuthenticator(), SAMPLE_AUTHENTICATOR);
+        assertEquals(SAMPLE_SP_ID, failedPayload.getApplication().getId());
+        assertEquals(SAMPLE_SERVICE_PROVIDER, failedPayload.getApplication().getName());
+        assertEquals(SAMPLE_TENANT_ID, failedPayload.getTenant().getId());
+        assertEquals(SAMPLE_TENANT_DOMAIN, failedPayload.getTenant().getName());
+        assertEquals(SAMPLE_ERROR_CODE, failedPayload.getReason().getId());
+        assertEquals(2, failedPayload.getReason().getFailedStep().getStep());
+        assertEquals(SAMPLE_IDP, failedPayload.getReason().getFailedStep().getIdp());
+        assertEquals(SAMPLE_AUTHENTICATOR, failedPayload.getReason().getFailedStep().getAuthenticator());
     }
 
     private AuthenticationContext createMockAuthenticationContext() {
