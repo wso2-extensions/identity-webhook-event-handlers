@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -35,11 +35,12 @@ import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.webhook.common.event.handler.model.EventData;
-import org.wso2.identity.webhook.wso2.event.handler.constant.Constants;
-import org.wso2.identity.webhook.wso2.event.handler.internal.WSO2EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.wso2.event.handler.model.WSO2AuthenticationFailedEventPayload;
-import org.wso2.identity.webhook.wso2.event.handler.model.WSO2AuthenticationSuccessEventPayload;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationFailedEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationSuccessEventPayload;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -104,7 +105,7 @@ public class WSO2LoginEventPayloadBuilderTest {
     @DataProvider(name = "successEventDataProvider")
     public Object[][] successEventDataProvider() {
 
-        return new Object[][] {
+        return new Object[][]{
                 {SAMPLE_USER_ID, SAMPLE_USERSTORE_NAME, SAMPLE_SP_ID, SAMPLE_SERVICE_PROVIDER, SAMPLE_TENANT_ID,
                         SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, 1}
         };
@@ -143,9 +144,10 @@ public class WSO2LoginEventPayloadBuilderTest {
     @DataProvider(name = "failedEventDataProvider")
     public Object[][] failedEventDataProvider() {
 
-        return new Object[][] {
+        return new Object[][]{
                 {SAMPLE_USER_ID, SAMPLE_USERSTORE_NAME, SAMPLE_SP_ID, SAMPLE_SERVICE_PROVIDER, SAMPLE_TENANT_ID,
-                        SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, SAMPLE_ERROR_CODE, 2, SAMPLE_IDP, SAMPLE_AUTHENTICATOR}
+                        SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, SAMPLE_ERROR_CODE, 2,
+                        SAMPLE_IDP, SAMPLE_AUTHENTICATOR}
         };
     }
 
@@ -187,14 +189,14 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         WSO2AuthenticationFailedEventPayload failedPayload = (WSO2AuthenticationFailedEventPayload) eventPayload;
 
-        assertEquals(failedPayload.getApplication().getId(), SAMPLE_SP_ID);
-        assertEquals(failedPayload.getApplication().getName(), SAMPLE_SERVICE_PROVIDER);
-        assertEquals(failedPayload.getTenant().getId(), SAMPLE_TENANT_ID);
-        assertEquals(failedPayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
-        assertEquals(failedPayload.getReason().getId(), SAMPLE_ERROR_CODE);
-        assertEquals(failedPayload.getReason().getFailedStep().getStep(), 2);
-        assertEquals(failedPayload.getReason().getFailedStep().getIdp(), SAMPLE_IDP);
-        assertEquals(failedPayload.getReason().getFailedStep().getAuthenticator(), SAMPLE_AUTHENTICATOR);
+        assertEquals(SAMPLE_SP_ID, failedPayload.getApplication().getId());
+        assertEquals(SAMPLE_SERVICE_PROVIDER, failedPayload.getApplication().getName());
+        assertEquals(SAMPLE_TENANT_ID, failedPayload.getTenant().getId());
+        assertEquals(SAMPLE_TENANT_DOMAIN, failedPayload.getTenant().getName());
+        assertEquals(SAMPLE_ERROR_CODE, failedPayload.getReason().getId());
+        assertEquals(2, failedPayload.getReason().getFailedStep().getStep());
+        assertEquals(SAMPLE_IDP, failedPayload.getReason().getFailedStep().getIdp());
+        assertEquals(SAMPLE_AUTHENTICATOR, failedPayload.getReason().getFailedStep().getAuthenticator());
     }
 
     private AuthenticationContext createMockAuthenticationContext() {

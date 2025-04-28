@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -18,7 +18,6 @@
 
 package org.wso2.identity.webhook.common.event.handler;
 
-import org.apache.commons.logging.Log;
 import org.json.simple.JSONObject;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -40,34 +39,31 @@ import org.wso2.carbon.identity.configuration.mgt.core.model.Resource;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.common.event.handler.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.model.EventPublisherConfig;
-import org.wso2.identity.webhook.common.event.handler.model.ResourceConfig;
-import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
+import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
+import org.wso2.identity.webhook.common.event.handler.internal.config.ResourceConfig;
+import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
+import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
+import static org.mockito.Answers.CALLS_REAL_METHODS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.reset;
@@ -78,7 +74,6 @@ import static org.mockito.Mockito.withSettings;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.assertSame;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockIdentityTenantUtil;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockServiceURLBuilder;
 
@@ -225,8 +220,7 @@ public class LoginEventHookHandlerTest {
         mockIdentityTenantUtil();
         mockedEventHookHandlerUtils = mock(EventHookHandlerUtils.class, withSettings()
                 .defaultAnswer(CALLS_REAL_METHODS));
-        loginEventHookHandler = new LoginEventHookHandler(mockedEventHookHandlerUtils,
-                mockedEventConfigManager);
+        loginEventHookHandler = new LoginEventHookHandler(mockedEventConfigManager);
     }
 
     private Event createEvent(String eventName) {
@@ -285,6 +279,6 @@ public class LoginEventHookHandlerTest {
                 any(EventContext.class));
 
         SecurityEventTokenPayload capturedEventPayload = argumentCaptor.getValue();
-        assertEquals(capturedEventPayload.getEvent().keySet().iterator().next(), expectedEventKey);
+        assertEquals(capturedEventPayload.getEvents().keySet().iterator().next(), expectedEventKey);
     }
 }

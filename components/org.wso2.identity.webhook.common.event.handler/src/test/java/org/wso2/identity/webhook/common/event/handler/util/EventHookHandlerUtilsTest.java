@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -19,7 +19,6 @@
 package org.wso2.identity.webhook.common.event.handler.util;
 
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -33,12 +32,12 @@ import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
-import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -56,9 +55,6 @@ public class EventHookHandlerUtilsTest {
     @Mock
     private EventPublisherService mockedEventPublisherService;
 
-    @InjectMocks
-    private EventHookHandlerUtils eventHookHandlerUtils;
-
     @BeforeMethod
     public void setup() {
 
@@ -71,17 +67,18 @@ public class EventHookHandlerUtilsTest {
     @Test
     public void testGetCorrelationID() {
 
-        String correlationID = EventHookHandlerUtils.getInstance().getCorrelationID();
+        String correlationID = EventHookHandlerUtils.getCorrelationID();
         assertNotNull(correlationID, "Correlation ID should not be null");
         // Test if correlation ID is a valid UUID format
-        assertTrue(correlationID.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
+        assertTrue(correlationID.matches(
+                "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
     }
 
     @Test
     public void testConstructBaseURL() {
 
         TestUtils.mockServiceURLBuilder();
-        String baseURL = EventHookHandlerUtils.getInstance().constructBaseURL();
+        String baseURL = EventHookHandlerUtils.constructBaseURL();
         assertEquals(baseURL, "https://localhost:9443", "Base URL should be correctly constructed.");
         closeMockedServiceURLBuilder();
     }
@@ -89,48 +86,37 @@ public class EventHookHandlerUtilsTest {
     @Test(expectedExceptions = IdentityEventException.class)
     public void testBuildSecurityEventTokenWithNullEventPayload() throws IdentityEventException {
 
-        EventHookHandlerUtils.getInstance().buildSecurityEventToken(null, "eventUri");
+        EventHookHandlerUtils.buildSecurityEventToken(null, "eventUri");
     }
 
     @Test(expectedExceptions = IdentityEventException.class)
     public void testBuildSecurityEventTokenWithNullEventURI() throws IdentityEventException {
 
         EventPayload payload = Mockito.mock(EventPayload.class);
-        EventHookHandlerUtils.getInstance().buildSecurityEventToken(payload, null);
+        EventHookHandlerUtils.buildSecurityEventToken(payload, null);
     }
 
     @Test(expectedExceptions = IdentityEventException.class)
     public void testPublishEventPayloadWithNullPayload() throws IdentityEventException {
 
-        EventHookHandlerUtils utils = EventHookHandlerUtils.getInstance();
         SecurityEventTokenPayload nullPayload = null;
-        utils.publishEventPayload(nullPayload, "sampleTenant", "sampleEventUri");
+        EventHookHandlerUtils.publishEventPayload(nullPayload, "sampleTenant", "sampleEventUri");
         Assert.fail("Expected IdentityEventException was not thrown when payload is null.");
-    }
-
-    @Test
-    public void testConstructFullURLWithEndpoint() {
-
-        TestUtils.mockServiceURLBuilder();
-        EventHookHandlerUtils utils = EventHookHandlerUtils.getInstance();
-        String endpoint = "/api/test";
-        String result = utils.constructFullURLWithEndpoint(endpoint);
-        assertEquals(result, "https://localhost:9443" + endpoint);
-        closeMockedServiceURLBuilder();
     }
 
     @Test
     public void testPublishEventPayloadWithProperPayload() throws Exception {
 
-        try (MockedStatic<EventHookHandlerDataHolder> mockedDataHolder = mockStatic(EventHookHandlerDataHolder.class)) {
+        try (MockedStatic<EventHookHandlerDataHolder> mockedDataHolder =
+                     Mockito.mockStatic(EventHookHandlerDataHolder.class)) {
 
-            EventHookHandlerDataHolder mockDataHolderInstance = mock(EventHookHandlerDataHolder.class);
+            EventHookHandlerDataHolder mockDataHolderInstance = Mockito.mock(EventHookHandlerDataHolder.class);
             when(EventHookHandlerDataHolder.getInstance()).thenReturn(mockDataHolderInstance);
 
             when(mockDataHolderInstance.getEventPublisherService()).thenReturn(mockedEventPublisherService);
 
             Map<String, EventPayload> eventMap = new HashMap<>();
-            EventPayload sampleEventPayload = mock(EventPayload.class);  // Mock EventPayload
+            EventPayload sampleEventPayload = Mockito.mock(EventPayload.class);  // Mock EventPayload
             eventMap.put("sampleEvent", sampleEventPayload);
 
             SecurityEventTokenPayload properPayload = SecurityEventTokenPayload.builder()
@@ -140,18 +126,20 @@ public class EventHookHandlerUtilsTest {
                     .aud("https://audience.example.com")
                     .txn("transaction-id-12345")
                     .rci("request-correlation-id-12345")
-                    .event(eventMap)
+                    .events(eventMap)
                     .build();
 
             String tenantDomain = "sampleTenant";
             String eventUri = "https://event.example.com";
 
-            eventHookHandlerUtils.publishEventPayload(properPayload, tenantDomain, eventUri);
+            EventHookHandlerUtils.publishEventPayload(properPayload, tenantDomain, eventUri);
 
-            ArgumentCaptor<SecurityEventTokenPayload> payloadCaptor = ArgumentCaptor.forClass(SecurityEventTokenPayload.class);
+            ArgumentCaptor<SecurityEventTokenPayload> payloadCaptor =
+                    ArgumentCaptor.forClass(SecurityEventTokenPayload.class);
             ArgumentCaptor<EventContext> contextCaptor = ArgumentCaptor.forClass(EventContext.class);
 
-            verify(mockedEventPublisherService, times(1)).publish(payloadCaptor.capture(), contextCaptor.capture());
+            verify(mockedEventPublisherService, times(1))
+                    .publish(payloadCaptor.capture(), contextCaptor.capture());
 
             SecurityEventTokenPayload capturedPayload = payloadCaptor.getValue();
             EventContext capturedContext = contextCaptor.getValue();
@@ -163,7 +151,7 @@ public class EventHookHandlerUtilsTest {
             assertEquals(capturedContext.getTenantDomain(), tenantDomain);
             assertEquals(capturedContext.getEventUri(), eventUri);
 
-            assertEquals(capturedPayload.getEvent(), eventMap);
+            assertEquals(capturedPayload.getEvents(), eventMap);
         }
     }
 
@@ -171,7 +159,7 @@ public class EventHookHandlerUtilsTest {
     public void testConstructBaseURLSuccess() {
 
         TestUtils.mockServiceURLBuilder();
-        String baseURL = EventHookHandlerUtils.getInstance().constructBaseURL();
+        String baseURL = EventHookHandlerUtils.constructBaseURL();
         assertNotNull(baseURL, "Base URL should not be null");
         closeMockedServiceURLBuilder();
     }
@@ -184,7 +172,7 @@ public class EventHookHandlerUtilsTest {
             // Simulate setting the correlation ID in the MDC with the correct key
             mockedMDC.when(() -> MDC.get("Correlation-ID")).thenReturn(expectedCorrelationID);
 
-            String correlationID = EventHookHandlerUtils.getInstance().getCorrelationID();
+            String correlationID = EventHookHandlerUtils.getCorrelationID();
 
             assertNotNull(correlationID, "Correlation ID should not be null");
             assertEquals(correlationID, expectedCorrelationID, "Correlation ID should match the expected value");
@@ -194,22 +182,21 @@ public class EventHookHandlerUtilsTest {
         }
     }
 
-
     @Test
     public void testGetCorrelationIDWithoutExistingCorrelationID() {
 
         MDC.clear();
-        String correlationID = EventHookHandlerUtils.getInstance().getCorrelationID();
+        String correlationID = EventHookHandlerUtils.getCorrelationID();
         assertNotNull(correlationID, "A new correlation ID should be generated");
     }
-
 
     @Test
     public void testGetCorrelationIDWhenMDCNotSet() {
 
         MDC.clear();
-        String correlationID = EventHookHandlerUtils.getInstance().getCorrelationID();
+        String correlationID = EventHookHandlerUtils.getCorrelationID();
         assertNotNull(correlationID);
-        assertTrue(correlationID.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
+        assertTrue(correlationID.matches(
+                "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
     }
 }

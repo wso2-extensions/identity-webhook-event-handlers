@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -21,12 +21,13 @@ package org.wso2.identity.webhook.common.event.handler;
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
 import java.util.List;
 
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertThrows;
@@ -43,7 +44,7 @@ public class PayloadBuilderFactoryTest {
     public void setup() {
 
         mockBuilder = Mockito.mock(LoginEventPayloadBuilder.class);
-        Mockito.when(mockBuilder.getEventSchemaType()).thenReturn("WSO2");
+        Mockito.when(mockBuilder.getEventSchemaType()).thenReturn(Constants.WSO2_EVENT_SCHEMA);
 
         EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(mockBuilder);
     }
@@ -62,9 +63,10 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetLoginEventPayloadBuilderReturnsRegisteredBuilder() {
 
-        LoginEventPayloadBuilder builder = PayloadBuilderFactory.getLoginEventPayloadBuilder("WSO2");
+        LoginEventPayloadBuilder builder =
+                PayloadBuilderFactory.getLoginEventPayloadBuilder(Constants.WSO2_EVENT_SCHEMA);
         assertNotNull(builder, "The builder should not be null.");
-        assertEquals(builder.getEventSchemaType(), "WSO2", "The schema type should match 'WSO2'.");
+        // TODO verify the EventSchema Type after implementing schema to be read from tenant context.
     }
 
     @Test
