@@ -29,6 +29,7 @@ import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
@@ -78,7 +79,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
 
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
-        String schema = Constants.CAEP_EVENT_SCHEMA;
+        EventSchema schema = EventSchema.CAEP;
         CredentialEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
                 .getCredentialEventPayloadBuilder(schema);
 

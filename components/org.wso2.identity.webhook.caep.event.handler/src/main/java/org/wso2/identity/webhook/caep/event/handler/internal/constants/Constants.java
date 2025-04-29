@@ -17,6 +17,4 @@ public class Constants {
         public static final String EVENT_TIME_STAMP = "eventTimestamp";
     }
 
-    public static final String CAEP_EVENT_SCHEMA = "CAEP";
-
 }

@@ -48,6 +48,7 @@ import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.event.common.publisher.model.common.ComplexSubject;
 import org.wso2.identity.event.common.publisher.model.common.SimpleSubject;
 import org.wso2.identity.event.common.publisher.model.common.Subject;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
@@ -103,15 +104,15 @@ public class EventHookHandlerUtils {
         AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);
         String sessionId = extractSessionId(eventData);
 
-        Subject subject = new ComplexSubject();
+        ComplexSubject subject = new ComplexSubject();
         try {
-            subject.addProperty("user", SimpleSubject.createOpaqueSubject(authenticatedUser.getUserId()));
+            subject.addUserSubject(SimpleSubject.createOpaqueSubject(authenticatedUser.getUserId()));
         } catch (UserIdNotFoundException e) {
             throw new IdentityEventException("Error occurred while retrieving user id", e);
         }
-        subject.addProperty("tenant", SimpleSubject.createOpaqueSubject(String.valueOf(
+        subject.addTenantSubject(SimpleSubject.createOpaqueSubject(String.valueOf(
                 IdentityTenantUtil.getTenantId(authenticatedUser.getTenantDomain()))));
-        subject.addProperty("session", SimpleSubject.createOpaqueSubject(sessionId));
+        subject.addSessionSubject(SimpleSubject.createOpaqueSubject(sessionId));
 
         return subject;
     }
@@ -339,10 +340,10 @@ public class EventHookHandlerUtils {
      * @param eventName   Event name.
      * @return Event URI.
      */
-    public static String resolveEventHandlerKey(String eventSchema, IdentityEventConstants.EventName eventName) {
+    public static String resolveEventHandlerKey(EventSchema eventSchema, IdentityEventConstants.EventName eventName) {
 
         switch (eventSchema) {
-            case Constants.WSO2_EVENT_SCHEMA:
+            case WSO2:
                 switch (eventName) {
                     case AUTHENTICATION_SUCCESS:
                         return Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT;
@@ -350,7 +351,7 @@ public class EventHookHandlerUtils {
                         return Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT;
                 }
                 break;
-            case Constants.CAEP_EVENT_SCHEMA:
+            case CAEP:
                 switch (eventName) {
                     case SESSION_TERMINATE:
                     case SESSION_EXPIRE:

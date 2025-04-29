@@ -83,13 +83,4 @@ public class Constants {
 
         }
     }
-
-//    public enum EventSchema {
-//        WSO2,
-//        CAEP,
-//        RISC;
-//
-//        EventSchema() {
-//        }
-//    }
 }

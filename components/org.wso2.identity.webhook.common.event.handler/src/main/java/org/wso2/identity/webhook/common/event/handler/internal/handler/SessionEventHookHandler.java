@@ -28,6 +28,7 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
@@ -57,7 +58,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
         // TODO: Get the schema type from tenant configuration
-        String schema = Constants.CAEP_EVENT_SCHEMA;
+        EventSchema schema = EventSchema.CAEP;
         SessionEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getSessionEventPayloadBuilder(schema);
 
         EventPublisherConfig sessionEventPublisherConfig;
@@ -94,7 +95,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                 }
                 String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
                 Subject subject = null;
-                if (schema.equals(Constants.CAEP_EVENT_SCHEMA)) {
+                if (schema.equals(EventSchema.CAEP)) {
                     subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
                 }
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils

@@ -30,6 +30,7 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
@@ -88,7 +89,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         }
 
         //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
-        String schema = Constants.WSO2_EVENT_SCHEMA;
+        EventSchema schema = EventSchema.WSO2;
         LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
                 .getLoginEventPayloadBuilder(schema);
         EventPublisherConfig loginEventPublisherConfig = null;
