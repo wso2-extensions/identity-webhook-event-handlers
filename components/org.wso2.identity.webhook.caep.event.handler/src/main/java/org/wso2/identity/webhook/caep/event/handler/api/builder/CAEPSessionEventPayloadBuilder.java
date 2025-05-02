@@ -162,39 +162,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
     public EventPayload buildSessionExpireEvent(EventData eventData) throws IdentityEventException {
 
         return null;
-//        final Map<String, Object> params = eventData.getEventParams();
-//        long eventTimeStamp = extractEventTimeStamp(params);
-//        String initiatingEntity = "system";
-//        Map<String, String> reasonAdmin = new HashMap<>();
-//        reasonAdmin.put("en", "Session Expired");
-//        Map<String, String> reasonUser = new HashMap<>();
-//        reasonUser.put("en", "User Session Expired due to inactivity");
-//
-//        AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);
-//        String sessionId = extractSessionId(eventData, params);
-//
-//        if (authenticatedUser == null || sessionId == null) {
-//            log.debug("No Authenticated User or Session ID found");
-//            throw new IdentityEventException("Authenticated User or Session ID cannot be null");
-//        }
-//
-//        Subject subject = new ComplexSubject();
-//        try {
-//            subject.addProperty("user", SimpleSubject.createOpaqueSubject(authenticatedUser.getUserId()));
-//        } catch (UserIdNotFoundException e) {
-//            throw new IdentityEventException("Error occurred while retrieving user id", e);
-//        }
-//        subject.addProperty("tenant", SimpleSubject.createOpaqueSubject(String.valueOf(
-//                IdentityTenantUtil.getTenantId(authenticatedUser.getTenantDomain()))));
-//        subject.addProperty("session", SimpleSubject.createOpaqueSubject(sessionId));
-//
-//        return new CAEPSessionRevokedEventPayload.Builder()
-//                .eventTimeStamp(eventTimeStamp)
-//                .initiatingEntity(initiatingEntity)
-//                .reasonUser(reasonUser)
-//                .reasonAdmin(reasonAdmin)
-//                .subject(subject)
-//                .build();
     }
 
     /**
