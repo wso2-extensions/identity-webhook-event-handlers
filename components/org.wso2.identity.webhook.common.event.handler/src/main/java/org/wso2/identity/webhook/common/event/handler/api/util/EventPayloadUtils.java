@@ -18,16 +18,12 @@
 
 package org.wso2.identity.webhook.common.event.handler.api.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 
 /**
  * This class contains the utility methods needed to construct Endpoints needed for payloads.
  */
 public class EventPayloadUtils {
-
-    private static final Log log = LogFactory.getLog(EventPayloadUtils.class);
 
     private EventPayloadUtils() {
 
