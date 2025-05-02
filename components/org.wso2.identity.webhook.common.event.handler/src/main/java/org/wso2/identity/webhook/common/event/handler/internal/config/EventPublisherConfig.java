@@ -19,7 +19,6 @@
 package org.wso2.identity.webhook.common.event.handler.internal.config;
 
 import org.json.simple.JSONObject;
-import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 
 /**
  * Model class representing the event attributes.
@@ -70,17 +69,4 @@ public class EventPublisherConfig {
         this.properties = properties;
     }
 
-    /**
-     * Get JSON string for the event attribute.
-     *
-     * @return JSON string.
-     */
-    public String toJSONString() {
-
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY, publishEnabled);
-        jsonObject.put(Constants.EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PROPERTIES_KEY, properties.getConfigs());
-
-        return jsonObject.toJSONString();
-    }
 }

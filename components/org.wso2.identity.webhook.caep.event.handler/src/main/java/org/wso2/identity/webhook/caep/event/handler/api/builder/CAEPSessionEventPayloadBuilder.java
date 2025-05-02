@@ -49,12 +49,12 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
 
     @Override
     public EventPayload buildSessionTerminateEvent(EventData eventData) throws IdentityEventException {
+
         final Map<String, Object> params = eventData.getEventParams();
         long eventTimeStamp = extractEventTimeStamp(params);
         String initiatingEntity = null;
         Map<String, String> reasonAdmin = null;
         Map<String, String> reasonUser = null;
-
 
         try {
             // If logout
@@ -90,16 +90,12 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
 
         SessionContext sessionContext = eventData.getSessionContext();
         final Map<String, Object> params = eventData.getEventParams();
-        long eventTimeStamp;
-        try {
-            Long createdTimestamp = (Long) sessionContext.getProperty("CreatedTimestamp");
-            if (createdTimestamp == null) {
-                eventTimeStamp = extractEventTimeStamp(params);
-            } else {
-                eventTimeStamp = createdTimestamp;
-            }
-        } catch (ClassCastException e) {
-            log.error("Error occurred while retrieving Created Timestamp", e);
+        Long eventTimeStamp = null;
+        if (sessionContext != null && sessionContext.getProperty("CreatedTimestamp") != null) {
+            eventTimeStamp = Long.parseLong(sessionContext.getProperty("CreatedTimestamp").toString());
+        }
+
+        if (eventTimeStamp == null) {
             eventTimeStamp = extractEventTimeStamp(params);
         }
 
@@ -110,7 +106,8 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         AuthenticationContext context = eventData.getAuthenticationContext();
         if (context != null) {
             // If Initial Login
-            if (context.getParameter("isInitialLogin").toString().equalsIgnoreCase("true")) {
+            if (context.getParameter("isInitialLogin") != null
+                    && context.getParameter("isInitialLogin").toString().equalsIgnoreCase("true")) {
                 reasonAdmin = new HashMap<>();
                 reasonAdmin.put("en", "Initial Login");
                 reasonUser = new HashMap<>();
@@ -163,7 +160,8 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
      */
     @Override
     public EventPayload buildSessionExpireEvent(EventData eventData) throws IdentityEventException {
-            return null;
+
+        return null;
 //        final Map<String, Object> params = eventData.getEventParams();
 //        long eventTimeStamp = extractEventTimeStamp(params);
 //        String initiatingEntity = "system";

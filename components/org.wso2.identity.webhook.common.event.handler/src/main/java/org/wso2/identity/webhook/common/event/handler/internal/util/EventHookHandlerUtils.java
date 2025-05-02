@@ -103,18 +103,21 @@ public class EventHookHandlerUtils {
 
         AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);
         String sessionId = extractSessionId(eventData);
-
-        ComplexSubject subject = new ComplexSubject();
+        SimpleSubject user = null;
         try {
-            subject.addUserSubject(SimpleSubject.createOpaqueSubject(authenticatedUser.getUserId()));
+            user = SimpleSubject.createOpaqueSubject(authenticatedUser.getUserId());
         } catch (UserIdNotFoundException e) {
             throw new IdentityEventException("Error occurred while retrieving user id", e);
         }
-        subject.addTenantSubject(SimpleSubject.createOpaqueSubject(String.valueOf(
-                IdentityTenantUtil.getTenantId(authenticatedUser.getTenantDomain()))));
-        subject.addSessionSubject(SimpleSubject.createOpaqueSubject(sessionId));
+        SimpleSubject tenant = SimpleSubject.createOpaqueSubject(String.valueOf(
+                IdentityTenantUtil.getTenantId(authenticatedUser.getTenantDomain())));
+        SimpleSubject session = SimpleSubject.createOpaqueSubject(sessionId);
 
-        return subject;
+        return ComplexSubject.builder()
+                .tenant(tenant)
+                .user(user)
+                .session(session)
+                .build();
     }
 
     /**

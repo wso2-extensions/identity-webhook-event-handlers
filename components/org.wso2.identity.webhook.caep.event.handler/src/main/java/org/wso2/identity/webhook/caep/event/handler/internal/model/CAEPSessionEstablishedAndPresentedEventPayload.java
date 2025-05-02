@@ -20,7 +20,6 @@ package org.wso2.identity.webhook.caep.event.handler.internal.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +45,7 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
 
     @JsonProperty("fp_ua")
     private final String fpUa;
-    private final AuthenticationContext acr;
+    private final String acr;
     private List<String> amr = new ArrayList<>();
     @JsonProperty("ext_id")
     private final String extId;
@@ -61,7 +60,7 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
         return amr;
     }
 
-    public AuthenticationContext getAcr() {
+    public String getAcr() {
 
         return acr;
     }
@@ -84,8 +83,8 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
         private Map<String, String> reasonUser;
         private List<String> ips;
         private String fpUa;
-        private AuthenticationContext acr;
         private List<String> amr;
+        private String acr;
         private String extId;
 
         public Builder eventTimeStamp(long eventTimeStamp) {
@@ -133,6 +132,12 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
         public Builder extId(String extId) {
 
             this.extId = extId;
+            return this;
+        }
+
+        public Builder acr(String acr) {
+
+            this.acr = acr;
             return this;
         }
 

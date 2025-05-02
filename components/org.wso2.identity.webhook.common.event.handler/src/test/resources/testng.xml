@@ -17,14 +17,17 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
 <suite name="org.wso2.identity.webhook.common.event.handler">
-    <test name="login-event-hook-handler-tests" preserve-order="true" parallel="false">
+    <test name="login-event-hook-handler-tests" parallel="false">
         <classes>
             <class name="org.wso2.identity.webhook.common.event.handler.EventConfigManagerTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtilsTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.util.EventPayloadUtilsTest"/>
-            <class name="org.wso2.identity.webhook.common.event.handler.EventHookHandlerServiceComponentTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.component.EventHookHandlerServiceComponentTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.LoginEventHookHandlerTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.SessionEventHookHandlerTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.CredentialEventHookHandlerTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.PayloadBuilderFactoryTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.component.EventHookHandlerDataHolderTest"/>
         </classes>
     </test>
 </suite>

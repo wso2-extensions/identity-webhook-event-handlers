@@ -34,6 +34,11 @@ public class CAEPTokenClaimsChangeEventPayload extends CAEPBaseEventPayload {
 
     private Map<String, String> claims;
 
+    public Map<String, String> getClaims() {
+
+        return claims;
+    }
+
     public static class Builder {
 
         private long eventTimeStamp;

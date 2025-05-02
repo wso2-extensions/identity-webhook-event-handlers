@@ -20,11 +20,7 @@ package org.wso2.identity.webhook.common.event.handler.internal.handler;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.identity.base.IdentityRuntimeException;
-import org.wso2.carbon.identity.core.bean.context.MessageContext;
-import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
@@ -51,27 +47,6 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
     public String getName() {
 
         return Constants.CREDENTIAL_EVENT_HOOK_NAME;
-    }
-
-    @Override
-    public boolean canHandle(MessageContext messageContext) throws IdentityRuntimeException {
-
-        IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
-        String eventName = identityContext.getEvent().getEventName();
-
-        boolean canHandle = isSupportedEvent(eventName);
-        if (canHandle) {
-            log.debug(eventName + " event can be handled.");
-        } else {
-            log.debug(eventName + " event cannot be handled.");
-        }
-        return canHandle;
-    }
-
-    private boolean isSupportedEvent(String eventName) {
-
-        return IdentityEventConstants.EventName.POST_UPDATE_CREDENTIAL.name().equals(eventName) ||
-                IdentityEventConstants.EventName.POST_UPDATE_CREDENTIAL_BY_ADMIN.name().equals(eventName);
     }
 
     @Override

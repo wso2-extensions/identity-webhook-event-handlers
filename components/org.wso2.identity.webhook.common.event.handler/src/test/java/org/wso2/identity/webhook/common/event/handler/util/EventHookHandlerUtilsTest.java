@@ -27,11 +27,18 @@ import org.slf4j.MDC;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
+import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
+import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
+import org.wso2.identity.event.common.publisher.model.common.ComplexSubject;
+import org.wso2.identity.event.common.publisher.model.common.SimpleSubject;
+import org.wso2.identity.event.common.publisher.model.common.Subject;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 
@@ -45,12 +52,23 @@ import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedServiceURLBuilder;
+import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockIdentityTenantUtil;
 
 /**
  * Test class for EventHookHandlerUtils.
  */
 public class EventHookHandlerUtilsTest {
+
+    private static final String SAMPLE_TENANT_DOMAIN = "myorg";
+    private static final String SAMPLE_TENANT_ID = "100";
+
+    @Mock
+    private AuthenticationContext mockedAuthenticationContext;
+
+    @Mock
+    private AuthenticatedUser mockedAuthenticatedUser;
 
     @Mock
     private EventPublisherService mockedEventPublisherService;
@@ -199,4 +217,46 @@ public class EventHookHandlerUtilsTest {
         assertTrue(correlationID.matches(
                 "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
     }
+
+    @Test
+    public void testExtractSubjectFromEventData() throws IdentityEventException, UserIdNotFoundException {
+        // Mock EventData and its dependencies
+        EventData eventData = Mockito.mock(EventData.class);
+
+        // Mock behavior for authenticatedUser
+        when(eventData.getAuthenticatedUser()).thenReturn(mockedAuthenticatedUser);
+        when(mockedAuthenticatedUser.getUserId()).thenReturn("user-id-123");
+        when(mockedAuthenticatedUser.getTenantDomain()).thenReturn(SAMPLE_TENANT_DOMAIN);
+
+        // Mock behavior for session ID
+        when(eventData.getAuthenticationContext()).thenReturn(mockedAuthenticationContext);
+        when(mockedAuthenticationContext.getSessionIdentifier()).thenReturn("session-id-123");
+        mockIdentityTenantUtil();
+
+        // Call the method under test
+        Subject subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
+
+        closeMockedIdentityTenantUtil();
+
+        // Validate the result
+        assertNotNull(subject, "Subject should not be null");
+        assertTrue(subject instanceof ComplexSubject, "Subject should be of type ComplexSubject");
+
+        ComplexSubject complexSubject = (ComplexSubject) subject;
+        assertEquals(complexSubject.getProperties().size(), 3, "ComplexSubject should contain 3 subjects");
+        complexSubject.getProperties().forEach((key, value) -> {
+            assertTrue(value instanceof SimpleSubject, "Value should be of type SimpleSubject");
+            SimpleSubject simpleSubject = (SimpleSubject) value;
+            if (key.equals("user")) {
+                assertEquals(simpleSubject.getProperty("id"), "user-id-123", "User ID should match");
+            } else if (key.equals("tenant")) {
+                assertEquals(simpleSubject.getProperty("id"), SAMPLE_TENANT_ID, "Tenant domain should match");
+            } else if (key.equals("session")) {
+                assertEquals(simpleSubject.getProperty("id"), "session-id-123", "Session ID should match");
+            }
+        });
+
+    }
+
+
 }

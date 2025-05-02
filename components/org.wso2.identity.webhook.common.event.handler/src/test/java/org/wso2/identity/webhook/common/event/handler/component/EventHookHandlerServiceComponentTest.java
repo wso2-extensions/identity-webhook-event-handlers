@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler;
+package org.wso2.identity.webhook.common.event.handler.component;
 
 import org.mockito.MockedStatic;
 import org.testng.annotations.AfterClass;
