@@ -39,18 +39,4 @@ public class CAEPEventHookHandlerServiceComponent {
         log.debug("WSO2 CAEP Event Handler is deactivated.");
     }
 
-//    @Reference(name = "identity.organization.management.component",
-//            service = OrganizationManager.class,
-//            cardinality = ReferenceCardinality.MANDATORY,
-//            policy = ReferencePolicy.DYNAMIC,
-//            unbind = "unsetOrganizationManager")
-//    protected void setOrganizationManager(OrganizationManager organizationManager) {
-//
-//        CAEPEventHookHandlerDataHolder.getInstance().setOrganizationManager(organizationManager);
-//    }
-//
-//    protected void unsetOrganizationManager(OrganizationManager organizationManager) {
-//
-//        CAEPEventHookHandlerDataHolder.getInstance().setOrganizationManager(null);
-//    }
 }

@@ -19,24 +19,4 @@ public class CAEPEventHookHandlerDataHolder {
         return instance;
     }
 
-    /**
-     * Get {@link OrganizationManager}.
-     *
-     * @return organization manager instance {@link OrganizationManager}.
-     */
-    public OrganizationManager getOrganizationManager() {
-
-        return organizationManager;
-    }
-
-    /**
-     * Set {@link OrganizationManager}.
-     *
-     * @param organizationManager Instance of {@link OrganizationManager}.
-     */
-    public void setOrganizationManager(OrganizationManager organizationManager) {
-
-        this.organizationManager = organizationManager;
-    }
-
 }
