@@ -31,10 +31,8 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Ses
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPSessionEventPayloadBuilder;
-import org.wso2.identity.webhook.caep.event.handler.internal.component.CAEPEventHookHandlerDataHolder;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedAndPresentedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
@@ -75,10 +73,8 @@ public class CAEPSessionEventPayloadBuilderTest {
     private EventData mockEventData;
 
     @Mock
-    private OrganizationManager mockOrganizationManager;
-
-    @Mock
     private AuthenticationContext mockAuthenticationContext;
+
     @Mock
     private AuthenticatedUser mockAuthenticatedUser;
 
@@ -86,7 +82,6 @@ public class CAEPSessionEventPayloadBuilderTest {
     public void setup() {
 
         MockitoAnnotations.openMocks(this);
-        CAEPEventHookHandlerDataHolder.getInstance().setOrganizationManager(mockOrganizationManager);
         mockAuthenticationContext = createMockAuthenticationContext();
         mockAuthenticatedUser = createMockAuthenticatedUser();
         mockServiceURLBuilder();
