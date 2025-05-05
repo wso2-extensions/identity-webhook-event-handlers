@@ -22,9 +22,23 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
+/**
+ * This interface is responsible for building credential event payloads.
+ */
 public interface CredentialEventPayloadBuilder {
 
+    /**
+     * Build the credential change event.
+     *
+     * @param eventData Event data.
+     * @return Event payload.
+     */
     EventPayload buildCredentialChange(EventData eventData);
 
+    /**
+     * Returns the EventSchema type of the event payload.
+     *
+     * @return Event Schema.
+     */
     EventSchema getEventSchemaType();
 }

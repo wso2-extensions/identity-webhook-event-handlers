@@ -23,6 +23,9 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
+/**
+ * This interface is responsible for building session event payloads.
+ */
 public interface SessionEventPayloadBuilder {
 
     /**
