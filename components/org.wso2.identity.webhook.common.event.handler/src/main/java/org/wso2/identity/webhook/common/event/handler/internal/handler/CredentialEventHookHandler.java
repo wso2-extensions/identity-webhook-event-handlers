@@ -70,7 +70,6 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
 
             EventPayload eventPayload = null;
             String eventUri = null;
-
         } catch (Exception e) {
             throw new IdentityEventException("Error occurred while building event payload", e);
         }

@@ -175,7 +175,6 @@ public class CAEPSessionEventPayloadBuilderTest {
 
         assertNotNull(eventPayload, "Event payload should not be null");
         assertEquals(eventPayload.getEventTimeStamp(), systemTime, "Event timestamp should match");
-
     }
 
     @Test

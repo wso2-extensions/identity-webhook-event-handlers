@@ -74,7 +74,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
         try {
             sessionEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant((String)
-                    eventData.getSessionContext().getProperty("tenantDomain"),
+                            eventData.getSessionContext().getProperty("tenantDomain"),
                     event.getEventName(), eventConfigManager);
 
             EventPayload eventPayload = null;
@@ -123,7 +123,5 @@ public class SessionEventHookHandler extends AbstractEventHandler {
         } catch (IdentityEventException e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }
-
     }
-
 }

@@ -74,7 +74,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 reasonAdmin.put("en", "User logout");
                 reasonUser = new HashMap<>();
                 reasonUser.put("en", "User Logged out");
-
             }
 
         } catch (Exception e) {

@@ -61,5 +61,4 @@ public abstract class CAEPBaseEventPayload extends EventPayload {
 
         return reasonUser;
     }
-
 }

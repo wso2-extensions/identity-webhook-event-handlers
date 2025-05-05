@@ -151,6 +151,5 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
 
             return new CAEPSessionEstablishedAndPresentedEventPayload(this);
         }
-
     }
 }

@@ -304,5 +304,4 @@ public class LoginEventHookHandlerTest {
         SecurityEventTokenPayload capturedEventPayload = argumentCaptor.getValue();
         assertEquals(capturedEventPayload.getEvents().keySet().iterator().next(), expectedEventKey);
     }
-
 }
