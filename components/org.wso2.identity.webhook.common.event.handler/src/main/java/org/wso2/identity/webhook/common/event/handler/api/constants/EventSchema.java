@@ -18,6 +18,9 @@
 
 package org.wso2.identity.webhook.common.event.handler.api.constants;
 
+/**
+ * This enum represents the event schema types.
+ */
 public enum EventSchema {
     WSO2,
     CAEP,
