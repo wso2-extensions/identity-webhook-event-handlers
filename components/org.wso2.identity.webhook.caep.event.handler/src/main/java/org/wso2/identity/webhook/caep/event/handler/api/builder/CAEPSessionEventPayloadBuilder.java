@@ -56,6 +56,10 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Map<String, String> reasonAdmin = null;
         Map<String, String> reasonUser = null;
 
+        if (eventData.getAuthenticationContext() == null) {
+            throw new IdentityEventException("Authentication context cannot be null");
+        }
+
         try {
             // If logout
             if (eventData.getAuthenticationContext().isLogoutRequest()) {
@@ -128,6 +132,9 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         // TODO: Add ExtId
         String extId = null;
 
+        // TODO: Add Acr
+        String acr = context.getSelectedAcr();
+
         return new CAEPSessionEstablishedAndPresentedEventPayload.Builder()
                 .eventTimeStamp(eventTimeStamp)
                 .initiatingEntity(initiatingEntity)
@@ -137,6 +144,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 .ips(ips)
                 .fpUa(fpUa)
                 .extId(extId)
+                .acr(acr)
                 .build();
     }
 
@@ -148,8 +156,49 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
      */
     @Override
     public EventPayload buildSessionUpdateEvent(EventData eventData) throws IdentityEventException {
+        final Map<String, Object> params = eventData.getEventParams();
+        SessionContext sessionContext = eventData.getSessionContext();
+        Long eventTimeStamp = null;
+        if (sessionContext != null && sessionContext.getProperty("CreatedTimestamp") != null) {
+            eventTimeStamp = Long.parseLong(sessionContext.getProperty("CreatedTimestamp").toString());
+        }
 
-        return null;
+        if (eventTimeStamp == null) {
+            eventTimeStamp = extractEventTimeStamp(params);
+        }
+        String initiatingEntity = null;
+        Map<String, String> reasonAdmin = null;
+        Map<String, String> reasonUser = null;
+
+
+
+        // TODO: Add AMR list Support
+        List<String> amr = null;
+
+        // TODO: Add ips
+        List<String> ips = null;
+
+        // TODO: Add FpUa
+        String fpUa = null;
+
+        // TODO: Add ExtId
+        String extId = null;
+
+        // TODO: Add Acr
+        String acr = eventData.getAuthenticationContext() != null ?
+                eventData.getAuthenticationContext().getSelectedAcr() : null;
+
+        return new CAEPSessionEstablishedAndPresentedEventPayload.Builder()
+                .eventTimeStamp(eventTimeStamp)
+                .initiatingEntity(initiatingEntity)
+                .reasonUser(reasonUser)
+                .reasonAdmin(reasonAdmin)
+                .amr(amr)
+                .ips(ips)
+                .fpUa(fpUa)
+                .extId(extId)
+                .acr(acr)
+                .build();
     }
 
     /**
