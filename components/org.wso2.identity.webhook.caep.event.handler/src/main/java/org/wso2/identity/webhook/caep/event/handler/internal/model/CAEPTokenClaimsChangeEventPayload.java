@@ -21,6 +21,9 @@ package org.wso2.identity.webhook.caep.event.handler.internal.model;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class represents the payload for token claims change events in CAEP.
+ */
 public class CAEPTokenClaimsChangeEventPayload extends CAEPBaseEventPayload {
 
     private CAEPTokenClaimsChangeEventPayload(Builder builder) {
@@ -39,6 +42,9 @@ public class CAEPTokenClaimsChangeEventPayload extends CAEPBaseEventPayload {
         return claims;
     }
 
+    /**
+     * Builder class for CAEPTokenClaimsChangeEventPayload.
+     */
     public static class Builder {
 
         private long eventTimeStamp;

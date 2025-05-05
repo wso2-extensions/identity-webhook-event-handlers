@@ -20,6 +20,9 @@ package org.wso2.identity.webhook.caep.event.handler.internal.model;
 
 import java.util.Map;
 
+/**
+ * This class represents the payload for session revoked events in CAEP.
+ */
 public class CAEPSessionRevokedEventPayload extends CAEPBaseEventPayload {
 
     private CAEPSessionRevokedEventPayload(Builder builder) {
@@ -30,6 +33,9 @@ public class CAEPSessionRevokedEventPayload extends CAEPBaseEventPayload {
         this.reasonUser = builder.reasonUser;
     }
 
+    /**
+     * Builder class for CAEPSessionRevokedEventPayload.
+     */
     public static class Builder {
 
         private long eventTimeStamp;

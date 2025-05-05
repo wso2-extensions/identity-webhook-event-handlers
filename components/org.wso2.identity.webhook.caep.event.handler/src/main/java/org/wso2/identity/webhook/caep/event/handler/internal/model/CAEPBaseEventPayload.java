@@ -24,6 +24,9 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 
 import java.util.Map;
 
+/**
+ * Base class for CAEP event payloads.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class CAEPBaseEventPayload extends EventPayload {
 

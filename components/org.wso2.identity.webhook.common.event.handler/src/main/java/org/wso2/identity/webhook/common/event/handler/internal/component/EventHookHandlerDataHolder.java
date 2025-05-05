@@ -58,16 +58,31 @@ public class EventHookHandlerDataHolder {
         return credentialEventPayloadBuilders;
     }
 
+    /**
+     * Add a credential event payload builder to hte list.
+     *
+     * @param credentialEventPayloadBuilder A credential event payload builders.
+     */
     public void addCredentialEventPayloadBuilder(CredentialEventPayloadBuilder credentialEventPayloadBuilder) {
 
         credentialEventPayloadBuilders.add(credentialEventPayloadBuilder);
     }
 
+    /**
+     * Remove a credential event payload builder from the list.
+     *
+     * @param credentialEventPayloadBuilder A credential event payload builders.
+     */
     public void removeCredentialEventPayloadBuilder(CredentialEventPayloadBuilder credentialEventPayloadBuilder) {
 
         credentialEventPayloadBuilders.remove(credentialEventPayloadBuilder);
     }
 
+    /**
+     * Set a list of credential event payload builders.
+     *
+     * @param credentialEventPayloadBuilders List of credential event payload builders.
+     */
     public void setCredentialEventPayloadBuilders(List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders) {
 
         this.credentialEventPayloadBuilders = credentialEventPayloadBuilders;
@@ -83,16 +98,31 @@ public class EventHookHandlerDataHolder {
         return sessionEventPayloadBuilders;
     }
 
+    /**
+     * Add session event payload builder implementation.
+     *
+     * @param sessionEventPayloadBuilder Session event payload builder implementation.
+     */
     public void addSessionEventPayloadBuilder(SessionEventPayloadBuilder sessionEventPayloadBuilder) {
 
         sessionEventPayloadBuilders.add(sessionEventPayloadBuilder);
     }
 
+    /**
+     * Remove session event payload builder implementation.
+     *
+     * @param sessionEventPayloadBuilder Session event payload builder implementation.
+     */
     public void removeSessionEventPayloadBuilder(SessionEventPayloadBuilder sessionEventPayloadBuilder) {
 
         sessionEventPayloadBuilders.remove(sessionEventPayloadBuilder);
     }
 
+    /**
+     * Set a list of session event payload builders.
+     *
+     * @param sessionEventPayloadBuilders List of session event payload builders.
+     */
     public void setSessionEventPayloadBuilders(List<SessionEventPayloadBuilder> sessionEventPayloadBuilders) {
 
         this.sessionEventPayloadBuilders = sessionEventPayloadBuilders;

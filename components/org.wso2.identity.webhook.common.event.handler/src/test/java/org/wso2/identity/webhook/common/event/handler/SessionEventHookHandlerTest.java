@@ -75,8 +75,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import static org.testng.Assert.assertEquals;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.SP_TO_CARBON_CLAIM_MAPPING;
-import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedIdentityTenantUtil;
-import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedServiceURLBuilder;
 
 /**
  * Unit tests for the SessionEventHookHandlerTest class and related classes.
@@ -119,7 +117,7 @@ public class SessionEventHookHandlerTest {
 
     @AfterMethod
     public void tearDownMethod() {
-//        tearDownUtilities();
+
         Mockito.reset(mockedEventHookHandlerUtils);
         Mockito.reset(mockedEventPublisherService);
     }
@@ -227,23 +225,10 @@ public class SessionEventHookHandlerTest {
     }
 
     private void setupUtilities() {
-//        tearDownUtilities();
-//        mockServiceURLBuilder();
-//        mockIdentityTenantUtil();
+
         mockedEventHookHandlerUtils = mock(EventHookHandlerUtils.class, withSettings()
                 .defaultAnswer(CALLS_REAL_METHODS));
         sessionEventHookHandler = new SessionEventHookHandler(mockedEventConfigManager);
-    }
-
-    private void tearDownUtilities() {
-
-        closeMockedServiceURLBuilder();
-        closeMockedIdentityTenantUtil();
-    }
-
-    private Event createEvent(String eventName) {
-
-        return new Event(eventName);
     }
 
     private Event createEventWithProperties(String eventName) {

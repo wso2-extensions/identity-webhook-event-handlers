@@ -22,6 +22,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
 
+/**
+ * This class represents the payload for credential change events in CAEP.
+ */
 public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
 
     private CAEPCredentialChangeEventPayload(Builder builder) {
@@ -86,6 +89,9 @@ public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
         return fidoAaguid;
     }
 
+    /*
+     * Builder class for CAEPCredentialChangeEventPayload.
+     */
     public static class Builder {
 
         private long eventTimeStamp;

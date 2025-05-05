@@ -118,7 +118,7 @@ public class LoginEventHookHandlerTest {
 
     @AfterMethod
     public void tearDownMethod() {
-//        tearDownUtilities();
+
         Mockito.reset(mockedEventHookHandlerUtils);
         Mockito.reset(mockedEventPublisherService);
     }
@@ -205,6 +205,7 @@ public class LoginEventHookHandlerTest {
 
     @Test
     public void testPassiveAuthenticate() throws IdentityEventException {
+
         Event event = createEventWithProperties(IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name());
         AuthenticationContext context = createAuthenticationContext();
         context.setPassiveAuthenticate(true);

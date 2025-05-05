@@ -134,7 +134,7 @@ public class EventHookHandlerUtilsTest {
             when(mockDataHolderInstance.getEventPublisherService()).thenReturn(mockedEventPublisherService);
 
             Map<String, EventPayload> eventMap = new HashMap<>();
-            EventPayload sampleEventPayload = Mockito.mock(EventPayload.class);  // Mock EventPayload
+            EventPayload sampleEventPayload = Mockito.mock(EventPayload.class);
             eventMap.put("sampleEvent", sampleEventPayload);
 
             SecurityEventTokenPayload properPayload = SecurityEventTokenPayload.builder()
@@ -156,8 +156,8 @@ public class EventHookHandlerUtilsTest {
                     ArgumentCaptor.forClass(SecurityEventTokenPayload.class);
             ArgumentCaptor<EventContext> contextCaptor = ArgumentCaptor.forClass(EventContext.class);
 
-            verify(mockedEventPublisherService, times(1))
-                    .publish(payloadCaptor.capture(), contextCaptor.capture());
+            verify(mockedEventPublisherService, times(1)).
+                    publish(payloadCaptor.capture(), contextCaptor.capture());
 
             SecurityEventTokenPayload capturedPayload = payloadCaptor.getValue();
             EventContext capturedContext = contextCaptor.getValue();
@@ -187,7 +187,6 @@ public class EventHookHandlerUtilsTest {
 
         String expectedCorrelationID = "test-correlation-id";
         try (MockedStatic<MDC> mockedMDC = mockStatic(MDC.class)) {
-            // Simulate setting the correlation ID in the MDC with the correct key
             mockedMDC.when(() -> MDC.get("Correlation-ID")).thenReturn(expectedCorrelationID);
 
             String correlationID = EventHookHandlerUtils.getCorrelationID();
@@ -195,7 +194,6 @@ public class EventHookHandlerUtilsTest {
             assertNotNull(correlationID, "Correlation ID should not be null");
             assertEquals(correlationID, expectedCorrelationID, "Correlation ID should match the expected value");
 
-            // Verify that the put method was not called since the ID already exists
             mockedMDC.verify(() -> MDC.put("Correlation-ID", expectedCorrelationID), times(0));
         }
     }
@@ -220,25 +218,21 @@ public class EventHookHandlerUtilsTest {
 
     @Test
     public void testExtractSubjectFromEventData() throws IdentityEventException, UserIdNotFoundException {
-        // Mock EventData and its dependencies
+
         EventData eventData = Mockito.mock(EventData.class);
 
-        // Mock behavior for authenticatedUser
         when(eventData.getAuthenticatedUser()).thenReturn(mockedAuthenticatedUser);
         when(mockedAuthenticatedUser.getUserId()).thenReturn("user-id-123");
         when(mockedAuthenticatedUser.getTenantDomain()).thenReturn(SAMPLE_TENANT_DOMAIN);
 
-        // Mock behavior for session ID
         when(eventData.getAuthenticationContext()).thenReturn(mockedAuthenticationContext);
         when(mockedAuthenticationContext.getSessionIdentifier()).thenReturn("session-id-123");
         mockIdentityTenantUtil();
 
-        // Call the method under test
         Subject subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
 
         closeMockedIdentityTenantUtil();
 
-        // Validate the result
         assertNotNull(subject, "Subject should not be null");
         assertTrue(subject instanceof ComplexSubject, "Subject should be of type ComplexSubject");
 
@@ -257,6 +251,5 @@ public class EventHookHandlerUtilsTest {
         });
 
     }
-
 
 }

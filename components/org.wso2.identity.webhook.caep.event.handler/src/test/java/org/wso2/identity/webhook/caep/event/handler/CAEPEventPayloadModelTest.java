@@ -33,6 +33,9 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
+/**
+ * Unit test class for CAEP event payload models.
+ */
 public class CAEPEventPayloadModelTest {
 
     private static Map<String, String> sampleReasonAdmin = new HashMap<>();

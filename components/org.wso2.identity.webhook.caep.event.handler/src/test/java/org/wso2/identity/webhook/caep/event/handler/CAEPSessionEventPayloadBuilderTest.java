@@ -54,6 +54,9 @@ import static org.wso2.identity.webhook.caep.event.handler.util.TestUtils.closeM
 import static org.wso2.identity.webhook.caep.event.handler.util.TestUtils.mockIdentityTenantUtil;
 import static org.wso2.identity.webhook.caep.event.handler.util.TestUtils.mockServiceURLBuilder;
 
+/**
+ * Unit test class for {@link CAEPSessionEventPayloadBuilder}.
+ */
 public class CAEPSessionEventPayloadBuilderTest {
 
     private static final String SAMPLE_TENANT_DOMAIN = "myorg";
@@ -62,12 +65,8 @@ public class CAEPSessionEventPayloadBuilderTest {
     private static final String SAMPLE_USERSTORE_NAME = "DEFAULT";
     private static final String SAMPLE_SERVICE_PROVIDER = "test-app";
     private static final String SAMPLE_IDP = "LOCAL";
-    private static final String SAMPLE_MESSAGE = "Invalid Credentials";
     private static final String SAMPLE_AUTHENTICATOR = "sms-otp-authenticator";
     private static final String SAMPLE_SP_ID = "f27178f9-984b-41df-aee5-372de8ef327f";
-    private static final String SAMPLE_TENANT_ID = "100";
-    private static final String SAMPLE_USER_REF = "https://localhost:9443/t/myorg/scim2/" + SAMPLE_USER_ID;
-    private static final String SAMPLE_ERROR_CODE = "SMS-65020";
 
     @InjectMocks
     private CAEPSessionEventPayloadBuilder caepSessionEventPayloadBuilder;
@@ -104,13 +103,8 @@ public class CAEPSessionEventPayloadBuilderTest {
     @Test
     public void testGetEventSchemaType() {
 
-        // Mock the behavior of the CAEPSessionEventPayloadBuilder
-//        when(caepSessionEventPayloadBuilder.getEventSchemaType()).thenCallRealMethod();
-
-        // Call the method to test
         EventSchema eventSchema = caepSessionEventPayloadBuilder.getEventSchemaType();
 
-        // Add assertions to verify the expected behavior
         assertNotNull(eventSchema, "Event schema should not be null");
         assertEquals(eventSchema, EventSchema.CAEP, "Event schema should be CAEP");
     }
@@ -124,15 +118,9 @@ public class CAEPSessionEventPayloadBuilderTest {
         paramMap.put("eventTimestamp", System.currentTimeMillis());
         when(mockEventData.getEventParams()).thenReturn(paramMap);
 
-//        // Mock the behavior of the CAEPSessionEventPayloadBuilder
-//        when(caepSessionEventPayloadBuilder.buildSessionTerminateEvent(mockEventData))
-//                .thenCallRealMethod();
-
-        // Call the method to test
         CAEPSessionRevokedEventPayload eventPayload = (CAEPSessionRevokedEventPayload)
                 caepSessionEventPayloadBuilder.buildSessionTerminateEvent(mockEventData);
 
-        // Add assertions to verify the expected behavior
         assertNotNull(eventPayload, "Event payload should not be null");
         assertTrue(eventPayload.getEventTimeStamp() > 0, "Event timestamp should be greater than 0");
 
@@ -147,11 +135,9 @@ public class CAEPSessionEventPayloadBuilderTest {
         Map<String, Object> paramMap = new HashMap<>();
         when(mockEventData.getEventParams()).thenReturn(paramMap);
 
-        // Call the method to test
         CAEPSessionRevokedEventPayload eventPayload = (CAEPSessionRevokedEventPayload)
                 caepSessionEventPayloadBuilder.buildSessionTerminateEvent(mockEventData);
 
-        // Add assertions to verify the expected behavior
         assertNotNull(eventPayload, "Event payload should not be null");
         assertEquals("User logout", eventPayload.getReasonAdmin().get("en"));
         assertEquals("User Logged out", eventPayload.getReasonUser().get("en"));
@@ -181,9 +167,20 @@ public class CAEPSessionEventPayloadBuilderTest {
     @Test
     public void testBuildSessionUpdateEvent() throws IdentityEventException {
 
-        EventPayload eventPayload = caepSessionEventPayloadBuilder.buildSessionUpdateEvent(mockEventData);
+        long systemTime = System.currentTimeMillis();
+        SessionContext mockSessionContext = mock(SessionContext.class);
+        when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
+        when(mockEventData.getAuthenticatedUser()).thenReturn(mockAuthenticatedUser);
+        when(mockSessionContext.getProperty("UpdatedTimestamp")).thenReturn(systemTime);
+        when(mockEventData.getSessionContext()).thenReturn(mockSessionContext);
 
-        assertNull(eventPayload, "Event payload should be null");
+        CAEPSessionEstablishedAndPresentedEventPayload eventPayload =
+                (CAEPSessionEstablishedAndPresentedEventPayload) caepSessionEventPayloadBuilder
+                        .buildSessionUpdateEvent(mockEventData);
+
+        assertNotNull(eventPayload, "Event payload should not be null");
+        assertEquals(eventPayload.getEventTimeStamp(), systemTime, "Event timestamp should match");
+
     }
 
     @Test

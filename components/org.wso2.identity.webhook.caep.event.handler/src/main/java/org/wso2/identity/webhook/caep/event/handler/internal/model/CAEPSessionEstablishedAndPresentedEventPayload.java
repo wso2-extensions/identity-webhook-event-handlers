@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class represents the payload for session established and session presented events in CAEP.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEventPayload {
 
@@ -75,6 +78,9 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
         return ips;
     }
 
+    /*
+     * Builder class to create CAEPSessionEstablishedAndPresentedEventPayload instances.
+     */
     public static class Builder {
 
         private long eventTimeStamp;

@@ -30,7 +30,9 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigM
 
 import static org.testng.Assert.assertEquals;
 
-
+/**
+ * Unit test class for CredentialEventHookHandler.
+ */
 public class CredentialEventHookHandlerTest {
 
     @Mock
@@ -46,15 +48,16 @@ public class CredentialEventHookHandlerTest {
 
     @BeforeClass
     public void setUp() {
+
         MockitoAnnotations.openMocks(this);
         credentialEventHookHandler = new CredentialEventHookHandler(eventConfigManager);
     }
 
     @Test
     public void testGetName() {
+
         String name = credentialEventHookHandler.getName();
         assertEquals(name, Constants.CREDENTIAL_EVENT_HOOK_NAME);
     }
-
 
 }

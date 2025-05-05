@@ -23,10 +23,6 @@ package org.wso2.identity.webhook.common.event.handler.internal.constant;
  */
 public class Constants {
 
-    public static final String WSO2_EVENT_SCHEMA = "WSO2";
-    public static final String CAEP_EVENT_SCHEMA = "CAEP";
-    public static final String RISC_EVENT_SCHEMA = "RISC";
-
     public static final String LOGIN_EVENT_HOOK_NAME = "LoginEventHook";
     public static final String EVENT_SCHEMA_EVENTS_KEY = "events";
     public static final String LOGIN_EVENT_HOOK_ENABLED = "LoginEventHook.enable";

@@ -76,6 +76,13 @@ public class EventHookHandlerUtils {
 
     }
 
+    /**
+     * Extracts the authenticated user from the event data.
+     *
+     * @param eventData Event data.
+     * @return Authenticated user.
+     * @throws IdentityEventException If an error occurs while extracting the authenticated user.
+     */
     private static AuthenticatedUser extractAuthenticatedUser(EventData eventData) throws IdentityEventException {
 
         AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
@@ -90,6 +97,13 @@ public class EventHookHandlerUtils {
         }
     }
 
+    /**
+     * Extracts the session ID from the event data.
+     *
+     * @param eventData Event data.
+     * @return Session ID.
+     * @throws IdentityEventException If an error occurs while extracting the session ID.
+     */
     private static String extractSessionId(EventData eventData)
             throws IdentityEventException {
 
@@ -102,6 +116,13 @@ public class EventHookHandlerUtils {
         return null;
     }
 
+    /**
+     * Extracts the subject from the event data.
+     *
+     * @param eventData Event data.
+     * @return Subject.
+     * @throws IdentityEventException If an error occurs while extracting the subject.
+     */
     public static Subject extractSubjectFromEventData(EventData eventData) throws IdentityEventException {
 
         AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);

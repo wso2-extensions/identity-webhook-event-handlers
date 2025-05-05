@@ -33,6 +33,9 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigM
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
+/**
+ * This class handles credential events and builds the event payload.
+ */
 public class CredentialEventHookHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(CredentialEventHookHandler.class);

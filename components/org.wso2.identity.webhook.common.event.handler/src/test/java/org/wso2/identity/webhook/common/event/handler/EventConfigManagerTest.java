@@ -32,6 +32,9 @@ import static org.testng.Assert.assertTrue;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedServiceURLBuilder;
 
+/**
+ * Unit test class for EventConfigManager.
+ */
 public class EventConfigManagerTest {
 
     private static MockedStatic<Files> mockedFiles;

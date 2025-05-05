@@ -88,7 +88,6 @@ public class PayloadBuilderFactoryTest {
                 () -> PayloadBuilderFactory.getLoginEventPayloadBuilder(EventSchema.RISC));
     }
 
-
     @Test
     public void testGetSessionEventPayloadBuilderReturnsRegisteredBuilder() {
 

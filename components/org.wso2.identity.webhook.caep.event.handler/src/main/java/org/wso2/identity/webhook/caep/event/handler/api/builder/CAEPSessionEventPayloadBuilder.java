@@ -24,7 +24,6 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.webhook.caep.event.handler.internal.constants.Constants;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedAndPresentedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
@@ -35,14 +34,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class is responsible for building CAEP session event payloads.
+ */
 public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilder {
 
     private static final Log log = LogFactory.getLog(CAEPSessionEventPayloadBuilder.class);
 
+    static final String IS_INITIAL_LOGIN = "isInitialLogin";
+    static final String CREATED_TIMESTAMP = "CreatedTimestamp";
+    static final String UPDATED_TIMESTAMP = "UpdatedTimestamp";
+    static final String EVENT_TIMESTAMP = "eventTimestamp";
+
     private long extractEventTimeStamp(Map<String, Object> params) {
 
-        return params.containsKey(Constants.CAEPMapParams.EVENT_TIME_STAMP) ?
-                Long.parseLong(params.get(Constants.CAEPMapParams.EVENT_TIME_STAMP).toString()) :
+        return params.containsKey(EVENT_TIMESTAMP) ?
+                Long.parseLong(params.get(EVENT_TIMESTAMP).toString()) :
                 System.currentTimeMillis();
 
     }
@@ -61,7 +68,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         }
 
         try {
-            // If logout
             if (eventData.getAuthenticationContext().isLogoutRequest()) {
                 initiatingEntity = "user";
                 reasonAdmin = new HashMap<>();
@@ -95,8 +101,8 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         SessionContext sessionContext = eventData.getSessionContext();
         final Map<String, Object> params = eventData.getEventParams();
         Long eventTimeStamp = null;
-        if (sessionContext != null && sessionContext.getProperty("CreatedTimestamp") != null) {
-            eventTimeStamp = Long.parseLong(sessionContext.getProperty("CreatedTimestamp").toString());
+        if (sessionContext != null && sessionContext.getProperty(CREATED_TIMESTAMP) != null) {
+            eventTimeStamp = Long.parseLong(sessionContext.getProperty(CREATED_TIMESTAMP).toString());
         }
 
         if (eventTimeStamp == null) {
@@ -110,8 +116,8 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         AuthenticationContext context = eventData.getAuthenticationContext();
         if (context != null) {
             // If Initial Login
-            if (context.getParameter("isInitialLogin") != null
-                    && context.getParameter("isInitialLogin").toString().equalsIgnoreCase("true")) {
+            if (context.getParameter(IS_INITIAL_LOGIN) != null &&
+                    context.getParameter(IS_INITIAL_LOGIN).toString().equalsIgnoreCase("true")) {
                 reasonAdmin = new HashMap<>();
                 reasonAdmin.put("en", "Initial Login");
                 reasonUser = new HashMap<>();
@@ -156,11 +162,12 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
      */
     @Override
     public EventPayload buildSessionUpdateEvent(EventData eventData) throws IdentityEventException {
+
         final Map<String, Object> params = eventData.getEventParams();
         SessionContext sessionContext = eventData.getSessionContext();
         Long eventTimeStamp = null;
-        if (sessionContext != null && sessionContext.getProperty("CreatedTimestamp") != null) {
-            eventTimeStamp = Long.parseLong(sessionContext.getProperty("CreatedTimestamp").toString());
+        if (sessionContext != null && sessionContext.getProperty(UPDATED_TIMESTAMP) != null) {
+            eventTimeStamp = Long.parseLong(sessionContext.getProperty(UPDATED_TIMESTAMP).toString());
         }
 
         if (eventTimeStamp == null) {
@@ -169,8 +176,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         String initiatingEntity = null;
         Map<String, String> reasonAdmin = null;
         Map<String, String> reasonUser = null;
-
-
 
         // TODO: Add AMR list Support
         List<String> amr = null;
