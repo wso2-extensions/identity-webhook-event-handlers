@@ -46,6 +46,8 @@ public class Constants {
     public static final String CREDENTIAL_EVENT_HOOK_NAME = "CredentialEventHook";
     public static final String CREDENTIAL_EVENT_HOOK_ENABLED = "CredentialEventHook.enable";
 
+    public static final String SESSION_ID = "sessionId";
+
     /**
      * Constants for event config names (keys).
      * These names will be equal to the config attribute keys stored in the core config store.

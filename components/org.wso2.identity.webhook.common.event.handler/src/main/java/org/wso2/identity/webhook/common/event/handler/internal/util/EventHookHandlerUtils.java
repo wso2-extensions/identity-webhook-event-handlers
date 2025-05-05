@@ -72,6 +72,7 @@ public class EventHookHandlerUtils {
 
     private static final Log log = LogFactory.getLog(EventHookHandlerUtils.class);
 
+
     private EventHookHandlerUtils() {
 
     }
@@ -107,9 +108,9 @@ public class EventHookHandlerUtils {
     private static String extractSessionId(EventData eventData)
             throws IdentityEventException {
 
-        if (eventData.getEventParams().containsKey("sessionId") &&
-                eventData.getEventParams().get("sessionId") != null) {
-            return eventData.getEventParams().get("sessionId").toString();
+        if (eventData.getEventParams().containsKey(Constants.SESSION_ID) &&
+                eventData.getEventParams().get(Constants.SESSION_ID) != null) {
+            return eventData.getEventParams().get(Constants.SESSION_ID).toString();
         } else if (eventData.getAuthenticationContext() != null) {
             return eventData.getAuthenticationContext().getSessionIdentifier();
         }
