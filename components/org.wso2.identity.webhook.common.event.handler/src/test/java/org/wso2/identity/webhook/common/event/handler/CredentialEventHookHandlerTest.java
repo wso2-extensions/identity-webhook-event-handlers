@@ -59,5 +59,4 @@ public class CredentialEventHookHandlerTest {
         String name = credentialEventHookHandler.getName();
         assertEquals(name, Constants.CREDENTIAL_EVENT_HOOK_NAME);
     }
-
 }

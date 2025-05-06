@@ -249,7 +249,5 @@ public class EventHookHandlerUtilsTest {
                 assertEquals(simpleSubject.getProperty("id"), "session-id-123", "Session ID should match");
             }
         });
-
     }
-
 }

@@ -163,5 +163,4 @@ public class CAEPEventPayloadModelTest {
         assertEquals(payload.getX509Serial(), x509Serial);
         assertEquals(payload.getFidoAaguid(), fidoAaguid);
     }
-
 }
