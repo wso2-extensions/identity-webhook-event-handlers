@@ -21,14 +21,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
-import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.AuthenticationFailedReason;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationFailedEventPayload;
@@ -37,7 +35,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Applic
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
-import org.wso2.identity.webhook.wso2.event.handler.internal.util.PayloadUtils;
+import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,8 +59,8 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         }
 
         User user = new User();
-        PayloadUtils.populateUserClaims(user, authenticatedUser);
-        PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
+        WSO2PayloadUtils.populateUserClaims(user, authenticatedUser);
+        WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
 
         Organization tenant = new Organization(
                 String.valueOf(IdentityTenantUtil.getTenantId(authenticationContext.getTenantDomain())),
@@ -73,7 +71,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         }
         Organization b2bUserResidentOrganization = null;
         if (authenticatedUser.getUserResidentOrganization() != null) {
-            b2bUserResidentOrganization = PayloadUtils.getUserResidentOrganization(
+            b2bUserResidentOrganization = WSO2PayloadUtils.getUserResidentOrganization(
                     authenticatedUser.getUserResidentOrganization());
         }
         Application application = new Application(
@@ -102,7 +100,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
             if (authenticatedUser.getUserStoreDomain() != null) {
                 userStore = new UserStore(authenticatedUser.getUserStoreDomain());
             }
-            PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
+            WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
         }
 
         Organization tenant = new Organization(

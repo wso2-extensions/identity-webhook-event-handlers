@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
@@ -5,14 +23,10 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organi
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
 
     private String sessionId;
     private String currentAcr;
-    private List<String> authenticationMethods = new ArrayList<>();
 
     public String getSessionId() {
 
@@ -24,10 +38,6 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         return currentAcr;
     }
 
-    public List<String> getAuthenticationMethods() {
-
-        return authenticationMethods;
-    }
 
     private WSO2SessionCreatedEventPayload(Builder builder) {
 
@@ -38,7 +48,6 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         this.application = builder.application;
         this.sessionId = builder.sessionId;
         this.currentAcr = builder.currentAcr;
-        this.authenticationMethods = builder.authenticationMethods;
     }
 
     private WSO2SessionCreatedEventPayload() {
@@ -54,7 +63,6 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         private Organization userResidentOrganization;
         private UserStore userStore;
         private Application application;
-        private List<String> authenticationMethods = new ArrayList<>();
 
         public Builder sessionId(String sessionId) {
 
@@ -95,12 +103,6 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         public Builder application(Application application) {
 
             this.application = application;
-            return this;
-        }
-
-        public Builder authenticationMethods(List<String> authenticationMethods) {
-
-            this.authenticationMethods = authenticationMethods;
             return this;
         }
 

@@ -37,9 +37,9 @@ import java.util.Map;
 
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 
-public class PayloadUtils {
+public class WSO2PayloadUtils {
 
-    private static final Log log = LogFactory.getLog(PayloadUtils.class);
+    private static final Log log = LogFactory.getLog(WSO2PayloadUtils.class);
 
     public static Organization getUserResidentOrganization(String organizationId) {
 
