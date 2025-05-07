@@ -69,7 +69,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 //        String initiatorType = String.valueOf(properties.get(IdentityEventConstants.EventProperty.INITIATOR_TYPE));
 
         return new WSO2UserGroupUpdateEventPayload.Builder()
-                .initiatorType("")
+                .initiatorType(initiatorType)
                 .group(group)
                 .organization(organization)
                 .userStore(userStore)
