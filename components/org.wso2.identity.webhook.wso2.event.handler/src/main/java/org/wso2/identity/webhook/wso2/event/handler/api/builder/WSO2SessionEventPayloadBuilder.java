@@ -55,6 +55,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
 
         List<Application> applications = new ArrayList<>();
 
+        // TODO: Get from Session Context
         Application application = new Application(
                 authenticationContext.getServiceProviderResourceId(),
                 authenticationContext.getServiceProviderName());

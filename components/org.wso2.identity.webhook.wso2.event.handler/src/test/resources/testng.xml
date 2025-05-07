@@ -20,6 +20,7 @@
     <test name="wso2-login-event-payload-builder-tests" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.identity.webhook.wso2.event.handler.builder.WSO2LoginEventPayloadBuilderTest"/>
+            <class name="org.wso2.identity.webhook.wso2.event.handler.builder.WSO2SessionEventPayloadBuilderTest"/>
         </classes>
     </test>
 </suite>
