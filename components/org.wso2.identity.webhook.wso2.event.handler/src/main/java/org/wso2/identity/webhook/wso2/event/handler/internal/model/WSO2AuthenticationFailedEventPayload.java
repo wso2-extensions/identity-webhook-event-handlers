@@ -35,7 +35,7 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
 
         this.user = builder.user;
         this.tenant = builder.tenant;
-        this.userResidentOrganization = builder.userResidentOrganization;
+        this.organization = builder.organization;
         this.userStore = builder.userStore;
         this.application = builder.application;
         this.reason = builder.reason;
@@ -59,7 +59,7 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
 
         private User user;
         private Organization tenant;
-        private Organization userResidentOrganization;
+        private Organization organization;
         private UserStore userStore;
         private Application application;
         private AuthenticationFailedReason reason;
@@ -77,9 +77,9 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public Builder userResidentOrganization(Organization userResidentOrganization) {
+        public Builder organization(Organization organization) {
 
-            this.userResidentOrganization = userResidentOrganization;
+            this.organization = organization;
             return this;
         }
 
