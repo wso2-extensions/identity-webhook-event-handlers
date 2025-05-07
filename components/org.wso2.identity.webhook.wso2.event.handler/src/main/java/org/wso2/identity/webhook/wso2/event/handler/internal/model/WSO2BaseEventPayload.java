@@ -31,7 +31,7 @@ public abstract class WSO2BaseEventPayload extends EventPayload {
 
     protected User user;
     protected Organization tenant;
-    protected Organization userResidentOrganization;
+    protected Organization organization;
     protected UserStore userStore;
     protected Application application;
 
@@ -55,8 +55,8 @@ public abstract class WSO2BaseEventPayload extends EventPayload {
         return application;
     }
 
-    public Organization getUserResidentOrganization() {
+    public Organization getOrganization() {
 
-        return userResidentOrganization;
+        return organization;
     }
 }

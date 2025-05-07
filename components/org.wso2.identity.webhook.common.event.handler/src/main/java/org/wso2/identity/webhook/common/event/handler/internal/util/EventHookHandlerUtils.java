@@ -87,6 +87,8 @@ public class EventHookHandlerUtils {
                     setLocalUserClaimsToAuthenticatedUser(authenticatedUser, context);
                 }
             }
+        } else {
+            params = properties;
         }
 
         return EventData.builder()
