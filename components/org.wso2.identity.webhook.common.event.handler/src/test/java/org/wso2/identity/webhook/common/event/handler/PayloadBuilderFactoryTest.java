@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
 
 import java.util.List;
@@ -37,15 +38,21 @@ import static org.testng.Assert.assertTrue;
  */
 public class PayloadBuilderFactoryTest {
 
-    private LoginEventPayloadBuilder mockBuilder;
+    private LoginEventPayloadBuilder mockLoginEventPayloadBuilder;
+    private UserOperationEventPayloadBuilder mockUserOperationEventPayloadBuilder;
 
     @BeforeClass
     public void setup() {
 
-        mockBuilder = Mockito.mock(LoginEventPayloadBuilder.class);
-        Mockito.when(mockBuilder.getEventSchemaType()).thenReturn("WSO2");
+        mockLoginEventPayloadBuilder = Mockito.mock(LoginEventPayloadBuilder.class);
+        mockUserOperationEventPayloadBuilder = Mockito.mock(UserOperationEventPayloadBuilder.class);
 
-        EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(mockBuilder);
+        Mockito.when(mockLoginEventPayloadBuilder.getEventSchemaType()).thenReturn("WSO2");
+        Mockito.when(mockUserOperationEventPayloadBuilder.getEventSchemaType()).thenReturn("WSO2");
+
+        EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(mockLoginEventPayloadBuilder);
+        EventHookHandlerDataHolder.getInstance()
+                .addUserOperationEventPayloadBuilder(mockUserOperationEventPayloadBuilder);
     }
 
     @Test
@@ -56,7 +63,18 @@ public class PayloadBuilderFactoryTest {
 
         assertNotNull(builders, "The list of builders should not be null.");
         assertFalse(builders.isEmpty(), "The list of builders should not be empty.");
-        assertTrue(builders.contains(mockBuilder), "The mock builder should be in the list.");
+        assertTrue(builders.contains(mockLoginEventPayloadBuilder), "The mock builder should be in the list.");
+    }
+
+    @Test
+    public void testAddUserOperationEventPayloadBuilder() {
+
+        List<UserOperationEventPayloadBuilder> builders =
+                EventHookHandlerDataHolder.getInstance().getUserOperationEventPayloadBuilders();
+
+        assertNotNull(builders, "The list of builders should not be null.");
+        assertFalse(builders.isEmpty(), "The list of builders should not be empty.");
+        assertTrue(builders.contains(mockUserOperationEventPayloadBuilder), "The mock builder should be in the list.");
     }
 
     @Test
@@ -68,9 +86,24 @@ public class PayloadBuilderFactoryTest {
     }
 
     @Test
+    public void testGetUserOperationEventPayloadBuilderReturnsRegisteredBuilder() {
+
+        UserOperationEventPayloadBuilder builder = PayloadBuilderFactory.getUserOperationEventPayloadBuilder("WSO2");
+        assertNotNull(builder, "The builder should not be null.");
+        assertEquals(builder.getEventSchemaType(), "WSO2", "The schema type should match 'WSO2'.");
+    }
+
+    @Test
     public void testGetLoginEventPayloadBuilderThrowsExceptionForUnknownSchema() {
 
         assertThrows(IllegalArgumentException.class,
                 () -> PayloadBuilderFactory.getLoginEventPayloadBuilder("UnknownSchema"));
+    }
+
+    @Test
+    public void testGetUserOperationEventPayloadBuilderThrowsExceptionForUnknownSchema() {
+
+        assertThrows(IllegalArgumentException.class,
+                () -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder("UnknownSchema"));
     }
 }

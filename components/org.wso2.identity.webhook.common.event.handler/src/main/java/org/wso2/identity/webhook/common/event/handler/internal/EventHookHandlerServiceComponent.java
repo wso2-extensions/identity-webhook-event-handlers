@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -37,7 +37,9 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.LoginEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.UserOperationEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtils;
 
@@ -58,6 +60,9 @@ public class EventHookHandlerServiceComponent {
             log.debug("Event Handler is activated.");
             String isLoginEventHandlerEnabled = getIdentityEventProperty(Constants.LOGIN_EVENT_HOOK_NAME,
                     Constants.LOGIN_EVENT_HOOK_ENABLED);
+            String isUserOperationEventHandlerEnabled =
+                    getIdentityEventProperty(Constants.USER_OPERATION_EVENT_HOOK_NAME,
+                            Constants.USER_OPERATION_EVENT_HOOK_ENABLED);
             BundleContext bundleContext = context.getBundleContext();
 
             if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled
@@ -65,8 +70,12 @@ public class EventHookHandlerServiceComponent {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
                         new LoginEventHookHandler(EventHookHandlerUtils.getInstance(),
                                 EventConfigManager.getInstance()), null);
-            } else {
-                log.error("Login Event Handler is not enabled.");
+            }
+            if (isUserOperationEventHandlerEnabled != null && isUserOperationEventHandlerEnabled
+                    .equalsIgnoreCase(Boolean.TRUE.toString())) {
+                bundleContext.registerService(AbstractEventHandler.class.getName(),
+                        new UserOperationEventHookHandler(EventHookHandlerUtils.getInstance(),
+                                EventConfigManager.getInstance()), null);
             }
         } catch (IdentityEventServerException e) {
             log.error("Error while activating event handler.", e);
@@ -98,6 +107,30 @@ public class EventHookHandlerServiceComponent {
         log.debug("Removing the Login Event Payload Builder Service : " +
                 loginEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().removeLoginEventPayloadBuilder(loginEventPayloadBuilder);
+    }
+
+    @Reference(
+            name = "user.operation.event.payload.builder",
+            service = UserOperationEventPayloadBuilder.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeUserOperationEventPayloadBuilder"
+    )
+    protected void addUserOperationEventPayloadBuilder(
+            UserOperationEventPayloadBuilder userOperationEventPayloadBuilder) {
+
+        log.debug("Adding the User Operation Event Payload Builder Service : " +
+                userOperationEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().addUserOperationEventPayloadBuilder(userOperationEventPayloadBuilder);
+    }
+
+    protected void removeUserOperationEventPayloadBuilder(
+            UserOperationEventPayloadBuilder userOperationEventPayloadBuilder) {
+
+        log.debug("Removing the User Operation Event Payload Builder Service : " +
+                userOperationEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance()
+                .removeUserOperationEventPayloadBuilder(userOperationEventPayloadBuilder);
     }
 
     @Reference(

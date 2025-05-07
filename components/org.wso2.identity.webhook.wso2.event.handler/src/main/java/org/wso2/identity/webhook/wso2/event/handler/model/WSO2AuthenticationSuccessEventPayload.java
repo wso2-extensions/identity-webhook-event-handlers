@@ -36,7 +36,7 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
     private WSO2AuthenticationSuccessEventPayload(Builder builder) {
         this.user = builder.user;
         this.tenant = builder.tenant;
-        this.userResidentOrganization = builder.userResidentOrganization;
+        this.organization = builder.userResidentOrganization;
         this.userStore = builder.userStore;
         this.application = builder.application;
         this.authenticationMethods = builder.authenticationMethods;

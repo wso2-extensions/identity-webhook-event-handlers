@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -29,7 +29,9 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.builder.WSO2LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.wso2.event.handler.builder.WSO2UserOperationEventPayloadBuilder;
 
 /**
  * WSO2 Event Handler service component class.
@@ -49,6 +51,8 @@ public class WSO2EventHookHandlerServiceComponent {
 
             context.getBundleContext().registerService(LoginEventPayloadBuilder.class.getName(),
                     new WSO2LoginEventPayloadBuilder(), null);
+            context.getBundleContext().registerService(UserOperationEventPayloadBuilder.class.getName(),
+                    new WSO2UserOperationEventPayloadBuilder(), null);
 
         } catch (Exception e) {
             log.error("Error while activating event handler.", e);

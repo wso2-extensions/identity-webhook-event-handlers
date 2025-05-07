@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -19,6 +19,7 @@
 package org.wso2.identity.webhook.common.event.handler;
 
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.EventHookHandlerDataHolder;
 
 import java.util.List;
@@ -41,6 +42,18 @@ public class PayloadBuilderFactory {
         for (LoginEventPayloadBuilder loginEventPayloadBuilder : loginEventPayloadBuilders) {
             if (loginEventPayloadBuilder.getEventSchemaType().equals(eventSchemaType)) {
                 return loginEventPayloadBuilder;
+            }
+        }
+        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType);
+    }
+
+    public static UserOperationEventPayloadBuilder getUserOperationEventPayloadBuilder(String eventSchemaType) {
+
+        List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders =
+                EventHookHandlerDataHolder.getInstance().getUserOperationEventPayloadBuilders();
+        for (UserOperationEventPayloadBuilder userOperationEventPayloadBuilder : userOperationEventPayloadBuilders) {
+            if (userOperationEventPayloadBuilder.getEventSchemaType().equals(eventSchemaType)) {
+                return userOperationEventPayloadBuilder;
             }
         }
         throw new IllegalArgumentException("Unknown schema: " + eventSchemaType);

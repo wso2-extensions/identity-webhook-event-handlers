@@ -30,7 +30,7 @@ import org.wso2.identity.webhook.wso2.event.handler.model.common.UserStore;
 public abstract class WSO2BaseEventPayload extends EventPayload {
     protected User user;
     protected Organization tenant;
-    protected Organization userResidentOrganization;
+    protected Organization organization;
     protected UserStore userStore;
     protected Application application;
 
@@ -50,7 +50,7 @@ public abstract class WSO2BaseEventPayload extends EventPayload {
         return application;
     }
 
-    public Organization getUserResidentOrganization() {
-        return userResidentOrganization;
+    public Organization getOrganization() {
+        return organization;
     }
 }

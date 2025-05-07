@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -21,6 +21,7 @@ package org.wso2.identity.webhook.common.event.handler.internal;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.builder.UserOperationEventPayloadBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +35,10 @@ public class EventHookHandlerDataHolder {
     private ConfigurationManager configurationManager;
     private EventPublisherService eventPublisherService;
     private List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
+    private List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
+
     }
 
     public static EventHookHandlerDataHolder getInstance() {
@@ -81,6 +84,38 @@ public class EventHookHandlerDataHolder {
     public void setLoginEventPayloadBuilders(List<LoginEventPayloadBuilder> loginEventPayloadBuilders) {
 
         this.loginEventPayloadBuilders = loginEventPayloadBuilders;
+    }
+
+    public List<UserOperationEventPayloadBuilder> getUserOperationEventPayloadBuilders() {
+
+        return userOperationEventPayloadBuilders;
+    }
+
+    public void setUserOperationEventPayloadBuilders(
+            List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders) {
+
+        this.userOperationEventPayloadBuilders = userOperationEventPayloadBuilders;
+    }
+
+    /**
+     * Add User operation event payload builder implementation.
+     *
+     * @param userOperationEventPayloadBuilder User operation event payload builder implementation.
+     */
+    public void addUserOperationEventPayloadBuilder(UserOperationEventPayloadBuilder userOperationEventPayloadBuilder) {
+
+        userOperationEventPayloadBuilders.add(userOperationEventPayloadBuilder);
+    }
+
+    /**
+     * Remove User operation event payload builder implementation.
+     *
+     * @param userOperationEventPayloadBuilder User operation event payload builder implementation.
+     */
+    public void removeUserOperationEventPayloadBuilder(
+            UserOperationEventPayloadBuilder userOperationEventPayloadBuilder) {
+
+        userOperationEventPayloadBuilders.remove(userOperationEventPayloadBuilder);
     }
 
     /**
