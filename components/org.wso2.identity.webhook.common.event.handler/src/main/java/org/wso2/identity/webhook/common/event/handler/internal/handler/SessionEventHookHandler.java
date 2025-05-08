@@ -82,7 +82,8 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
             if (sessionEventPublisherConfig.isPublishEnabled()) {
                 String eventUri = eventConfigManager.getEventUri(
-                        EventHookHandlerUtils.resolveEventHandlerKey(schema, event.getEventName()));
+                        EventHookHandlerUtils.resolveEventHandlerKey(schema,
+                                IdentityEventConstants.EventName.valueOf(event.getEventName())));
                 switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
                     case SESSION_TERMINATE:
                         eventPayload = payloadBuilder.buildSessionTerminateEvent(eventData);

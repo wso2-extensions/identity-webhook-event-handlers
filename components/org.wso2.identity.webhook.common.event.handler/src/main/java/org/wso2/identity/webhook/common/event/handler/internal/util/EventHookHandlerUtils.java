@@ -39,6 +39,7 @@ import org.wso2.carbon.identity.configuration.mgt.core.search.constant.Condition
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.model.EventContext;
@@ -378,28 +379,28 @@ public class EventHookHandlerUtils {
      * @param eventName   Event name.
      * @return Event URI.
      */
-    public static String resolveEventHandlerKey(EventSchema eventSchema, String eventName) {
+    public static String resolveEventHandlerKey(EventSchema eventSchema, IdentityEventConstants.EventName eventName) {
 
         switch (eventSchema) {
             case WSO2:
                 switch (eventName) {
-                    case "AUTHENTICATION_SUCCESS":
+                    case AUTHENTICATION_SUCCESS:
                         return Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT;
-                    case "AUTHENTICATION_STEP_FAILURE":
+                    case AUTHENTICATION_STEP_FAILURE:
                         return Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT;
                 }
                 break;
             case CAEP:
                 switch (eventName) {
-                    case "SESSION_TERMINATE":
-                    case "SESSION_EXPIRE":
+                    case SESSION_TERMINATE:
+                    case SESSION_EXPIRE:
                         return Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT;
-                    case "SESSION_CREATE":
+                    case SESSION_CREATE:
                         return Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT;
-                    case "SESSION_EXTEND":
-                    case "SESSION_UPDATE":
+                    case SESSION_EXTEND:
+                    case SESSION_UPDATE:
                         return Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT;
-                    case "VERIFICATION":
+                    case VERIFICATION:
                         return Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT;
                 }
         }

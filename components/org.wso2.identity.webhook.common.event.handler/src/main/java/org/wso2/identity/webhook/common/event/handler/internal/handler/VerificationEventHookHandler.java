@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
+import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
@@ -96,7 +97,7 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
                 eventPayload = payloadBuilder.buildVerificationEventPayload(eventData);
                 Subject subject = EventHookHandlerUtils.buildVerificationSubject(eventData);
                 String eventUri = eventConfigManager.getEventUri(EventHookHandlerUtils.
-                        resolveEventHandlerKey(eventSchema, "VERIFICATION"));
+                        resolveEventHandlerKey(eventSchema, IdentityEventConstants.EventName.valueOf("VERIFICATION")));
 
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
                         buildSecurityEventToken(eventPayload, eventUri, subject);

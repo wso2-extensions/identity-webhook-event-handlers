@@ -102,7 +102,8 @@ public class LoginEventHookHandler extends AbstractEventHandler {
             String eventUri;
             if (loginEventPublisherConfig.isPublishEnabled()) {
                 eventUri = eventConfigManager.getEventUri(
-                        EventHookHandlerUtils.resolveEventHandlerKey(schema, event.getEventName()));
+                        EventHookHandlerUtils.resolveEventHandlerKey(schema,
+                                IdentityEventConstants.EventName.valueOf(event.getEventName())));
                 switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
                     case AUTHENTICATION_SUCCESS:
                         eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
