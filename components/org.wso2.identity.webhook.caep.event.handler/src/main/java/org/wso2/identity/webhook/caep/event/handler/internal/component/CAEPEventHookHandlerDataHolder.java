@@ -26,7 +26,6 @@ import org.wso2.carbon.identity.organization.management.service.OrganizationMana
 public class CAEPEventHookHandlerDataHolder {
 
     private static CAEPEventHookHandlerDataHolder instance = new CAEPEventHookHandlerDataHolder();
-    private OrganizationManager organizationManager;
 
     private CAEPEventHookHandlerDataHolder() {
 

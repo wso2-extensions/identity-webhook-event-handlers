@@ -51,7 +51,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         return params.containsKey(EVENT_TIMESTAMP) ?
                 Long.parseLong(params.get(EVENT_TIMESTAMP).toString()) :
                 System.currentTimeMillis();
-
     }
 
     @Override

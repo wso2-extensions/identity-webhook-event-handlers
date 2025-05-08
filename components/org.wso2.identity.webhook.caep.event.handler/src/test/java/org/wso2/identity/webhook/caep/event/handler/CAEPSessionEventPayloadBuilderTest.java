@@ -118,7 +118,6 @@ public class CAEPSessionEventPayloadBuilderTest {
 
         assertNotNull(eventPayload, "Event payload should not be null");
         assertTrue(eventPayload.getEventTimeStamp() > 0, "Event timestamp should be greater than 0");
-
     }
 
     @Test
@@ -140,7 +139,6 @@ public class CAEPSessionEventPayloadBuilderTest {
         assertTrue(eventPayload.getEventTimeStamp() > 0, "Event timestamp should be greater than 0");
 
         mockAuthenticationContext.setLogoutRequest(false);
-
     }
 
     @Test

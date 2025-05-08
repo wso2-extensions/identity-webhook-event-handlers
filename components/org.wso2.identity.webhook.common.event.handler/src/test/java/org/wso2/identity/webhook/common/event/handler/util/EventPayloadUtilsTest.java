@@ -72,5 +72,4 @@ public class EventPayloadUtilsTest {
         EventPayloadUtils.constructFullURLWithEndpoint(null);
         closeMockedServiceURLBuilder();
     }
-
 }
