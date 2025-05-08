@@ -106,6 +106,5 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
         } catch (IdentityEventException e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }
-
     }
 }

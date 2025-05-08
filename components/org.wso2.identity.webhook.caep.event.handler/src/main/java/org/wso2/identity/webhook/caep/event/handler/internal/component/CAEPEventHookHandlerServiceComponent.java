@@ -54,5 +54,4 @@ public class CAEPEventHookHandlerServiceComponent {
 
         log.debug("WSO2 CAEP Event Handler is deactivated.");
     }
-
 }

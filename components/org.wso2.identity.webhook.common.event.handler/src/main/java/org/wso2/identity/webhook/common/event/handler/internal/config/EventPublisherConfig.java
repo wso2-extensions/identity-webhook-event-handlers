@@ -68,5 +68,4 @@ public class EventPublisherConfig {
 
         this.properties = properties;
     }
-
 }
