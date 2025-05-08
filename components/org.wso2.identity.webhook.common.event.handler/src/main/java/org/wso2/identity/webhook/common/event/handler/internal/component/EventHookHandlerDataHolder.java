@@ -21,6 +21,7 @@ package org.wso2.identity.webhook.common.event.handler.internal.component;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ public class EventHookHandlerDataHolder {
     private ConfigurationManager configurationManager;
     private EventPublisherService eventPublisherService;
     private List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
+    private List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
 
@@ -52,16 +54,6 @@ public class EventHookHandlerDataHolder {
     public List<LoginEventPayloadBuilder> getLoginEventPayloadBuilders() {
 
         return loginEventPayloadBuilders;
-    }
-
-    /**
-     * Set a list of login event payload builders.
-     *
-     * @param loginEventPayloadBuilders List of login event payload builders.
-     */
-    public void setLoginEventPayloadBuilders(List<LoginEventPayloadBuilder> loginEventPayloadBuilders) {
-
-        this.loginEventPayloadBuilders = loginEventPayloadBuilders;
     }
 
     /**
@@ -85,13 +77,45 @@ public class EventHookHandlerDataHolder {
     }
 
     /**
-     * Get the configuration manager.
+     * Set a list of login event payload builders.
      *
-     * @return Configuration manager.
+     * @param loginEventPayloadBuilders List of login event payload builders.
      */
-    public ConfigurationManager getConfigurationManager() {
+    public void setLoginEventPayloadBuilders(List<LoginEventPayloadBuilder> loginEventPayloadBuilders) {
 
-        return configurationManager;
+        this.loginEventPayloadBuilders = loginEventPayloadBuilders;
+    }
+
+    public List<UserOperationEventPayloadBuilder> getUserOperationEventPayloadBuilders() {
+
+        return userOperationEventPayloadBuilders;
+    }
+
+    public void setUserOperationEventPayloadBuilders(
+            List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders) {
+
+        this.userOperationEventPayloadBuilders = userOperationEventPayloadBuilders;
+    }
+
+    /**
+     * Add User operation event payload builder implementation.
+     *
+     * @param userOperationEventPayloadBuilder User operation event payload builder implementation.
+     */
+    public void addUserOperationEventPayloadBuilder(UserOperationEventPayloadBuilder userOperationEventPayloadBuilder) {
+
+        userOperationEventPayloadBuilders.add(userOperationEventPayloadBuilder);
+    }
+
+    /**
+     * Remove User operation event payload builder implementation.
+     *
+     * @param userOperationEventPayloadBuilder User operation event payload builder implementation.
+     */
+    public void removeUserOperationEventPayloadBuilder(
+            UserOperationEventPayloadBuilder userOperationEventPayloadBuilder) {
+
+        userOperationEventPayloadBuilders.remove(userOperationEventPayloadBuilder);
     }
 
     /**
@@ -102,6 +126,16 @@ public class EventHookHandlerDataHolder {
     public void setConfigurationManager(ConfigurationManager configurationManager) {
 
         this.configurationManager = configurationManager;
+    }
+
+    /**
+     * Get the configuration manager.
+     *
+     * @return Configuration manager.
+     */
+    public ConfigurationManager getConfigurationManager() {
+
+        return configurationManager;
     }
 
     /**
