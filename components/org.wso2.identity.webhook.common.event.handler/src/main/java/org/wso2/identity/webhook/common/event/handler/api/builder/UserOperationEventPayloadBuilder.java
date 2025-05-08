@@ -36,4 +36,3 @@ public interface UserOperationEventPayloadBuilder {
      */
     String getEventSchemaType();
 }
-
