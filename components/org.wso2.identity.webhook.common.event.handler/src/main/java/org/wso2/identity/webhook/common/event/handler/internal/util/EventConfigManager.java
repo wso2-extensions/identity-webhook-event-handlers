@@ -136,10 +136,25 @@ public class EventConfigManager {
 
     private boolean isMatchingEventPublisherConfig(Attribute attribute, String eventName) {
 
-        return (Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT.equals(attribute.getKey()) &&
-                eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name())) ||
-                (Constants.EventHandlerKey.LOGIN_FAILED_EVENT.equals(attribute.getKey()) &&
-                        eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()));
+        if ((Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT.equals(attribute.getKey()))
+                && (eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name()))) {
+            return true;
+        }
+        if ((Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT.equals(attribute.getKey()))
+                && (eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()))) {
+            return true;
+        }
+        if (Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT.equals(attribute.getKey())) {
+            return eventName.equals(IdentityEventConstants.EventName.SESSION_TERMINATE.name());
+        }
+        if (Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT.equals(attribute.getKey())) {
+            return (eventName.equals(IdentityEventConstants.EventName.SESSION_CREATE.name()));
+        }
+        if (Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT.equals(attribute.getKey())) {
+            return (eventName.equals(IdentityEventConstants.EventName.SESSION_UPDATE.name())
+                    || eventName.equals(IdentityEventConstants.EventName.SESSION_EXTEND.name()));
+        }
+        return false;
     }
 
     private EventPublisherConfig buildEventPublisherConfigFromJSONString(String jsonString)

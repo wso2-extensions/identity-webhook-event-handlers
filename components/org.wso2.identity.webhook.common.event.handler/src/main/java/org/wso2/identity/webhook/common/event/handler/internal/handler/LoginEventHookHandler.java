@@ -18,16 +18,9 @@
 
 package org.wso2.identity.webhook.common.event.handler.internal.handler;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
-import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
-import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
-import org.wso2.carbon.identity.configuration.mgt.core.search.ComplexCondition;
-import org.wso2.carbon.identity.configuration.mgt.core.search.Condition;
-import org.wso2.carbon.identity.configuration.mgt.core.search.PrimitiveCondition;
-import org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -37,19 +30,13 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType.PrimitiveOperator.EQUALS;
-import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.WSO2_EVENT_SCHEMA;
 
 /**
  * Login Event Hook Handler.
@@ -102,12 +89,14 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         }
 
         //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
+        EventSchema schema = EventSchema.WSO2;
         LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                .getLoginEventPayloadBuilder(WSO2_EVENT_SCHEMA);
+                .getLoginEventPayloadBuilder(schema);
         EventPublisherConfig loginEventPublisherConfig = null;
         try {
-            loginEventPublisherConfig = getLoginEventPublisherConfigForTenant(
-                    eventData.getAuthenticationContext().getLoginTenantDomain(), event.getEventName());
+            loginEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
+                    eventData.getAuthenticationContext().getLoginTenantDomain(),
+                    event.getEventName(), eventConfigManager);
 
             EventPayload eventPayload;
             String eventUri;
@@ -115,7 +104,8 @@ public class LoginEventHookHandler extends AbstractEventHandler {
             if (IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name().equals(event.getEventName()) &&
                     loginEventPublisherConfig.isPublishEnabled()) {
                 eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
-                eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.LOGIN_SUCCESS_EVENT);
+                eventUri = eventConfigManager.getEventUri(EventHookHandlerUtils
+                        .resolveEventHandlerKey(schema, IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS));
                 String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                         .buildSecurityEventToken(eventPayload, eventUri);
@@ -124,7 +114,8 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                     .equals(event.getEventName()) &&
                     loginEventPublisherConfig.isPublishEnabled()) {
                 eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
-                eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.LOGIN_FAILED_EVENT);
+                eventUri = eventConfigManager.getEventUri(EventHookHandlerUtils.
+                        resolveEventHandlerKey(schema, IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE));
                 String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                         .buildSecurityEventToken(eventPayload, eventUri);
@@ -133,32 +124,5 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         } catch (IdentityEventException e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }
-    }
-
-    private EventPublisherConfig getLoginEventPublisherConfigForTenant(String tenantDomain, String eventName)
-            throws IdentityEventException {
-
-        if (StringUtils.isEmpty(tenantDomain)) {
-            throw new IdentityEventException("Invalid tenant domain: " + tenantDomain);
-        }
-
-        try {
-            Condition condition = createPublisherConfigFilterCondition();
-            Resources publisherConfigResource = EventHookHandlerDataHolder.getInstance().getConfigurationManager()
-                    .getTenantResources(tenantDomain, condition);
-            return eventConfigManager.extractEventPublisherConfig(publisherConfigResource, eventName);
-        } catch (ConfigurationManagementException e) {
-            throw new IdentityEventException("Error while retrieving event publisher configuration for tenant.", e);
-        }
-    }
-
-    private ComplexCondition createPublisherConfigFilterCondition() {
-
-        List<Condition> conditionList = new ArrayList<>();
-        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS,
-                Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
-        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS,
-                Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_NAME));
-        return new ComplexCondition(ConditionType.ComplexOperator.AND, conditionList);
     }
 }
