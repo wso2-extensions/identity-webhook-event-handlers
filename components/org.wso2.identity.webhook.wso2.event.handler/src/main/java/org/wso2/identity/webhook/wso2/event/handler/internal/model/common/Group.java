@@ -28,7 +28,6 @@ public class Group {
     private List<User> removedUsers;
     private String ref;
 
-    // Getters and setters
     public String getId() {
 
         return id;
