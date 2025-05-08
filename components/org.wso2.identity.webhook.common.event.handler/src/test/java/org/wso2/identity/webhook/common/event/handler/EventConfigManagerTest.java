@@ -21,6 +21,7 @@ package org.wso2.identity.webhook.common.event.handler;
 import org.mockito.MockedStatic;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resource;
@@ -104,14 +105,37 @@ public class EventConfigManagerTest {
         eventConfigManager.getEventUri("invalidEvent");
     }
 
-    @Test
-    public void testExtractEventPublisherConfig() throws IdentityEventException {
+    @DataProvider(name = "publisherDataProvider")
+    public Object[][] publisherDataProvider() {
 
-        Resources resources = createResourcesWithAttributes(Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT,
+        return new Object[][]{
+                {Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT, IdentityEventConstants.EventName
+                        .AUTHENTICATION_SUCCESS.name(), true},
+                {Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT, IdentityEventConstants.EventName
+                        .AUTHENTICATION_FAILURE.name(), true},
+                {Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT, "VERIFICATION", true},
+                {Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT, IdentityEventConstants.EventName
+                        .SESSION_CREATE.name(), true},
+                {Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT, IdentityEventConstants.EventName
+                        .SESSION_TERMINATE.name(), true},
+                {Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT, IdentityEventConstants.EventName
+                        .SESSION_EXPIRE.name(), false},
+                {Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT, IdentityEventConstants.EventName
+                        .SESSION_UPDATE.name(), true},
+                {Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT, IdentityEventConstants.EventName.
+                        SESSION_EXTEND.name(), true}
+
+        };
+    }
+
+    @Test(dataProvider = "publisherDataProvider")
+    public void testExtractEventPublisherConfig(String eventHandlerKey, String eventName,
+                                                boolean expectedPublishEnabled) throws IdentityEventException {
+
+        Resources resources = createResourcesWithAttributes(eventHandlerKey,
                 "{\"publishEnabled\":true}");
-        EventPublisherConfig config = eventConfigManager.extractEventPublisherConfig(resources,
-                IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name());
-        assertTrue(config.isPublishEnabled(), "Publish should be enabled.");
+        EventPublisherConfig config = eventConfigManager.extractEventPublisherConfig(resources, eventName);
+        assertEquals(config.isPublishEnabled(), expectedPublishEnabled,  "Publish should be enabled.");
     }
 
     @Test

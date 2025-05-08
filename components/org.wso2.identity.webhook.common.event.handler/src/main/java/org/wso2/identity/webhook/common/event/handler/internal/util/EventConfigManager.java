@@ -140,9 +140,9 @@ public class EventConfigManager {
                 && (eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name()))) {
             return true;
         }
-        if ((Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT.equals(attribute.getKey()))
-                && (eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()))) {
-            return true;
+        if ((Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT.equals(attribute.getKey()))) {
+            return ((eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()))) ||
+                    (eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_FAILURE.name()));
         }
         if (Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT.equals(attribute.getKey())) {
             return eventName.equals(IdentityEventConstants.EventName.SESSION_TERMINATE.name());
@@ -153,6 +153,9 @@ public class EventConfigManager {
         if (Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT.equals(attribute.getKey())) {
             return (eventName.equals(IdentityEventConstants.EventName.SESSION_UPDATE.name())
                     || eventName.equals(IdentityEventConstants.EventName.SESSION_EXTEND.name()));
+        }
+        if (Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT.equals(attribute.getKey())) {
+            return (eventName.equals("VERIFICATION"));
         }
         return false;
     }

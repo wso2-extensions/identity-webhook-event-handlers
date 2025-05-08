@@ -42,6 +42,7 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -249,5 +250,20 @@ public class EventHookHandlerUtilsTest {
                 assertEquals(simpleSubject.getProperty("id"), "session-id-123", "Session ID should match");
             }
         });
+    }
+
+    @Test
+    public void testBuildVerificationSubject() throws IdentityEventException {
+
+        EventData eventData = Mockito.mock(EventData.class);
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("streamId", "stream-id-123");
+        when(eventData.getEventParams()).thenReturn(Collections.unmodifiableMap(dataMap));
+
+        Subject subject = EventHookHandlerUtils.buildVerificationSubject(eventData);
+
+        assertNotNull(subject, "Subject should not be null");
+        assertTrue(subject instanceof SimpleSubject, "Subject should be of type SimpleSubject");
+        assertEquals(subject.getProperty("id"), "stream-id-123", "Stream ID should match");
     }
 }

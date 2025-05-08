@@ -51,7 +51,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         return params.containsKey(EVENT_TIMESTAMP) ?
                 Long.parseLong(params.get(EVENT_TIMESTAMP).toString()) :
                 System.currentTimeMillis();
-
     }
 
     @Override
@@ -114,7 +113,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
 
         AuthenticationContext context = eventData.getAuthenticationContext();
         if (context != null) {
-            // If Initial Login
             if (context.getParameter(IS_INITIAL_LOGIN) != null &&
                     context.getParameter(IS_INITIAL_LOGIN).toString().equalsIgnoreCase("true")) {
                 reasonAdmin = new HashMap<>();
@@ -137,8 +135,8 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         // TODO: Add ExtId
         String extId = null;
 
-        // TODO: Add Acr
-        String acr = context.getSelectedAcr();
+        String acr = eventData.getAuthenticationContext() != null ?
+                eventData.getAuthenticationContext().getSelectedAcr() : null;
 
         return new CAEPSessionEstablishedAndPresentedEventPayload.Builder()
                 .eventTimeStamp(eventTimeStamp)
@@ -188,7 +186,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         // TODO: Add ExtId
         String extId = null;
 
-        // TODO: Add Acr
         String acr = eventData.getAuthenticationContext() != null ?
                 eventData.getAuthenticationContext().getSelectedAcr() : null;
 

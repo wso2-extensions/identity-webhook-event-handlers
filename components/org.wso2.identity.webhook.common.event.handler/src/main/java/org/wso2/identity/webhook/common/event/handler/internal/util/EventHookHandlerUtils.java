@@ -39,7 +39,6 @@ import org.wso2.carbon.identity.configuration.mgt.core.search.constant.Condition
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
-import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.model.EventContext;
@@ -71,7 +70,6 @@ import static org.wso2.carbon.identity.configuration.mgt.core.search.constant.Co
 public class EventHookHandlerUtils {
 
     private static final Log log = LogFactory.getLog(EventHookHandlerUtils.class);
-
 
     private EventHookHandlerUtils() {
 
@@ -143,6 +141,18 @@ public class EventHookHandlerUtils {
                 .user(user)
                 .session(session)
                 .build();
+    }
+
+    public static Subject buildVerificationSubject(EventData eventData) throws IdentityEventException {
+
+        Map<String, Object> params = eventData.getEventParams();
+        String streamId = params.get("streamId") != null ? params.get("streamId").toString() : null;
+        if (streamId == null) {
+            throw new IdentityEventException("Stream ID cannot be null");
+        }
+
+        return SimpleSubject.createOpaqueSubject(streamId);
+
     }
 
     /**
@@ -368,27 +378,29 @@ public class EventHookHandlerUtils {
      * @param eventName   Event name.
      * @return Event URI.
      */
-    public static String resolveEventHandlerKey(EventSchema eventSchema, IdentityEventConstants.EventName eventName) {
+    public static String resolveEventHandlerKey(EventSchema eventSchema, String eventName) {
 
         switch (eventSchema) {
             case WSO2:
                 switch (eventName) {
-                    case AUTHENTICATION_SUCCESS:
+                    case "AUTHENTICATION_SUCCESS":
                         return Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT;
-                    case AUTHENTICATION_STEP_FAILURE:
+                    case "AUTHENTICATION_STEP_FAILURE":
                         return Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT;
                 }
                 break;
             case CAEP:
                 switch (eventName) {
-                    case SESSION_TERMINATE:
-                    case SESSION_EXPIRE:
+                    case "SESSION_TERMINATE":
+                    case "SESSION_EXPIRE":
                         return Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT;
-                    case SESSION_CREATE:
+                    case "SESSION_CREATE":
                         return Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT;
-                    case SESSION_EXTEND:
-                    case SESSION_UPDATE:
+                    case "SESSION_EXTEND":
+                    case "SESSION_UPDATE":
                         return Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT;
+                    case "VERIFICATION":
+                        return Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT;
                 }
         }
         return null;

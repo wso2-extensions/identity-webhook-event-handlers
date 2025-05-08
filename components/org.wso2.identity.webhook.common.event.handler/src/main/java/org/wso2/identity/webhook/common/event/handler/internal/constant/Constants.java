@@ -46,6 +46,9 @@ public class Constants {
     public static final String CREDENTIAL_EVENT_HOOK_NAME = "CredentialEventHook";
     public static final String CREDENTIAL_EVENT_HOOK_ENABLED = "CredentialEventHook.enable";
 
+    public static final String VERIFICATION_EVENT_HOOK_NAME = "VerificationEventHook";
+    public static final String VERIFICATION_EVENT_HOOK_ENABLED = "VerificationEventHook.enable";
+
     public static final String SESSION_ID = "sessionId";
 
     /**
@@ -71,6 +74,8 @@ public class Constants {
             public static final String SESSION_PRESENTED_EVENT = "caep.sessionPresented";
 
             public static final String CREDENTIAL_CHANGE_EVENT = "caep.credentialChange";
+
+            public static final String VERIFICATION_EVENT = "caep.verification";
 
             private CAEP() {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -22,14 +22,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
-import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
-import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.event.common.publisher.model.common.Subject;
+import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
@@ -38,23 +38,15 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigM
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
-/**
- * Login Event Hook Handler.
- */
-public class LoginEventHookHandler extends AbstractEventHandler {
+public class VerificationEventHookHandler extends AbstractEventHandler {
 
-    private static final Log log = LogFactory.getLog(LoginEventHookHandler.class);
+    private static final Log log = LogFactory.getLog(VerificationEventHookHandler.class);
+
     private final EventConfigManager eventConfigManager;
 
-    public LoginEventHookHandler(EventConfigManager eventConfigManager) {
+    public VerificationEventHookHandler(EventConfigManager eventConfigManager) {
 
         this.eventConfigManager = eventConfigManager;
-    }
-
-    @Override
-    public String getName() {
-
-        return Constants.LOGIN_EVENT_HOOK_NAME;
     }
 
     @Override
@@ -72,11 +64,15 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         return canHandle;
     }
 
+    @Override
+    public String getName() {
+
+        return Constants.VERIFICATION_EVENT_HOOK_NAME;
+    }
+
     private boolean isSupportedEvent(String eventName) {
 
-        return IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name().equals(eventName) ||
-                IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name().equals(eventName) ||
-                IdentityEventConstants.EventName.AUTHENTICATION_FAILURE.name().equals(eventName);
+        return eventName.equals("VERIFICATION");
     }
 
     @Override
@@ -84,45 +80,32 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
-        if (eventData.getAuthenticationContext().isPassiveAuthenticate()) {
-            return;
-        }
+        EventSchema eventSchema = EventSchema.CAEP;
+        VerificationEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getVerificationEventPayloadBuilder(eventSchema);
 
-        //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
-        EventSchema schema = EventSchema.WSO2;
-        LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                .getLoginEventPayloadBuilder(schema);
-        EventPublisherConfig loginEventPublisherConfig = null;
+        EventPublisherConfig eventPublisherConfig;
+        EventPayload eventPayload;
+
         try {
-            String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-            loginEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
-                   tenantDomain, event.getEventName(), eventConfigManager);
+            String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
+            eventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
+                    tenantDomain, eventData.getEventName(), eventConfigManager);
 
-            EventPayload eventPayload;
-            String eventUri;
-            if (loginEventPublisherConfig.isPublishEnabled()) {
-                eventUri = eventConfigManager.getEventUri(
-                        EventHookHandlerUtils.resolveEventHandlerKey(schema, event.getEventName()));
-                switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
-                    case AUTHENTICATION_SUCCESS:
-                        eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
-                        break;
-                    case AUTHENTICATION_STEP_FAILURE:
-                        eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
-                        break;
-                    case AUTHENTICATION_FAILURE:
-                        eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
-                        break;
-                    default:
-                        throw new IdentityRuntimeException("Unsupported event type: " + event.getEventName());
-                }
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
+            if (eventPublisherConfig.isPublishEnabled()) {
+                eventPayload = payloadBuilder.buildVerificationEventPayload(eventData);
+                Subject subject = EventHookHandlerUtils.buildVerificationSubject(eventData);
+                String eventUri = eventConfigManager.getEventUri(EventHookHandlerUtils.
+                        resolveEventHandlerKey(eventSchema, "VERIFICATION"));
+
+                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
+                        buildSecurityEventToken(eventPayload, eventUri, subject);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-            }
 
+            }
         } catch (IdentityEventException e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }
+
     }
 }
