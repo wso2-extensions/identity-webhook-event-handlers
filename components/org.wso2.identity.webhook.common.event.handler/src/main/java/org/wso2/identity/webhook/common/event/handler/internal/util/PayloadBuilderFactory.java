@@ -18,7 +18,10 @@
 
 package org.wso2.identity.webhook.common.event.handler.internal.util;
 
+import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 
 import java.util.List;
@@ -34,7 +37,7 @@ public class PayloadBuilderFactory {
      * @param eventSchemaType Event schema type.
      * @return Login event payload builder.
      */
-    public static LoginEventPayloadBuilder getLoginEventPayloadBuilder(String eventSchemaType) {
+    public static LoginEventPayloadBuilder getLoginEventPayloadBuilder(EventSchema eventSchemaType) {
 
         List<LoginEventPayloadBuilder> loginEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getLoginEventPayloadBuilders();
@@ -43,6 +46,43 @@ public class PayloadBuilderFactory {
                 return loginEventPayloadBuilder;
             }
         }
-        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType);
+        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType.toString());
+    }
+
+    /**
+     * Get the session event payload builder.
+     *
+     * @param eventSchemaType Event schema type.
+     * @return Session event payload builder.
+     */
+    public static SessionEventPayloadBuilder getSessionEventPayloadBuilder(EventSchema eventSchemaType) {
+
+        List<SessionEventPayloadBuilder> sessionEventPayloadBuilders =
+                EventHookHandlerDataHolder.getInstance().getSessionEventPayloadBuilders();
+        for (SessionEventPayloadBuilder sessionEventPayloadBuilder : sessionEventPayloadBuilders) {
+            if (sessionEventPayloadBuilder.getEventSchemaType().equals(eventSchemaType)) {
+                return sessionEventPayloadBuilder;
+            }
+        }
+        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType.toString());
+    }
+
+    /**
+     * Get the credential event payload builder.
+     *
+     * @param eventSchemaType Event schema type.
+     * @return Credential event payload builder.
+     */
+    public static CredentialEventPayloadBuilder getCredentialEventPayloadBuilder(
+            EventSchema eventSchemaType) {
+
+        List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders =
+                EventHookHandlerDataHolder.getInstance().getCredentialEventPayloadBuilders();
+        for (CredentialEventPayloadBuilder credentialEventPayloadBuilder : credentialEventPayloadBuilders) {
+            if (credentialEventPayloadBuilder.getEventSchemaType().equals(eventSchemaType)) {
+                return credentialEventPayloadBuilder;
+            }
+        }
+        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType.toString());
     }
 }

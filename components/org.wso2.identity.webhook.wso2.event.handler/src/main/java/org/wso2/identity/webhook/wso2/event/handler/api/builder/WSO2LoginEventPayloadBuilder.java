@@ -26,6 +26,7 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.AuthenticationFailedReason;
@@ -120,9 +121,9 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
     }
 
     @Override
-    public String getEventSchemaType() {
+    public EventSchema getEventSchemaType() {
 
-        return Constants.WSO2_EVENT_SCHEMA;
+        return EventSchema.WSO2;
     }
 
     private List<String> buildAuthMethods(AuthenticationContext authContext) {

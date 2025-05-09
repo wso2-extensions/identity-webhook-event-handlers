@@ -20,7 +20,9 @@ package org.wso2.identity.webhook.common.event.handler.internal.component;
 
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
+import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,8 @@ public class EventHookHandlerDataHolder {
     private ConfigurationManager configurationManager;
     private EventPublisherService eventPublisherService;
     private List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
+    private List<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
+    private List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
 
@@ -42,6 +46,86 @@ public class EventHookHandlerDataHolder {
     public static EventHookHandlerDataHolder getInstance() {
 
         return instance;
+    }
+
+    /**
+     * Get the list of credential event payload builder implementations available.
+     *
+     * @return List of credential event payload builder implementations.
+     */
+    public List<CredentialEventPayloadBuilder> getCredentialEventPayloadBuilders() {
+
+        return credentialEventPayloadBuilders;
+    }
+
+    /**
+     * Add a credential event payload builder to hte list.
+     *
+     * @param credentialEventPayloadBuilder A credential event payload builders.
+     */
+    public void addCredentialEventPayloadBuilder(CredentialEventPayloadBuilder credentialEventPayloadBuilder) {
+
+        credentialEventPayloadBuilders.add(credentialEventPayloadBuilder);
+    }
+
+    /**
+     * Remove a credential event payload builder from the list.
+     *
+     * @param credentialEventPayloadBuilder A credential event payload builders.
+     */
+    public void removeCredentialEventPayloadBuilder(CredentialEventPayloadBuilder credentialEventPayloadBuilder) {
+
+        credentialEventPayloadBuilders.remove(credentialEventPayloadBuilder);
+    }
+
+    /**
+     * Set a list of credential event payload builders.
+     *
+     * @param credentialEventPayloadBuilders List of credential event payload builders.
+     */
+    public void setCredentialEventPayloadBuilders(List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders) {
+
+        this.credentialEventPayloadBuilders = credentialEventPayloadBuilders;
+    }
+
+    /**
+     * Get the list of session event payload builder implementations available.
+     *
+     * @return List of session event payload builder implementations.
+     */
+    public List<SessionEventPayloadBuilder> getSessionEventPayloadBuilders() {
+
+        return sessionEventPayloadBuilders;
+    }
+
+    /**
+     * Add session event payload builder implementation.
+     *
+     * @param sessionEventPayloadBuilder Session event payload builder implementation.
+     */
+    public void addSessionEventPayloadBuilder(SessionEventPayloadBuilder sessionEventPayloadBuilder) {
+
+        sessionEventPayloadBuilders.add(sessionEventPayloadBuilder);
+    }
+
+    /**
+     * Remove session event payload builder implementation.
+     *
+     * @param sessionEventPayloadBuilder Session event payload builder implementation.
+     */
+    public void removeSessionEventPayloadBuilder(SessionEventPayloadBuilder sessionEventPayloadBuilder) {
+
+        sessionEventPayloadBuilders.remove(sessionEventPayloadBuilder);
+    }
+
+    /**
+     * Set a list of session event payload builders.
+     *
+     * @param sessionEventPayloadBuilders List of session event payload builders.
+     */
+    public void setSessionEventPayloadBuilders(List<SessionEventPayloadBuilder> sessionEventPayloadBuilders) {
+
+        this.sessionEventPayloadBuilders = sessionEventPayloadBuilders;
     }
 
     /**

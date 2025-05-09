@@ -24,27 +24,46 @@ import org.apache.commons.logging.LogFactory;
 import org.slf4j.MDC;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorStatus;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
+import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
+import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
+import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
+import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
+import org.wso2.carbon.identity.configuration.mgt.core.search.ComplexCondition;
+import org.wso2.carbon.identity.configuration.mgt.core.search.Condition;
+import org.wso2.carbon.identity.configuration.mgt.core.search.PrimitiveCondition;
+import org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
+import org.wso2.identity.event.common.publisher.model.common.ComplexSubject;
+import org.wso2.identity.event.common.publisher.model.common.SimpleSubject;
+import org.wso2.identity.event.common.publisher.model.common.Subject;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils.CORRELATION_ID_MDC;
+import static org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType.PrimitiveOperator.EQUALS;
 
 /**
  * Utility class for Event Handler Hooks.
@@ -53,8 +72,77 @@ public class EventHookHandlerUtils {
 
     private static final Log log = LogFactory.getLog(EventHookHandlerUtils.class);
 
+
     private EventHookHandlerUtils() {
 
+    }
+
+    /**
+     * Extracts the authenticated user from the event data.
+     *
+     * @param eventData Event data.
+     * @return Authenticated user.
+     * @throws IdentityEventException If an error occurs while extracting the authenticated user.
+     */
+    private static AuthenticatedUser extractAuthenticatedUser(EventData eventData) throws IdentityEventException {
+
+        AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
+        try {
+            if (authenticatedUser == null) {
+                authenticatedUser = (AuthenticatedUser) eventData.getEventParams().
+                        get(FrameworkConstants.AnalyticsAttributes.USER);
+            }
+            return authenticatedUser;
+        } catch (ClassCastException e) {
+            throw new IdentityEventException("Error occurred while retrieving authenticated user", e);
+        }
+    }
+
+    /**
+     * Extracts the session ID from the event data.
+     *
+     * @param eventData Event data.
+     * @return Session ID.
+     * @throws IdentityEventException If an error occurs while extracting the session ID.
+     */
+    private static String extractSessionId(EventData eventData)
+            throws IdentityEventException {
+
+        if (eventData.getEventParams().containsKey(Constants.SESSION_ID) &&
+                eventData.getEventParams().get(Constants.SESSION_ID) != null) {
+            return eventData.getEventParams().get(Constants.SESSION_ID).toString();
+        } else if (eventData.getAuthenticationContext() != null) {
+            return eventData.getAuthenticationContext().getSessionIdentifier();
+        }
+        return null;
+    }
+
+    /**
+     * Extracts the subject from the event data.
+     *
+     * @param eventData Event data.
+     * @return Subject.
+     * @throws IdentityEventException If an error occurs while extracting the subject.
+     */
+    public static Subject extractSubjectFromEventData(EventData eventData) throws IdentityEventException {
+
+        AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);
+        String sessionId = extractSessionId(eventData);
+        SimpleSubject user = null;
+        try {
+            user = SimpleSubject.createOpaqueSubject(authenticatedUser.getUserId());
+        } catch (UserIdNotFoundException e) {
+            throw new IdentityEventException("Error occurred while retrieving user id", e);
+        }
+        SimpleSubject tenant = SimpleSubject.createOpaqueSubject(String.valueOf(
+                IdentityTenantUtil.getTenantId(authenticatedUser.getTenantDomain())));
+        SimpleSubject session = SimpleSubject.createOpaqueSubject(sessionId);
+
+        return ComplexSubject.builder()
+                .tenant(tenant)
+                .user(user)
+                .session(session)
+                .build();
     }
 
     /**
@@ -89,6 +177,9 @@ public class EventHookHandlerUtils {
             }
         }
 
+        SessionContext sessionContext = properties.containsKey("sessionContext") ?
+                (SessionContext) properties.get("sessionContext") : null;
+
         return EventData.builder()
                 .eventName(event.getEventName())
                 .request(request)
@@ -96,7 +187,22 @@ public class EventHookHandlerUtils {
                 .authenticationContext(context)
                 .authenticatorStatus(status)
                 .authenticatedUser(authenticatedUser)
+                .sessionContext(sessionContext)
                 .build();
+    }
+
+    /**
+     * Retrieve the audience.
+     *
+     * @param eventPayload
+     * @param eventUri     Event URI.
+     * @return Audience string.
+     */
+    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload,
+                                                                    String eventUri)
+            throws IdentityEventException {
+
+        return buildSecurityEventToken(eventPayload, eventUri, null);
     }
 
     /**
@@ -105,7 +211,8 @@ public class EventHookHandlerUtils {
      * @param eventUri Event URI.
      * @return Audience string.
      */
-    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload, String eventUri)
+    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload,
+                                                                    String eventUri, Subject subId)
             throws IdentityEventException {
 
         if (eventPayload == null) {
@@ -127,6 +234,7 @@ public class EventHookHandlerUtils {
                 .jti(UUID.randomUUID().toString())
                 .rci(getCorrelationID())
                 .txn("txn")
+                .subId(subId)
                 .events(eventMap)
                 .build();
     }
@@ -213,5 +321,76 @@ public class EventHookHandlerUtils {
             throw new IdentityEventException(String.format("Error while handling %s event.",
                     eventUri), e);
         }
+    }
+
+    /**
+     * Returns Event Publisher Configs of the Tenant.
+     *
+     * @param tenantDomain       Tenant Domain
+     * @param eventName          Event Name
+     * @param eventConfigManager Event Configuration Manager
+     * @throws IdentityEventException if any error occurs
+     */
+    public static EventPublisherConfig getEventPublisherConfigForTenant
+    (String tenantDomain, String eventName, EventConfigManager eventConfigManager) throws IdentityEventException {
+
+        if (StringUtils.isEmpty(tenantDomain)) {
+            throw new IdentityEventException("Invalid tenant domain: " + tenantDomain);
+        }
+
+        try {
+            Condition condition = createPublisherConfigFilterCondition();
+            Resources publisherConfigResource = EventHookHandlerDataHolder.getInstance().getConfigurationManager()
+                    .getTenantResources(tenantDomain, condition);
+            return eventConfigManager.extractEventPublisherConfig(publisherConfigResource, eventName);
+        } catch (ConfigurationManagementException | IdentityEventException e) {
+            throw new IdentityEventException("Error while retrieving event publisher configuration for tenant.", e);
+        }
+    }
+
+    /**
+     * Helper function for getEventPublisherConfigForTenant.
+     */
+    private static ComplexCondition createPublisherConfigFilterCondition() {
+
+        List<Condition> conditionList = new ArrayList<>();
+        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS,
+                Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
+        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS,
+                Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_NAME));
+        return new ComplexCondition(ConditionType.ComplexOperator.AND, conditionList);
+    }
+
+    /**
+     * Resolve the event URI based on the event schema and event name.
+     *
+     * @param eventSchema Event schema.
+     * @param eventName   Event name.
+     * @return Event URI.
+     */
+    public static String resolveEventHandlerKey(EventSchema eventSchema, IdentityEventConstants.EventName eventName) {
+
+        switch (eventSchema) {
+            case WSO2:
+                switch (eventName) {
+                    case AUTHENTICATION_SUCCESS:
+                        return Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT;
+                    case AUTHENTICATION_STEP_FAILURE:
+                        return Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT;
+                }
+                break;
+            case CAEP:
+                switch (eventName) {
+                    case SESSION_TERMINATE:
+                    case SESSION_EXPIRE:
+                        return Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT;
+                    case SESSION_CREATE:
+                        return Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT;
+                    case SESSION_EXTEND:
+                    case SESSION_UPDATE:
+                        return Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT;
+                }
+        }
+        return null;
     }
 }

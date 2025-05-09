@@ -20,6 +20,7 @@ package org.wso2.identity.webhook.common.event.handler.api.builder;
 
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
 /**
@@ -48,6 +49,6 @@ public interface LoginEventPayloadBuilder {
      *
      * @return Event schema type.
      */
-    String getEventSchemaType();
+    EventSchema getEventSchemaType();
 }
 

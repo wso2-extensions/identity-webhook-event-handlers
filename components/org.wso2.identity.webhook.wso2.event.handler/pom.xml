@@ -112,6 +112,7 @@
         <dependency>
             <groupId>org.wso2.identity.event.publishers</groupId>
             <artifactId>org.wso2.identity.event.common.publisher</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity.inbound.provisioning.scim2</groupId>
