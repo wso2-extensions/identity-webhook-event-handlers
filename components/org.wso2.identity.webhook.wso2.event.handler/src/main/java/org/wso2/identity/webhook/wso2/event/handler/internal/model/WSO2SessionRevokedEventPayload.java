@@ -23,14 +23,13 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organi
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
 
     private String initiatorType;
     private String sessionId;
-    private List<Application> applications = new ArrayList<>();
+    private List<Application> applications;
 
     private WSO2SessionRevokedEventPayload(Builder builder) {
 

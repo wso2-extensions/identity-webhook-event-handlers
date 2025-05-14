@@ -28,12 +28,13 @@ import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertThrows;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -54,6 +55,10 @@ public class PayloadBuilderFactoryTest {
         Mockito.when(mockWSO2LoginBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
         Mockito.when(mockCAEPSessionBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
         Mockito.when(mockCAEPCredentialBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
+
+        EventHookHandlerDataHolder.getInstance().setLoginEventPayloadBuilders(new ArrayList<>());
+        EventHookHandlerDataHolder.getInstance().setCredentialEventPayloadBuilders(new ArrayList<>());
+        EventHookHandlerDataHolder.getInstance().setSessionEventPayloadBuilders(new ArrayList<>());
 
         EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(mockWSO2LoginBuilder);
         EventHookHandlerDataHolder.getInstance().addSessionEventPayloadBuilder(mockCAEPSessionBuilder);
@@ -84,8 +89,11 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetLoginEventPayloadBuilderUnknownSchema() {
 
-        assertThrows(IllegalArgumentException.class,
-                () -> PayloadBuilderFactory.getLoginEventPayloadBuilder(EventSchema.RISC));
+        LoginEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getLoginEventPayloadBuilder(EventSchema.RISC);
+
+        assertNull(payloadBuilder, "The builder should be null.");
+
     }
 
     @Test
@@ -101,8 +109,10 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetSessionEventPayloadBuilderUnknownSchema() {
 
-        assertThrows(IllegalArgumentException.class,
-                () -> PayloadBuilderFactory.getSessionEventPayloadBuilder(EventSchema.RISC));
+        SessionEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getSessionEventPayloadBuilder(EventSchema.RISC);
+
+        assertNull(payloadBuilder, "The builder should be null.");
     }
 
     @Test
@@ -118,7 +128,9 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetCredentialEventPayloadBuilderUnknownSchema() {
 
-        assertThrows(IllegalArgumentException.class,
-                () -> PayloadBuilderFactory.getCredentialEventPayloadBuilder(EventSchema.RISC));
+        CredentialEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getCredentialEventPayloadBuilder(EventSchema.RISC);
+
+        assertNull(payloadBuilder, "The builder should be null.");
     }
 }

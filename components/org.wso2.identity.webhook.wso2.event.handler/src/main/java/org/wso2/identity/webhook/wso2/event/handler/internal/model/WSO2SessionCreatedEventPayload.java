@@ -23,10 +23,13 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organi
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
+import java.util.List;
+
 public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
 
     private String sessionId;
     private String currentAcr;
+    private List<Application> applications;
 
     public String getSessionId() {
 
@@ -38,6 +41,10 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         return currentAcr;
     }
 
+    public List<Application> getApplications() {
+
+        return applications;
+    }
 
     private WSO2SessionCreatedEventPayload(Builder builder) {
 
@@ -45,7 +52,7 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         this.tenant = builder.tenant;
         this.userResidentOrganization = builder.userResidentOrganization;
         this.userStore = builder.userStore;
-        this.application = builder.application;
+        this.applications = builder.applications;
         this.sessionId = builder.sessionId;
         this.currentAcr = builder.currentAcr;
     }
@@ -62,7 +69,7 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         private Organization tenant;
         private Organization userResidentOrganization;
         private UserStore userStore;
-        private Application application;
+        private List<Application> applications;
 
         public Builder sessionId(String sessionId) {
 
@@ -100,9 +107,9 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public Builder application(Application application) {
+        public Builder applications(List<Application> applications) {
 
-            this.application = application;
+            this.applications = applications;
             return this;
         }
 

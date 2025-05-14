@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.builder.util;
+package org.wso2.identity.webhook.wso2.event.handler.internal.util;
 
 import org.mockito.MockedStatic;
 import org.wso2.carbon.identity.core.ServiceURL;

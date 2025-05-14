@@ -39,8 +39,8 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_CREATE;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_EXPIRE;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_EXTEND;
-import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_TERMINATE;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_UPDATE;
+import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.USER_SESSION_TERMINATE;
 
 /**
  * This class handles session events and publishes them to the configured event publisher.
@@ -66,62 +66,66 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
-        // TODO: Get the schema type from tenant configuration
-        EventSchema schema = EventSchema.CAEP;
-        SessionEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getSessionEventPayloadBuilder(schema);
+        for (EventSchema schema : EventSchema.values()) {
+            SessionEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getSessionEventPayloadBuilder(schema);
 
-        EventPublisherConfig sessionEventPublisherConfig;
-
-        try {
-            sessionEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant((String)
-                            eventData.getSessionContext().getProperty("tenantDomain"),
-                    event.getEventName(), eventConfigManager);
-
-            EventPayload eventPayload = null;
-            String eventUri = null;
-
-            if (sessionEventPublisherConfig.isPublishEnabled()) {
-                switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
-                    case SESSION_TERMINATE:
-                        eventPayload = payloadBuilder.buildSessionTerminateEvent(eventData);
-                        eventUri = eventConfigManager.getEventUri(
-                                EventHookHandlerUtils.resolveEventHandlerKey(schema, SESSION_TERMINATE));
-                        break;
-                    case SESSION_EXPIRE:
-                        eventPayload = payloadBuilder.buildSessionExpireEvent(eventData);
-                        eventUri = eventConfigManager.getEventUri(
-                                EventHookHandlerUtils.resolveEventHandlerKey(schema, SESSION_EXPIRE));
-                        break;
-                    case SESSION_CREATE:
-                        eventPayload = payloadBuilder.buildSessionCreateEvent(eventData);
-                        eventUri = eventConfigManager.getEventUri(
-                                EventHookHandlerUtils.resolveEventHandlerKey(schema, SESSION_CREATE));
-                        break;
-                    case SESSION_UPDATE:
-                        eventPayload = payloadBuilder.buildSessionUpdateEvent(eventData);
-                        eventUri = eventConfigManager.getEventUri(
-                                EventHookHandlerUtils.resolveEventHandlerKey(schema, SESSION_UPDATE));
-                        break;
-
-                    case SESSION_EXTEND:
-                        eventPayload = payloadBuilder.buildSessionExtendEvent(eventData);
-                        eventUri = eventConfigManager.getEventUri(
-                                EventHookHandlerUtils.resolveEventHandlerKey(schema, SESSION_EXTEND));
-                        break;
-                }
-                Subject subject = null;
-                if (schema.equals(EventSchema.CAEP)) {
-                    subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
-                }
-                String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
-
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
-                        buildSecurityEventToken(eventPayload, eventUri, subject);
-                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+            if (payloadBuilder == null) {
+                log.debug("Session event payload builder not found for schema: " + schema);
+                continue;
             }
 
-        } catch (IdentityEventException e) {
-            log.debug("Error while retrieving event publisher configuration for tenant.", e);
+            EventPublisherConfig sessionEventPublisherConfig;
+
+            try {
+                sessionEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant((String)
+                                eventData.getSessionContext().getProperty("tenantDomain"),
+                        event.getEventName(), eventConfigManager);
+
+                EventPayload eventPayload = null;
+                String eventUri = null;
+
+                if (sessionEventPublisherConfig.isPublishEnabled()) {
+                    switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
+                        case USER_SESSION_TERMINATE:
+                            eventPayload = payloadBuilder.buildSessionTerminateEvent(eventData);
+                            eventUri = eventConfigManager.getEventUri(
+                                    EventHookHandlerUtils.resolveEventHandlerKey(schema, USER_SESSION_TERMINATE));
+                            break;
+                        case SESSION_EXPIRE:
+                            eventPayload = payloadBuilder.buildSessionExpireEvent(eventData);
+                            eventUri = eventConfigManager.getEventUri(
+                                    EventHookHandlerUtils.resolveEventHandlerKey(schema, SESSION_EXPIRE));
+                            break;
+                        case SESSION_CREATE:
+                            eventPayload = payloadBuilder.buildSessionCreateEvent(eventData);
+                            eventUri = eventConfigManager.getEventUri(
+                                    EventHookHandlerUtils.resolveEventHandlerKey(schema, SESSION_CREATE));
+                            break;
+                        case SESSION_UPDATE:
+                            eventPayload = payloadBuilder.buildSessionUpdateEvent(eventData);
+                            eventUri = eventConfigManager.getEventUri(
+                                    EventHookHandlerUtils.resolveEventHandlerKey(schema, SESSION_UPDATE));
+                            break;
+
+                        case SESSION_EXTEND:
+                            eventPayload = payloadBuilder.buildSessionExtendEvent(eventData);
+                            eventUri = eventConfigManager.getEventUri(
+                                    EventHookHandlerUtils.resolveEventHandlerKey(schema, SESSION_EXTEND));
+                            break;
+                    }
+                    Subject subject = null;
+                    if (schema.equals(EventSchema.CAEP)) {
+                        subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
+                    }
+                    String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
+
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
+                            buildSecurityEventToken(eventPayload, eventUri, subject);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                }
+            } catch (IdentityEventException e) {
+                log.debug("Error while retrieving event publisher configuration for tenant.", e);
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ package org.wso2.identity.webhook.caep.event.handler;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPCredentialChangeEventPayload;
-import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedAndPresentedEventPayload;
+import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPTokenClaimsChangeEventPayload;
 
@@ -79,8 +79,8 @@ public class CAEPEventPayloadModelTest {
         ips.add("192.168.1.1");
         String acr = "acr";
 
-        CAEPSessionEstablishedAndPresentedEventPayload payload =
-                new CAEPSessionEstablishedAndPresentedEventPayload.Builder()
+        CAEPSessionEstablishedEventPayload payload =
+                new CAEPSessionEstablishedEventPayload.Builder()
                         .eventTimeStamp(eventTimeStamp)
                         .initiatingEntity("admin")
                         .reasonAdmin(sampleReasonAdmin)

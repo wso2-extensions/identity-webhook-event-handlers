@@ -145,7 +145,7 @@ public class EventConfigManager {
             return true;
         }
         if (Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT.equals(attribute.getKey())) {
-            return eventName.equals(IdentityEventConstants.EventName.SESSION_TERMINATE.name());
+            return eventName.equals(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name());
         }
         if (Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT.equals(attribute.getKey())) {
             return (eventName.equals(IdentityEventConstants.EventName.SESSION_CREATE.name()));

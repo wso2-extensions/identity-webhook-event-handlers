@@ -57,7 +57,6 @@ public class WSO2PayloadUtils {
         return null;
     }
 
-
     public static void populateUserClaims(User user, AuthenticatedUser authenticatedUser) {
 
         if (authenticatedUser == null) {
