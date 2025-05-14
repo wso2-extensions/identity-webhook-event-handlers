@@ -167,6 +167,7 @@ public class CAEPEventPayloadModelTest {
 
     @Test
     public void testCAEPVerificationEventPayload() {
+
         String state = "state";
 
         CAEPVerificationEventPayload payload = new CAEPVerificationEventPayload.Builder()
