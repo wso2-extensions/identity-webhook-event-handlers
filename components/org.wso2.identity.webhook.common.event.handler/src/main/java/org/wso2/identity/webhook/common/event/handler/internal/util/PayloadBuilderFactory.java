@@ -46,7 +46,7 @@ public class PayloadBuilderFactory {
                 return loginEventPayloadBuilder;
             }
         }
-        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType.toString());
+        return null;
     }
 
     /**
@@ -64,7 +64,7 @@ public class PayloadBuilderFactory {
                 return sessionEventPayloadBuilder;
             }
         }
-        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType.toString());
+        return null;
     }
 
     /**
@@ -83,6 +83,6 @@ public class PayloadBuilderFactory {
                 return credentialEventPayloadBuilder;
             }
         }
-        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType.toString());
+        return null;
     }
 }

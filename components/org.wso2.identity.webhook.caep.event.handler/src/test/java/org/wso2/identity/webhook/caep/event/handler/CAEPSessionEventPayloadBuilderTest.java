@@ -33,7 +33,7 @@ import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPSessionEventPayloadBuilder;
-import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedAndPresentedEventPayload;
+import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
@@ -121,27 +121,6 @@ public class CAEPSessionEventPayloadBuilderTest {
     }
 
     @Test
-    public void testSessionTerminationByLogout() throws IdentityEventException {
-
-        mockAuthenticationContext.setLogoutRequest(true);
-        when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
-        when(mockEventData.getAuthenticatedUser()).thenReturn(mockAuthenticatedUser);
-        Map<String, Object> paramMap = new HashMap<>();
-        when(mockEventData.getEventParams()).thenReturn(paramMap);
-
-        CAEPSessionRevokedEventPayload eventPayload = (CAEPSessionRevokedEventPayload)
-                caepSessionEventPayloadBuilder.buildSessionTerminateEvent(mockEventData);
-
-        assertNotNull(eventPayload, "Event payload should not be null");
-        assertEquals("User logout", eventPayload.getReasonAdmin().get("en"));
-        assertEquals("User Logged out", eventPayload.getReasonUser().get("en"));
-        assertEquals("user", eventPayload.getInitiatingEntity());
-        assertTrue(eventPayload.getEventTimeStamp() > 0, "Event timestamp should be greater than 0");
-
-        mockAuthenticationContext.setLogoutRequest(false);
-    }
-
-    @Test
     public void testBuildSessionExpireEvent() throws IdentityEventException {
 
         EventPayload eventPayload = caepSessionEventPayloadBuilder.buildSessionExpireEvent(mockEventData);
@@ -153,7 +132,6 @@ public class CAEPSessionEventPayloadBuilderTest {
     public void testBuildSessionExtendEvent() throws IdentityEventException {
 
         EventPayload eventPayload = caepSessionEventPayloadBuilder.buildSessionExtendEvent(mockEventData);
-
         assertNull(eventPayload, "Event payload should be null");
     }
 
@@ -167,8 +145,8 @@ public class CAEPSessionEventPayloadBuilderTest {
         when(mockSessionContext.getProperty("UpdatedTimestamp")).thenReturn(systemTime);
         when(mockEventData.getSessionContext()).thenReturn(mockSessionContext);
 
-        CAEPSessionEstablishedAndPresentedEventPayload eventPayload =
-                (CAEPSessionEstablishedAndPresentedEventPayload) caepSessionEventPayloadBuilder
+        CAEPSessionEstablishedEventPayload eventPayload =
+                (CAEPSessionEstablishedEventPayload) caepSessionEventPayloadBuilder
                         .buildSessionUpdateEvent(mockEventData);
 
         assertNotNull(eventPayload, "Event payload should not be null");
@@ -185,8 +163,8 @@ public class CAEPSessionEventPayloadBuilderTest {
         when(mockSessionContext.getProperty("CreatedTimestamp")).thenReturn(systemTime);
         when(mockEventData.getSessionContext()).thenReturn(mockSessionContext);
 
-        CAEPSessionEstablishedAndPresentedEventPayload eventPayload =
-                (CAEPSessionEstablishedAndPresentedEventPayload) caepSessionEventPayloadBuilder
+        CAEPSessionEstablishedEventPayload eventPayload =
+                (CAEPSessionEstablishedEventPayload) caepSessionEventPayloadBuilder
                         .buildSessionCreateEvent(mockEventData);
 
         assertNotNull(eventPayload, "Event payload should not be null");

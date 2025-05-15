@@ -58,6 +58,8 @@ public class Constants {
 
             public static final String LOGIN_SUCCESS_EVENT = "logins.loginSuccess";
             public static final String LOGIN_FAILED_EVENT = "logins.loginFailed";
+            public static final String SESSION_REVOKED_EVENT = "sessions.sessionRevoked";
+            public static final String SESSION_CREATED_EVENT = "sessions.sessionCreated";
 
             private WSO2() {
 

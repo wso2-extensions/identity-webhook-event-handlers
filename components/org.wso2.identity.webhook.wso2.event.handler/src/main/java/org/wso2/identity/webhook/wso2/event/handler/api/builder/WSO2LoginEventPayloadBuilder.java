@@ -21,18 +21,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
-import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
-import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
-import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.AuthenticationFailedReason;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationFailedEventPayload;
@@ -40,15 +35,12 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2Authentic
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
-import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
+import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 
 /**
  * WSO2 Login Event Payload Builder.
@@ -68,15 +60,8 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         }
 
         User user = new User();
-        populateUserAttributes(authenticatedUser, user);
-        try {
-            user.setId(authenticatedUser.getUserId());
-            user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT) +
-                    "/" + authenticatedUser.getUserId());
-        } catch (UserIdNotFoundException e) {
-            //TODO: Need to verify when this exception is thrown and handle it accordingly
-            log.debug("Error while resolving user id.", e);
-        }
+        WSO2PayloadUtils.populateUserClaims(user, authenticatedUser);
+        WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
 
         Organization tenant = new Organization(
                 String.valueOf(IdentityTenantUtil.getTenantId(authenticationContext.getTenantDomain())),
@@ -87,7 +72,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         }
         Organization b2bUserResidentOrganization = null;
         if (authenticatedUser.getUserResidentOrganization() != null) {
-            b2bUserResidentOrganization = getUserResidentOrganization(
+            b2bUserResidentOrganization = WSO2PayloadUtils.getUserResidentOrganization(
                     authenticatedUser.getUserResidentOrganization());
         }
         Application application = new Application(
@@ -116,14 +101,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
             if (authenticatedUser.getUserStoreDomain() != null) {
                 userStore = new UserStore(authenticatedUser.getUserStoreDomain());
             }
-            try {
-                user.setId(authenticatedUser.getUserId());
-                user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT)
-                        + "/" + authenticatedUser.getUserId());
-            } catch (UserIdNotFoundException e) {
-                //TODO: Need to verify when this exception is thrown and handle it accordingly
-                log.debug("Error while resolving user id.", e);
-            }
+            WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
         }
 
         Organization tenant = new Organization(
@@ -179,59 +157,5 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         failedReason.setFailedStep(failedStep);
 
         return failedReason;
-    }
-
-    private void populateUserAttributes(AuthenticatedUser authenticatedUser, User user) {
-
-        if (authenticatedUser == null) {
-            return;
-        }
-
-        List<UserClaim> userClaims = new ArrayList<>();
-        for (Map.Entry<ClaimMapping, String> entry : authenticatedUser.getUserAttributes().entrySet()) {
-            ClaimMapping claimMapping = entry.getKey();
-            String claimUri = claimMapping.getLocalClaim().getClaimUri();
-            String claimValue = entry.getValue();
-
-            if (claimUri != null && claimValue != null) {
-                switch (claimUri) {
-                    case Constants.WSO2_CLAIM_GROUPS:
-                        user.addGroup(claimValue);
-                        break;
-                    case Constants.WSO2_CLAIM_ROLES:
-                        user.addRole(claimValue);
-                        break;
-                    case Constants.MULTI_ATTRIBUTE_SEPARATOR:
-                        // Not adding the multi attribute separator to the user claims
-                        break;
-                    case Constants.IDENTITY_PROVIDER_MAPPED_USER_ROLES:
-                        // Not adding the identity provider mapped user roles to the user claims for federated users
-                        break;
-                    case Constants.USER_ORGANIZATION:
-                        // Not adding the user resident organization to the user claims for b2b users
-                        break;
-                    default:
-                        userClaims.add(new UserClaim(claimUri, claimValue));
-                        break;
-                }
-            }
-        }
-        user.setClaims(userClaims);
-    }
-
-    private Organization getUserResidentOrganization(String organizationId) {
-
-        try {
-            String organizationName = WSO2EventHookHandlerDataHolder.getInstance()
-                    .getOrganizationManager().getOrganizationNameById(organizationId);
-            return new Organization(organizationId, organizationName);
-        } catch (OrganizationManagementException e) {
-            if (ERROR_CODE_INVALID_ORGANIZATION_ID.getCode().equals(e.getErrorCode())) {
-                log.debug("Returning an empty string as the organization name as the name is not returned " +
-                        "for the given id.");
-            }
-            log.debug("Error while retrieving the organization name for the given id: " + organizationId, e);
-        }
-        return null;
     }
 }

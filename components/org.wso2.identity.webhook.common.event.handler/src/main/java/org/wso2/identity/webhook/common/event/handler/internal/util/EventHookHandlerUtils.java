@@ -72,7 +72,6 @@ public class EventHookHandlerUtils {
 
     private static final Log log = LogFactory.getLog(EventHookHandlerUtils.class);
 
-
     private EventHookHandlerUtils() {
 
     }
@@ -105,9 +104,19 @@ public class EventHookHandlerUtils {
      * @return Session ID.
      * @throws IdentityEventException If an error occurs while extracting the session ID.
      */
-    private static String extractSessionId(EventData eventData)
-            throws IdentityEventException {
+    public static String extractSessionId(EventData eventData) {
 
+        // For Session Terminate Events, only extract sessionId if a single session is terminated
+        if (eventData.getEventName().equals(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name())) {
+            Object sessionData = eventData.getEventParams().getOrDefault("sessionData", null);
+            if (sessionData != null) {
+                if (sessionData instanceof String) {
+                    return sessionData.toString();
+                } else {
+                    return null;
+                }
+            }
+        }
         if (eventData.getEventParams().containsKey(Constants.SESSION_ID) &&
                 eventData.getEventParams().get(Constants.SESSION_ID) != null) {
             return eventData.getEventParams().get(Constants.SESSION_ID).toString();
@@ -128,7 +137,7 @@ public class EventHookHandlerUtils {
 
         AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);
         String sessionId = extractSessionId(eventData);
-        SimpleSubject user = null;
+        SimpleSubject user;
         try {
             user = SimpleSubject.createOpaqueSubject(authenticatedUser.getUserId());
         } catch (UserIdNotFoundException e) {
@@ -377,12 +386,15 @@ public class EventHookHandlerUtils {
                         return Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT;
                     case AUTHENTICATION_STEP_FAILURE:
                         return Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT;
+                    case USER_SESSION_TERMINATE:
+                        return Constants.EventHandlerKey.WSO2.SESSION_REVOKED_EVENT;
+                    case SESSION_CREATE:
+                        return Constants.EventHandlerKey.WSO2.SESSION_CREATED_EVENT;
                 }
                 break;
             case CAEP:
                 switch (eventName) {
-                    case SESSION_TERMINATE:
-                    case SESSION_EXPIRE:
+                    case USER_SESSION_TERMINATE:
                         return Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT;
                     case SESSION_CREATE:
                         return Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT;

@@ -16,11 +16,12 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.component;
+package org.wso2.identity.webhook.common.event.handler.internal.component;
 
 import org.testng.annotations.Test;
+import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 
 import java.util.ArrayList;
 
@@ -50,7 +51,31 @@ public class EventHookHandlerDataHolderTest {
         ArrayList<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
         loginEventPayloadBuilders.add(mockedLoginEventPayloadBuilder);
         instance.setLoginEventPayloadBuilders(loginEventPayloadBuilders);
-        assertNotNull(instance.getLoginEventPayloadBuilders(), "LoginEventPayloadBuilders should not be null");
+        assertNotNull(instance.getLoginEventPayloadBuilders(),
+                "LoginEventPayloadBuilders should not be null");
     }
 
+    @Test
+    public void testSetSessionEventPayloadBuilder() {
+
+        EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
+        SessionEventPayloadBuilder mockedSessionEventPayloadBuilder = mock(SessionEventPayloadBuilder.class);
+        ArrayList<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
+        sessionEventPayloadBuilders.add(mockedSessionEventPayloadBuilder);
+        instance.setSessionEventPayloadBuilders(sessionEventPayloadBuilders);
+        assertNotNull(instance.getSessionEventPayloadBuilders(),
+                "SessionEventPayloadBuilders should not be null");
+    }
+
+    @Test
+    public void testSetCredentialEventPayloadBuilder() {
+
+        EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
+        CredentialEventPayloadBuilder mockedCredentialEventPayloadBuilder = mock(CredentialEventPayloadBuilder.class);
+        ArrayList<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
+        credentialEventPayloadBuilders.add(mockedCredentialEventPayloadBuilder);
+        instance.setCredentialEventPayloadBuilders(credentialEventPayloadBuilders);
+        assertNotNull(instance.getCredentialEventPayloadBuilders(),
+                "CredentialEventPayloadBuilders should not be null");
+    }
 }
