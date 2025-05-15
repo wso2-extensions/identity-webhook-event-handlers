@@ -139,7 +139,7 @@ public class WSO2SessionEventPayloadBuilderTest {
         }
         params.put("eventTimeStamp", System.currentTimeMillis());
         params.put("flow", new Flow.Builder()
-                .name(Flow.Name.LOGOUT)
+                .name(Flow.Name.SESSION_REVOKE)
                 .initiatingPersona(initiatingEntity)
                 .build());
         EventData eventData = new EventData.Builder()
