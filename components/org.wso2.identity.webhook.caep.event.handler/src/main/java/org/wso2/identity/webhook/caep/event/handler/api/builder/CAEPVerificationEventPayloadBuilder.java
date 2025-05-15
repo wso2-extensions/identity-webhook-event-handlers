@@ -31,12 +31,14 @@ import java.util.Map;
  */
 public class CAEPVerificationEventPayloadBuilder implements VerificationEventPayloadBuilder {
 
+    static final String STATE = "state";
+
     @Override
     public EventPayload buildVerificationEventPayload(EventData eventData) {
 
         Map<String, Object> params = eventData.getEventParams();
 
-        String state = params.containsKey("state") ? params.get("state").toString() : null;
+        String state = params.containsKey(STATE) ? params.get(STATE).toString() : null;
 
         return new CAEPVerificationEventPayload.Builder()
                 .state(state)

@@ -81,6 +81,9 @@ import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.clos
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockIdentityTenantUtil;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockServiceURLBuilder;
 
+/**
+ * Unit test class for {@link VerificationEventHookHandler}.
+ */
 public class VerificationEventHookHandlerTest {
 
     private static final String SAMPLE_EVENT_KEY_VERIFICATION =
@@ -185,17 +188,38 @@ public class VerificationEventHookHandlerTest {
         }
     }
 
+    @Test(expectedExceptions = IdentityEventException.class)
+    public void testHandleEventWithException() throws ConfigurationManagementException, IdentityEventException {
+
+        Event event = new Event("VERIFICATION");
+        Resources resources = createResourcesWithAttributes(Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT);
+        EventPublisherConfig eventPublisherConfig = new EventPublisherConfig(true,
+                new ResourceConfig(new JSONObject()));
+
+        try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
+            mocked.when(() -> PayloadBuilderFactory.getVerificationEventPayloadBuilder(EventSchema.CAEP)).
+                    thenReturn(mockedVerificationEventPayloadBuilder);
+            when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
+            when(mockedEventConfigManager.getEventUri(anyString())).thenReturn(SAMPLE_EVENT_KEY_VERIFICATION);
+            when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString())).
+                    thenReturn(eventPublisherConfig);
+
+            verificationEventHookHandler.handleEvent(event);
+        }
+    }
+
     private Event createEventWithProperties(String eventName) {
 
         HashMap<String, Object> properties = new HashMap<>();
         HashMap<String, Object> params = new HashMap<>();
         AuthenticatedUser authenticatedUser = mock(AuthenticatedUser.class);
-        when(authenticatedUser.getTenantDomain()).thenReturn("sample-domain");
+        AuthenticationContext authenticationContext = mock(AuthenticationContext.class);
+        when(authenticationContext.getTenantDomain()).thenReturn("sample-domain");
         params.put("request", mock(HttpServletRequest.class));
         params.put("user", authenticatedUser);
         params.put("streamId", SAMPLE_STREAM_ID);
         params.put("state", SAMPLE_STATE);
-        properties.put("context", mock(AuthenticationContext.class));
+        properties.put("context", authenticationContext);
         properties.put("authenticationStatus", AuthenticatorStatus.PASS);
         properties.put("params", params);
         properties.put("sessionContext", mock(SessionContext.class));

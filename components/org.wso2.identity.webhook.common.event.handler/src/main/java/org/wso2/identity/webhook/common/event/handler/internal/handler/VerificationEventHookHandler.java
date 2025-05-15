@@ -39,6 +39,9 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigM
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
+/**
+ * This class is responsible for handling verification events.
+ */
 public class VerificationEventHookHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(VerificationEventHookHandler.class);
@@ -73,7 +76,7 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
 
     private boolean isSupportedEvent(String eventName) {
 
-        return eventName.equals("VERIFICATION");
+        return eventName.equals(IdentityEventConstants.EventName.VERIFICATION.name());
     }
 
     @Override
@@ -89,7 +92,7 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
         EventPayload eventPayload;
 
         try {
-            String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
+            String tenantDomain = eventData.getAuthenticationContext().getTenantDomain();
             eventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
                     tenantDomain, eventData.getEventName(), eventConfigManager);
 
@@ -104,8 +107,9 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
 
             }
-        } catch (IdentityEventException e) {
+        } catch (Exception e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
+            throw new IdentityEventException("Error while retrieving event publisher configuration for tenant.", e);
         }
     }
 }

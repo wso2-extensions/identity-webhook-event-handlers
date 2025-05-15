@@ -135,7 +135,7 @@ public class EventConfigManagerTest {
         Resources resources = createResourcesWithAttributes(eventHandlerKey,
                 "{\"publishEnabled\":true}");
         EventPublisherConfig config = eventConfigManager.extractEventPublisherConfig(resources, eventName);
-        assertEquals(config.isPublishEnabled(), expectedPublishEnabled,  "Publish should be enabled.");
+        assertEquals(config.isPublishEnabled(), expectedPublishEnabled, "Publish should be enabled.");
     }
 
     @Test

@@ -35,6 +35,9 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
+/**
+ * Unit test class for {@link CAEPVerificationEventPayloadBuilder}.
+ */
 public class CAEPVerificationEventPayloadBuilderTest {
 
     @InjectMocks
@@ -72,4 +75,19 @@ public class CAEPVerificationEventPayloadBuilderTest {
         assertEquals(((CAEPVerificationEventPayload) payload).getState(), state);
     }
 
+    @Test
+    public void testBuildVerificationEventPayloadWithoutState() {
+
+        String streamId = "streamId";
+
+        Map<String, Object> eventParams = new HashMap<>();
+        eventParams.put("streamId", streamId);
+
+        EventData eventData = EventData.builder().eventParams(eventParams).build();
+
+        EventPayload payload = caepVerificationEventPayloadBuilder.buildVerificationEventPayload(eventData);
+
+        assertTrue(payload instanceof CAEPVerificationEventPayload);
+        assertEquals(((CAEPVerificationEventPayload) payload).getState(), null);
+    }
 }
