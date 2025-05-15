@@ -66,7 +66,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         UserStore userStore = new UserStore(userStoreDomainName);
 
         Organization organization = new Organization(tenantId, tenantDomain);
-//        String initiatorType = String.valueOf(properties.get(IdentityEventConstants.EventProperty.INITIATOR_TYPE));
+        String initiatorType = String.valueOf(properties.get(IdentityEventConstants.EventProperty.INITIATOR_TYPE));
 
         return new WSO2UserGroupUpdateEventPayload.Builder()
                 .initiatorType(initiatorType)

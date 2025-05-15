@@ -108,7 +108,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         params.put(USER_STORE_MANAGER, userStoreManager);
         params.put(IdentityEventConstants.EventProperty.ROLE_NAME, ROLE_NAME);
-//        params.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, "admin");
+        params.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, "admin");
 
         String[] addedUsers = new String[]{DOMAIN_QUALIFIED_ADDED_USER_NAME};
         params.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
@@ -133,7 +133,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userGroupUpdateSuccessPayload);
 
         assertNotNull(userGroupUpdateSuccessPayload.getInitiatorType());
-//        assertEquals(userGroupUpdateSuccessPayload.getInitiatorType(), "admin");
+        assertEquals(userGroupUpdateSuccessPayload.getInitiatorType(), "admin");
 
         assertNotNull(userGroupUpdateSuccessPayload.getOrganization());
         assertEquals(String.valueOf(userGroupUpdateSuccessPayload.getOrganization().getId()),
