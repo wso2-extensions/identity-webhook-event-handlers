@@ -21,6 +21,9 @@ package org.wso2.identity.webhook.caep.event.handler.internal.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 
+/**
+ * This class represents the payload of a CAEP verification event.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CAEPVerificationEventPayload extends EventPayload {
 
@@ -40,6 +43,9 @@ public class CAEPVerificationEventPayload extends EventPayload {
         this.state = builder.state;
     }
 
+    /**
+     * Builder class for CAEPVerificationEventPayload.
+     */
     public static class Builder {
 
         private String state;

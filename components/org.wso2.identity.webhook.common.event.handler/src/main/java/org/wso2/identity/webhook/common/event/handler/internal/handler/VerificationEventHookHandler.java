@@ -97,7 +97,7 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
                 eventPayload = payloadBuilder.buildVerificationEventPayload(eventData);
                 Subject subject = EventHookHandlerUtils.buildVerificationSubject(eventData);
                 String eventUri = eventConfigManager.getEventUri(EventHookHandlerUtils.
-                        resolveEventHandlerKey(eventSchema, IdentityEventConstants.EventName.valueOf("VERIFICATION")));
+                        resolveEventHandlerKey(eventSchema, IdentityEventConstants.EventName.VERIFICATION));
 
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
                         buildSecurityEventToken(eventPayload, eventUri, subject);

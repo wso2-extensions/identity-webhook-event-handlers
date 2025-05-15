@@ -26,6 +26,9 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
 import java.util.Map;
 
+/**
+ * This class is responsible for building the CAEP verification event payload.
+ */
 public class CAEPVerificationEventPayloadBuilder implements VerificationEventPayloadBuilder {
 
     @Override

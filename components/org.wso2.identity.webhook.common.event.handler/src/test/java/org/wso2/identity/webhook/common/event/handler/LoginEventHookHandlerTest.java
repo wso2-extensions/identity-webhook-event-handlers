@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -121,6 +122,13 @@ public class LoginEventHookHandlerTest {
 
         Mockito.reset(mockedEventHookHandlerUtils);
         Mockito.reset(mockedEventPublisherService);
+    }
+
+    @AfterClass
+    public void tearDownUtilities() {
+
+        closeMockedServiceURLBuilder();
+        closeMockedIdentityTenantUtil();
     }
 
     @Test
@@ -238,12 +246,6 @@ public class LoginEventHookHandlerTest {
         mockedEventHookHandlerUtils = mock(EventHookHandlerUtils.class, withSettings()
                 .defaultAnswer(CALLS_REAL_METHODS));
         loginEventHookHandler = new LoginEventHookHandler(mockedEventConfigManager);
-    }
-
-    private void tearDownUtilities() {
-
-        closeMockedServiceURLBuilder();
-        closeMockedIdentityTenantUtil();
     }
 
     private Event createEvent(String eventName) {

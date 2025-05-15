@@ -19,10 +19,14 @@
 package org.wso2.identity.webhook.common.event.handler;
 
 import org.json.simple.JSONObject;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -40,7 +44,9 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
+import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
@@ -63,16 +69,22 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
+import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedIdentityTenantUtil;
+import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedServiceURLBuilder;
+import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockIdentityTenantUtil;
+import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockServiceURLBuilder;
 
 public class VerificationEventHookHandlerTest {
 
     private static final String SAMPLE_EVENT_KEY_VERIFICATION =
-            "https://schemas.openid.net/secevent/caep/event-type/verification";
+            "https://schemas.openid.net/secevent/ssf/event-type/verification";
     private static final String SAMPLE_STREAM_ID = "23fqa3-2fawq30-ag234";
     private static final String SAMPLE_STATE = "ani23fao10fao201a1fano";
     private static final String SAMPLE_ATTRIBUTE_JSON = "{\"sendCredentials\":false,\"publishEnabled\":true}";
@@ -96,12 +108,26 @@ public class VerificationEventHookHandlerTest {
     private EventHookHandlerUtils mockedEventHookHandlerUtils;
 
     @BeforeClass
-    public void setupClass() throws IdentityEventException {
+    public void setupClass() {
 
         MockitoAnnotations.openMocks(this);
         setupDataHolderMocks();
         setupPayloadBuilderMocks();
         setupUtilities();
+    }
+
+    @AfterMethod
+    public void tearDown() {
+
+        Mockito.reset(mockedEventHookHandlerUtils);
+        Mockito.reset(mockedEventPublisherService);
+    }
+
+    @AfterClass
+    public void tearDownClass() {
+
+        closeMockedServiceURLBuilder();
+        closeMockedIdentityTenantUtil();
     }
 
     @Test
@@ -130,7 +156,8 @@ public class VerificationEventHookHandlerTest {
     public Object[][] eventDataProvider() {
 
         return new Object[][]{{
-                "VERIFICATION", Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT,
+                IdentityEventConstants.EventName.VERIFICATION.name(),
+                Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT,
                 SAMPLE_EVENT_KEY_VERIFICATION}
         };
     }
@@ -153,6 +180,8 @@ public class VerificationEventHookHandlerTest {
                     thenReturn(eventPublisherConfig);
 
             verificationEventHookHandler.handleEvent(event);
+
+            verifyEventPublishedWithExpectedKey(expectedEventKey);
         }
     }
 
@@ -191,6 +220,8 @@ public class VerificationEventHookHandlerTest {
 
     private void setupUtilities() {
 
+        mockServiceURLBuilder();
+        mockIdentityTenantUtil();
         mockedEventHookHandlerUtils = mock(EventHookHandlerUtils.class, withSettings()
                 .defaultAnswer(CALLS_REAL_METHODS));
         verificationEventHookHandler = new VerificationEventHookHandler(mockedEventConfigManager);
@@ -207,5 +238,16 @@ public class VerificationEventHookHandlerTest {
         when(mockedVerificationEventPayloadBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
         when(mockedVerificationEventPayloadBuilder.buildVerificationEventPayload(any(EventData.class)))
                 .thenReturn(mockedEventPayload);
+    }
+
+    private void verifyEventPublishedWithExpectedKey(String expectedEventKey) {
+
+        ArgumentCaptor<SecurityEventTokenPayload> argumentCaptor = ArgumentCaptor
+                .forClass(SecurityEventTokenPayload.class);
+        verify(mockedEventPublisherService, times(1)).publish(argumentCaptor.capture(),
+                any(EventContext.class));
+
+        SecurityEventTokenPayload capturedEventPayload = argumentCaptor.getValue();
+        assertEquals(capturedEventPayload.getEvents().keySet().iterator().next(), expectedEventKey);
     }
 }

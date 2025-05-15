@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -75,6 +76,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import static org.testng.Assert.assertEquals;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.SP_TO_CARBON_CLAIM_MAPPING;
+import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedIdentityTenantUtil;
+import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedServiceURLBuilder;
+import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockIdentityTenantUtil;
+import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockServiceURLBuilder;
 
 /**
  * Unit tests for the SessionEventHookHandlerTest class and related classes.
@@ -120,6 +125,13 @@ public class SessionEventHookHandlerTest {
 
         Mockito.reset(mockedEventHookHandlerUtils);
         Mockito.reset(mockedEventPublisherService);
+    }
+
+    @AfterClass
+    public void tearDownClass() {
+
+        closeMockedServiceURLBuilder();
+        closeMockedIdentityTenantUtil();
     }
 
     @DataProvider(name = "eventDataProvider")
@@ -226,6 +238,8 @@ public class SessionEventHookHandlerTest {
 
     private void setupUtilities() {
 
+        mockServiceURLBuilder();
+        mockIdentityTenantUtil();
         mockedEventHookHandlerUtils = mock(EventHookHandlerUtils.class, withSettings()
                 .defaultAnswer(CALLS_REAL_METHODS));
         sessionEventHookHandler = new SessionEventHookHandler(mockedEventConfigManager);

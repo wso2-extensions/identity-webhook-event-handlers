@@ -36,12 +36,6 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigM
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
-import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_CREATE;
-import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_EXPIRE;
-import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_EXTEND;
-import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_TERMINATE;
-import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_UPDATE;
-
 /**
  * This class handles session events and publishes them to the configured event publisher.
  */
@@ -74,8 +68,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
         try {
             String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
-            sessionEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant((String)
-                            tenantDomain,
+            sessionEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(tenantDomain,
                     event.getEventName(), eventConfigManager);
 
             EventPayload eventPayload = null;

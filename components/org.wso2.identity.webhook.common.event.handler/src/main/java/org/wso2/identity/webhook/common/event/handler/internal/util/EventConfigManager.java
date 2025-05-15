@@ -155,7 +155,7 @@ public class EventConfigManager {
                     || eventName.equals(IdentityEventConstants.EventName.SESSION_EXTEND.name()));
         }
         if (Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT.equals(attribute.getKey())) {
-            return (eventName.equals("VERIFICATION"));
+            return (eventName.equals(IdentityEventConstants.EventName.VERIFICATION.name()));
         }
         return false;
     }
