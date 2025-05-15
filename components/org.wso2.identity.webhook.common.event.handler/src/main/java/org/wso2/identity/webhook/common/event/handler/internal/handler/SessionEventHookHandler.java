@@ -113,15 +113,17 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                                     EventHookHandlerUtils.resolveEventHandlerKey(schema, SESSION_EXTEND));
                             break;
                     }
-                    Subject subject = null;
-                    if (schema.equals(EventSchema.CAEP)) {
-                        subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
-                    }
-                    String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
+                    if (eventPayload != null) {
+                        Subject subject = null;
+                        if (schema.equals(EventSchema.CAEP)) {
+                            subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
+                        }
+                        String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
 
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
-                            buildSecurityEventToken(eventPayload, eventUri, subject);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                        SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
+                                buildSecurityEventToken(eventPayload, eventUri, subject);
+                        EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                    }
                 }
             } catch (IdentityEventException e) {
                 log.debug("Error while retrieving event publisher configuration for tenant.", e);
