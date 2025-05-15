@@ -27,6 +27,9 @@ import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils
 import static org.testng.Assert.assertEquals;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedServiceURLBuilder;
 
+/**
+ * Unit test class for EventPayloadUtils.
+ */
 public class EventPayloadUtilsTest {
 
     @BeforeClass

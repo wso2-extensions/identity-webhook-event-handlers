@@ -20,14 +20,17 @@ package org.wso2.identity.webhook.common.event.handler.internal.handler;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.identity.base.IdentityRuntimeException;
+import org.wso2.carbon.identity.core.bean.context.MessageContext;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.event.common.publisher.model.common.Subject;
-import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
@@ -37,22 +40,43 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHan
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
 /**
- * This class handles session events and publishes them to the configured event publisher.
+ * This class is responsible for handling verification events.
  */
-public class SessionEventHookHandler extends AbstractEventHandler {
+public class VerificationEventHookHandler extends AbstractEventHandler {
 
-    private static final Log log = LogFactory.getLog(SessionEventHookHandler.class);
+    private static final Log log = LogFactory.getLog(VerificationEventHookHandler.class);
+
     private final EventConfigManager eventConfigManager;
 
-    public SessionEventHookHandler(EventConfigManager eventConfigManager) {
+    public VerificationEventHookHandler(EventConfigManager eventConfigManager) {
 
         this.eventConfigManager = eventConfigManager;
     }
 
     @Override
+    public boolean canHandle(MessageContext messageContext) throws IdentityRuntimeException {
+
+        IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
+        String eventName = identityContext.getEvent().getEventName();
+
+        boolean canHandle = isSupportedEvent(eventName);
+        if (canHandle) {
+            log.debug(eventName + " event can be handled.");
+        } else {
+            log.debug(eventName + " event cannot be handled.");
+        }
+        return canHandle;
+    }
+
+    @Override
     public String getName() {
 
-        return Constants.SESSION_EVENT_HOOK_NAME;
+        return Constants.VERIFICATION_EVENT_HOOK_NAME;
+    }
+
+    private boolean isSupportedEvent(String eventName) {
+
+        return eventName.equals(IdentityEventConstants.EventName.VERIFICATION.name());
     }
 
     @Override
@@ -60,52 +84,32 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
-        // TODO: Get the schema type from tenant configuration
-        EventSchema schema = EventSchema.CAEP;
-        SessionEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getSessionEventPayloadBuilder(schema);
+        EventSchema eventSchema = EventSchema.CAEP;
+        VerificationEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getVerificationEventPayloadBuilder(eventSchema);
 
-        EventPublisherConfig sessionEventPublisherConfig;
+        EventPublisherConfig eventPublisherConfig;
+        EventPayload eventPayload;
 
         try {
-            String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
-            sessionEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(tenantDomain,
-                    event.getEventName(), eventConfigManager);
+            String tenantDomain = eventData.getAuthenticationContext().getTenantDomain();
+            eventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
+                    tenantDomain, eventData.getEventName(), eventConfigManager);
 
-            EventPayload eventPayload = null;
-
-            if (sessionEventPublisherConfig.isPublishEnabled()) {
-                String eventUri = eventConfigManager.getEventUri(
-                        EventHookHandlerUtils.resolveEventHandlerKey(schema,
-                                IdentityEventConstants.EventName.valueOf(event.getEventName())));
-                switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
-                    case SESSION_TERMINATE:
-                        eventPayload = payloadBuilder.buildSessionTerminateEvent(eventData);
-                        break;
-                    case SESSION_EXPIRE:
-                        eventPayload = payloadBuilder.buildSessionExpireEvent(eventData);
-                        break;
-                    case SESSION_CREATE:
-                        eventPayload = payloadBuilder.buildSessionCreateEvent(eventData);
-                        break;
-                    case SESSION_UPDATE:
-                        eventPayload = payloadBuilder.buildSessionUpdateEvent(eventData);
-                        break;
-                    case SESSION_EXTEND:
-                        eventPayload = payloadBuilder.buildSessionExtendEvent(eventData);
-                        break;
-                }
-                Subject subject = null;
-                if (schema.equals(EventSchema.CAEP)) {
-                    subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
-                }
+            if (eventPublisherConfig.isPublishEnabled()) {
+                eventPayload = payloadBuilder.buildVerificationEventPayload(eventData);
+                Subject subject = EventHookHandlerUtils.buildVerificationSubject(eventData);
+                String eventUri = eventConfigManager.getEventUri(EventHookHandlerUtils.
+                        resolveEventHandlerKey(eventSchema, IdentityEventConstants.EventName.VERIFICATION));
 
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
                         buildSecurityEventToken(eventPayload, eventUri, subject);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-            }
 
-        } catch (IdentityEventException e) {
+            }
+        } catch (Exception e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
+            throw new IdentityEventException("Error while retrieving event publisher configuration for tenant.", e);
         }
     }
 }

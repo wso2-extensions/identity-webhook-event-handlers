@@ -50,9 +50,7 @@ public class TestUtils {
             @Override
             public ServiceURLBuilder addPath(String... strings) {
 
-                Arrays.stream(strings).forEach(x -> {
-                    path += "/" + x;
-                });
+                Arrays.stream(strings).forEach(x -> path += "/" + x);
                 return this;
             }
 
@@ -94,7 +92,7 @@ public class TestUtils {
      */
     public static void closeMockedServiceURLBuilder() {
 
-        if (mockedStaticServiceURLBuilder != null) {
+        if (mockedStaticServiceURLBuilder != null && !mockedStaticServiceURLBuilder.isClosed()) {
             mockedStaticServiceURLBuilder.close();
         }
     }
@@ -113,7 +111,7 @@ public class TestUtils {
      */
     public static void closeMockedIdentityTenantUtil() {
 
-        if (mockedStaticIdentityTenantUtil != null) {
+        if (mockedStaticIdentityTenantUtil != null && !mockedStaticIdentityTenantUtil.isClosed()) {
             mockedStaticIdentityTenantUtil.close();
         }
     }

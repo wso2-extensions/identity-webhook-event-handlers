@@ -52,5 +52,4 @@ public class EventHookHandlerDataHolderTest {
         instance.setLoginEventPayloadBuilders(loginEventPayloadBuilders);
         assertNotNull(instance.getLoginEventPayloadBuilders(), "LoginEventPayloadBuilders should not be null");
     }
-
 }

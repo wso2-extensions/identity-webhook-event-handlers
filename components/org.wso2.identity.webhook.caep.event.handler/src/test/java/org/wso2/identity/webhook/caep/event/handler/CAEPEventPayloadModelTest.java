@@ -24,6 +24,7 @@ import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPCredentia
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedAndPresentedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPTokenClaimsChangeEventPayload;
+import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPVerificationEventPayload;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -162,5 +163,18 @@ public class CAEPEventPayloadModelTest {
         assertEquals(payload.getX509Issuer(), x509Issuer);
         assertEquals(payload.getX509Serial(), x509Serial);
         assertEquals(payload.getFidoAaguid(), fidoAaguid);
+    }
+
+    @Test
+    public void testCAEPVerificationEventPayload() {
+
+        String state = "state";
+
+        CAEPVerificationEventPayload payload = new CAEPVerificationEventPayload.Builder()
+                .state(state)
+                .build();
+
+        assertNotNull(payload);
+        assertEquals(payload.getState(), state);
     }
 }

@@ -23,6 +23,7 @@ import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,7 @@ public class EventHookHandlerDataHolder {
     private List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
     private List<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
     private List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
+    private List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
 
@@ -46,6 +48,36 @@ public class EventHookHandlerDataHolder {
     public static EventHookHandlerDataHolder getInstance() {
 
         return instance;
+    }
+
+    /**
+     * Get the list of verification event payload builder implementations available.
+     *
+     * @return List of verification event payload builder implementations.
+     */
+    public List<VerificationEventPayloadBuilder> getVerificationEventPayloadBuilders() {
+
+        return verificationEventPayloadBuilders;
+    }
+
+    /**
+     * Add a verification event payload builder to the list.
+     *
+     * @param verificationEventPayloadBuilder A verification event payload builders.
+     */
+    public void addVerificationEventPayloadBuilder(VerificationEventPayloadBuilder verificationEventPayloadBuilder) {
+
+        verificationEventPayloadBuilders.add(verificationEventPayloadBuilder);
+    }
+
+    /**
+     * Remove a verification event payload builder from the list.
+     *
+     * @param verificationEventPayloadBuilder A verification event payload builders.
+     */
+    public void removeVerificationEventPayloadBuilder(VerificationEventPayloadBuilder verificationEventPayloadBuilder) {
+
+        verificationEventPayloadBuilders.remove(verificationEventPayloadBuilder);
     }
 
     /**
