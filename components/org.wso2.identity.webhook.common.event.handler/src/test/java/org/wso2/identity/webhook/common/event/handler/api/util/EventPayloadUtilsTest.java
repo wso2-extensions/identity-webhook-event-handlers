@@ -16,13 +16,13 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.util;
+package org.wso2.identity.webhook.common.event.handler.api.util;
 
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
+import org.wso2.identity.webhook.common.event.handler.util.TestUtils;
 
 import static org.testng.Assert.assertEquals;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedServiceURLBuilder;

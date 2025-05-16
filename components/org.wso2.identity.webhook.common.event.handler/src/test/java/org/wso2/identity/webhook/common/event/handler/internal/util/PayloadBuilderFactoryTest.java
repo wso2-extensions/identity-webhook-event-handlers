@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler;
+package org.wso2.identity.webhook.common.event.handler.internal.util;
 
 import org.mockito.Mockito;
 import org.testng.annotations.BeforeClass;
@@ -27,7 +27,6 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationE
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
 import java.util.List;
 

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.builder;
+package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -32,7 +32,6 @@ import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.config.RealmConfiguration;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserGroupUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Group;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
