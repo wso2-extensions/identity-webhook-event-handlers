@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.builder;
+package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -35,8 +35,8 @@ import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationFailedEventPayload;
@@ -139,6 +139,11 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         when(mockEventData.getAuthenticatedUser()).thenReturn(null);
         payloadBuilder.buildAuthenticationSuccessEvent(mockEventData);
+    }
+
+    @Test
+    public void testGetEventSchemaType() {
+        assertEquals(payloadBuilder.getEventSchemaType(), EventSchema.WSO2);
     }
 
     @DataProvider(name = "failedEventDataProvider")

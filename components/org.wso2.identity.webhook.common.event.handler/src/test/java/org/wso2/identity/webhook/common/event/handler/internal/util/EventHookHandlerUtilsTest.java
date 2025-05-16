@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.util;
+package org.wso2.identity.webhook.common.event.handler.internal.util;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -40,7 +40,7 @@ import org.wso2.identity.event.common.publisher.model.common.SimpleSubject;
 import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
+import org.wso2.identity.webhook.common.event.handler.util.TestUtils;
 
 import java.util.HashMap;
 import java.util.Map;
