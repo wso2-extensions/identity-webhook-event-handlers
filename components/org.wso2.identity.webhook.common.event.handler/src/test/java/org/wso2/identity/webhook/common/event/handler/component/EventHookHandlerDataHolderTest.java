@@ -20,6 +20,7 @@ package org.wso2.identity.webhook.common.event.handler.component;
 
 import org.testng.annotations.Test;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 
 import java.util.ArrayList;
@@ -51,6 +52,17 @@ public class EventHookHandlerDataHolderTest {
         loginEventPayloadBuilders.add(mockedLoginEventPayloadBuilder);
         instance.setLoginEventPayloadBuilders(loginEventPayloadBuilders);
         assertNotNull(instance.getLoginEventPayloadBuilders(), "LoginEventPayloadBuilders should not be null");
+    }
+
+    @Test
+    public void testSetUserOperationPayloadBuilder() {
+
+        EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
+        UserOperationEventPayloadBuilder mockedUserOperationPayloadBuilder = mock(UserOperationEventPayloadBuilder.class);
+        ArrayList<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
+        userOperationEventPayloadBuilders.add(mockedUserOperationPayloadBuilder);
+        instance.setUserOperationEventPayloadBuilders(userOperationEventPayloadBuilders);
+        assertNotNull(instance.getUserOperationEventPayloadBuilders(), "UserOperationEventPayloadBuilder should not be null");
     }
 
 }

@@ -37,6 +37,7 @@ import org.wso2.carbon.identity.configuration.mgt.core.model.Resource;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
@@ -119,6 +120,7 @@ public class UserOperationEventHookHandlerTest {
 
     @AfterMethod
     public void tearDownMethod() {
+
         Mockito.reset(mockedEventHookHandlerUtils);
         Mockito.reset(mockedEventPublisherService);
     }
@@ -201,6 +203,35 @@ public class UserOperationEventHookHandlerTest {
         }
     }
 
+    @Test(expectedExceptions = IdentityEventException.class)
+    public void testHandleEventThrowsExceptionAtNoProperties() throws IdentityEventException, ConfigurationManagementException {
+
+        Event event = new Event(IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE, null);
+        Resources resources =
+                createResourcesWithAttributes(Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_LIST_OF_ROLE_EVENT);
+        EventPublisherConfig eventPublisherConfig = new EventPublisherConfig(false,
+                new ResourceConfig(new JSONObject()));
+
+        try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
+            mocked.when(() -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder(anyString()))
+                    .thenReturn(mockedUserOperationEventPayloadBuilder);
+            reset(mockedConfigurationManager);
+            when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
+            when(mockedEventConfigManager.getEventPublisherConfigForTenant(anyString(), anyString())).thenReturn(
+                    eventPublisherConfig);
+            when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString()))
+                    .thenReturn(eventPublisherConfig);
+
+            userOperationEventHookHandler.handleEvent(event);
+        }
+    }
+
+    @Test(expectedExceptions = IdentityEventException.class)
+    public void testExceptionOnNullTenant() throws IdentityEventException {
+        EventConfigManager eventConfigManager =  EventConfigManager.getInstance();
+        eventConfigManager.getEventPublisherConfigForTenant(null, IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE);
+    }
+
     private void setupDataHolderMocks() {
 
         EventHookHandlerDataHolder.getInstance().setConfigurationManager(mockedConfigurationManager);
@@ -264,5 +295,12 @@ public class UserOperationEventHookHandlerTest {
 
         SecurityEventTokenPayload capturedEventPayload = argumentCaptor.getValue();
         assertEquals(capturedEventPayload.getEvents().keySet().iterator().next(), expectedEventKey);
+    }
+
+    @Test
+    public void testGetName() {
+
+        String name = userOperationEventHookHandler.getName();
+        assertEquals(name, Constants.USER_OPERATION_EVENT_HOOK_NAME);
     }
 }
