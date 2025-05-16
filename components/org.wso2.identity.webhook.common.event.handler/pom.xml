@@ -210,7 +210,6 @@
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
-                    <workingDirectory>${project.basedir}/src/test/resources</workingDirectory>
                 </configuration>
             </plugin>
         </plugins>
