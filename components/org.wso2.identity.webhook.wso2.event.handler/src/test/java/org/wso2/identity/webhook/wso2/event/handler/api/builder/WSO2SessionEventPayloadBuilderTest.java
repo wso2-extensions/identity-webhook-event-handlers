@@ -20,7 +20,6 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -30,8 +29,10 @@ import org.wso2.carbon.identity.application.authentication.framework.config.mode
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
+import org.wso2.carbon.identity.application.authentication.framework.model.Application;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedIdPData;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
@@ -52,8 +53,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedIdentityTenantUtil;
@@ -115,46 +114,51 @@ public class WSO2SessionEventPayloadBuilderTest {
     @DataProvider(name = "revokedEventDataProvider")
     public Object[][] revokedEventDataProvider() {
 
-        List<String> sessionIds = new ArrayList<>();
-        sessionIds.add("sessionId1");
-        sessionIds.add("sessionId2");
+        List<UserSession> sessions = new ArrayList<>();
+        UserSession session1 = getUserSession("sessionId1", "Sample1", "SampleApp1", "1");
+        sessions.add(session1);
+        UserSession session2 = getUserSession("sessionId2", "Sample2", "SampleApp2", "2");
+        sessions.add(session2);
 
         return new Object[][]{
-                {Flow.InitiatingPersona.ADMIN, "sessionId", null},
-                {Flow.InitiatingPersona.USER, "sessionId", null},
-                {Flow.InitiatingPersona.APPLICATION, null, sessionIds}
+                {Flow.InitiatingPersona.ADMIN, sessions},
+                {Flow.InitiatingPersona.USER, sessions},
+                {Flow.InitiatingPersona.APPLICATION, sessions}
         };
+    }
+
+    private UserSession getUserSession(String id, String applicationSample, String applicationName,
+                                       String applicationId) {
+
+        UserSession session1 = new UserSession();
+        session1.setSessionId(id);
+        Application app = new Application(applicationSample, applicationName, applicationId);
+        session1.setApplications(Collections.singletonList(app));
+        return session1;
     }
 
     @Test(dataProvider = "revokedEventDataProvider")
     public void testBuildSessionTerminateEvent
-            (Flow.InitiatingPersona initiatingEntity, String sessionId, List<String> sessionIds)
+            (Flow.InitiatingPersona initiatingEntity, List<UserSession> sessions)
             throws IdentityEventException {
 
         Map<String, Object> params = new HashMap<>();
-        if (sessionIds != null) {
-            params.put("sessionData", sessionIds);
-        } else {
-            params.put("sessionData", sessionId);
-        }
+        params.put("sessions", sessions);
         params.put("eventTimeStamp", System.currentTimeMillis());
-        params.put("flow", new Flow.Builder()
+        Flow flow = new Flow.Builder()
                 .name(Flow.Name.SESSION_REVOKE)
                 .initiatingPersona(initiatingEntity)
-                .build());
+                .build();
         EventData eventData = new EventData.Builder()
                 .eventName(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name())
                 .authenticatedUser(mockAuthenticatedUser)
                 .authenticationContext(null)
                 .sessionContext(null)
                 .eventParams(params)
+                .flow(flow)
                 .build();
 
-        WSO2SessionEventPayloadBuilder payloadBuilder1 = Mockito.spy(payloadBuilder);
-        when(payloadBuilder1.getSessionContextFromSessionId(anyString(), anyString()))
-                .thenReturn(mockSessionContext);
-
-        EventPayload payload = payloadBuilder1.buildSessionTerminateEvent(eventData);
+        EventPayload payload = payloadBuilder.buildSessionTerminateEvent(eventData);
         assertTrue(payload instanceof WSO2SessionRevokedEventPayload);
 
         WSO2SessionRevokedEventPayload sessionRevokedPayload =

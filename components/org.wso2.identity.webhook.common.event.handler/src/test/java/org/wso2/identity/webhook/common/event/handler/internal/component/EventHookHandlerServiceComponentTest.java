@@ -59,7 +59,7 @@ public class EventHookHandlerServiceComponentTest {
     }
 
     @Test
-    public void testAddLoginEventPayloadBuilder() {
+    public void testAddAndRemoveLoginEventPayloadBuilder() {
 
         EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
         LoginEventPayloadBuilder mockedLoginEventPayloadBuilder = mock(LoginEventPayloadBuilder.class);
@@ -71,10 +71,20 @@ public class EventHookHandlerServiceComponentTest {
                 "LoginEventPayloadBuilders should contain one element");
         assertTrue(instance.getLoginEventPayloadBuilders().contains(mockedLoginEventPayloadBuilder),
                 "LoginEventPayloadBuilders should contain the added element");
+
+        eventHookHandlerServiceComponent.removeLoginEventPayloadBuilder(mockedLoginEventPayloadBuilder);
+        assertNotNull(instance.getLoginEventPayloadBuilders(),
+                "LoginEventPayloadBuilders should not be null");
+        assertEquals(instance.getLoginEventPayloadBuilders().size(), 0,
+                "LoginEventPayloadBuilders should be empty after removal");
+        assertTrue(!instance.getLoginEventPayloadBuilders().contains(mockedLoginEventPayloadBuilder),
+                "LoginEventPayloadBuilders should not contain the removed element");
+
+        eventHookHandlerServiceComponent.addLoginEventPayloadBuilder(mockedLoginEventPayloadBuilder);
     }
 
     @Test
-    public void testAddSessionEventPayloadBuilder() {
+    public void testAddAndRemoveSessionEventPayloadBuilder() {
 
         EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
         SessionEventPayloadBuilder mockedSessionEventPayloadBuilder = mock(SessionEventPayloadBuilder.class);
@@ -86,10 +96,20 @@ public class EventHookHandlerServiceComponentTest {
                 "SessionEventPayloadBuilders should contain one element");
         assertTrue(instance.getSessionEventPayloadBuilders().contains(mockedSessionEventPayloadBuilder),
                 "SessionEventPayloadBuilders should contain the added element");
+
+        eventHookHandlerServiceComponent.removeSessionEventPayloadBuilder(mockedSessionEventPayloadBuilder);
+        assertNotNull(instance.getSessionEventPayloadBuilders(),
+                "SessionEventPayloadBuilders should not be null");
+        assertEquals(instance.getSessionEventPayloadBuilders().size(), 0,
+                "SessionEventPayloadBuilders should be empty after removal");
+        assertTrue(!instance.getSessionEventPayloadBuilders().contains(mockedSessionEventPayloadBuilder),
+                "SessionEventPayloadBuilders should not contain the removed element");
+
+        eventHookHandlerServiceComponent.addSessionEventPayloadBuilder(mockedSessionEventPayloadBuilder);
     }
 
     @Test
-    public void testAddCredentialEventPayloadBuilder() {
+    public void testAddAndRemoveCredentialEventPayloadBuilder() {
 
         EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
         CredentialEventPayloadBuilder mockedCredentialEventPayloadBuilder = mock(CredentialEventPayloadBuilder.class);
@@ -101,5 +121,16 @@ public class EventHookHandlerServiceComponentTest {
                 "CredentialEventPayloadBuilders should contain one element");
         assertTrue(instance.getCredentialEventPayloadBuilders().contains(mockedCredentialEventPayloadBuilder),
                 "CredentialEventPayloadBuilders should contain the added element");
+
+        eventHookHandlerServiceComponent.removeCredentialEventPayloadBuilder(mockedCredentialEventPayloadBuilder);
+
+        assertNotNull(instance.getCredentialEventPayloadBuilders(),
+                "CredentialEventPayloadBuilders should not be null");
+        assertEquals(instance.getCredentialEventPayloadBuilders().size(), 0,
+                "CredentialEventPayloadBuilders should be empty after removal");
+        assertTrue(!instance.getCredentialEventPayloadBuilders().contains(mockedCredentialEventPayloadBuilder),
+                "CredentialEventPayloadBuilders should not contain the removed element");
+
+        eventHookHandlerServiceComponent.addCredentialEventPayloadBuilder(mockedCredentialEventPayloadBuilder);
     }
 }

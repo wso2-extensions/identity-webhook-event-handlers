@@ -27,6 +27,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
@@ -38,6 +39,7 @@ import org.wso2.carbon.identity.configuration.mgt.core.search.PrimitiveCondition
 import org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -106,12 +108,14 @@ public class EventHookHandlerUtils {
      */
     public static String extractSessionId(EventData eventData) {
 
+        Map<String, Object> params = eventData.getEventParams();
         // For Session Terminate Events, only extract sessionId if a single session is terminated
         if (eventData.getEventName().equals(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name())) {
-            Object sessionData = eventData.getEventParams().getOrDefault("sessionData", null);
-            if (sessionData != null) {
-                if (sessionData instanceof String) {
-                    return sessionData.toString();
+            List<UserSession> sessions = params.containsKey("sessions") ?
+                    (List<UserSession>) params.get("sessions") : null;
+            if (sessions != null) {
+                if (sessions.size() == 1) {
+                    return sessions.get(0).getSessionId();
                 } else {
                     return null;
                 }
@@ -173,6 +177,7 @@ public class EventHookHandlerUtils {
                 (AuthenticationContext) properties.get("context") : null;
         AuthenticatorStatus status = properties.containsKey("authenticationStatus") ?
                 (AuthenticatorStatus) properties.get("authenticationStatus") : null;
+        Flow flow = properties.containsKey("flow") ? (Flow) properties.get("flow") : null;
         HttpServletRequest request = params != null ? (HttpServletRequest) params.get("request") : null;
 
         AuthenticatedUser authenticatedUser = null;
@@ -197,6 +202,7 @@ public class EventHookHandlerUtils {
                 .authenticatorStatus(status)
                 .authenticatedUser(authenticatedUser)
                 .sessionContext(sessionContext)
+                .flow(flow)
                 .build();
     }
 

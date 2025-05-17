@@ -77,10 +77,10 @@ public class SessionEventHookHandler extends AbstractEventHandler {
             EventPublisherConfig sessionEventPublisherConfig;
 
             try {
-                sessionEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant((String)
-                                eventData.getSessionContext().getProperty("tenantDomain"),
+                sessionEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
+                                eventData.getAuthenticatedUser().getTenantDomain(),
                         event.getEventName(), eventConfigManager);
-
+                // Check if the event is enabled for the tenant
                 EventPayload eventPayload = null;
                 String eventUri = null;
 

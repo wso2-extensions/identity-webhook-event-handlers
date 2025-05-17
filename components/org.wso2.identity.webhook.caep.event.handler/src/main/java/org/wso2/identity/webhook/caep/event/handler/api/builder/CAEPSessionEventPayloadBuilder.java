@@ -61,9 +61,9 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Map<String, String> reasonAdmin = new HashMap<>();
         Map<String, String> reasonUser = new HashMap<>();
 
-        Flow flow = (Flow) params.getOrDefault("flow", null);
+        Flow flow = eventData.getFlow();
         if (flow != null) {
-            // TODO: Switch these with relavant flow names
+            // TODO: Switch these with relevant flow names
             switch (flow.getInitiatingPersona()) {
                 case USER:
                     initiatingEntity = "user";
@@ -100,6 +100,14 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
                     reasonUser.put("en", "User Account was Locked");
                     initiatingEntity = "policy";
                     break;
+                case SESSION_REVOKE:
+                    if (flow.getInitiatingPersona() == Flow.InitiatingPersona.ADMIN) {
+                        reasonAdmin.put("en", "Session Revoked by Admin");
+                        reasonUser.put("en", "Session Revoked by Admin");
+                    } else if (flow.getInitiatingPersona() == Flow.InitiatingPersona.USER) {
+                        reasonAdmin.put("en", "Session Revoked by User");
+                        reasonUser.put("en", "Session Revoked by User");
+                    }
             }
         }
 
