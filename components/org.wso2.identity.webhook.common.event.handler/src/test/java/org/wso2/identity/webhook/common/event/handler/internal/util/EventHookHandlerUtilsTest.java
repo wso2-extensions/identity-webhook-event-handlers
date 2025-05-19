@@ -16,15 +16,15 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.util;
+package org.wso2.identity.webhook.common.event.handler.internal.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -46,7 +46,7 @@ import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
+import org.wso2.identity.webhook.common.event.handler.util.TestUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -73,7 +73,7 @@ public class EventHookHandlerUtilsTest {
 
     private static final String SAMPLE_TENANT_DOMAIN = "myorg";
     private static final String SAMPLE_TENANT_ID = "100";
-    private static final Logger log = LoggerFactory.getLogger(EventHookHandlerUtilsTest.class);
+    private static final Log log = LogFactory.getLog(EventHookHandlerUtilsTest.class);
 
     @Mock
     private AuthenticationContext mockedAuthenticationContext;

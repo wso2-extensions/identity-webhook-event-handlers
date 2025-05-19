@@ -19,14 +19,21 @@
 package org.wso2.identity.webhook.common.event.handler.internal.util;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
+import org.wso2.carbon.identity.configuration.mgt.core.search.ComplexCondition;
+import org.wso2.carbon.identity.configuration.mgt.core.search.Condition;
+import org.wso2.carbon.identity.configuration.mgt.core.search.PrimitiveCondition;
+import org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.IdentityEventServerException;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.config.ResourceConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
@@ -37,6 +44,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType.PrimitiveOperator.EQUALS;
 
 /**
  * This class manages event-related configurations.
@@ -134,6 +145,34 @@ public class EventConfigManager {
         return new EventPublisherConfig();
     }
 
+    /**
+     * Retrieves the EventPublisherConfig for a given tenant domain and event name.
+     * This method fetches the event publisher configuration from the configuration management system
+     * for the specified tenant. If the configuration cannot be retrieved
+     * or an error occurs during the process, an IdentityEventException is thrown.
+     *
+     * @param tenantDomain the domain name of the tenant for which the configuration is being retrieved.
+     * @param eventName    the name of the event for which the publisher configuration is required.
+     * @return the EventPublisherConfig corresponding to the specified tenant and event.
+     * @throws IdentityEventException if the tenant domain is invalid or an error occurs while retrieving the configuration.
+     */
+    public EventPublisherConfig getEventPublisherConfigForTenant(String tenantDomain, String eventName)
+            throws IdentityEventException {
+
+        if (StringUtils.isEmpty(tenantDomain)) {
+            throw new IdentityEventException("Invalid tenant domain: " + tenantDomain);
+        }
+
+        try {
+            Condition condition = createPublisherConfigFilterCondition();
+            Resources publisherConfigResource = EventHookHandlerDataHolder.getInstance().getConfigurationManager()
+                    .getTenantResources(tenantDomain, condition);
+            return extractEventPublisherConfig(publisherConfigResource, eventName);
+        } catch (ConfigurationManagementException e) {
+            throw new IdentityEventException("Error while retrieving event publisher configuration for tenant.", e);
+        }
+    }
+
     private boolean isMatchingEventPublisherConfig(Attribute attribute, String eventName) {
 
         if ((Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT.equals(attribute.getKey()))
@@ -144,6 +183,12 @@ public class EventConfigManager {
             return ((eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()))) ||
                     (eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_FAILURE.name()));
         }
+
+        if ((Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_LIST_OF_ROLE_EVENT.equals(attribute.getKey()) &&
+                eventName.equals(IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE))) {
+            return true;
+        }
+
         if (Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT.equals(attribute.getKey())) {
             return eventName.equals(IdentityEventConstants.EventName.SESSION_TERMINATE.name());
         }
@@ -191,5 +236,15 @@ public class EventConfigManager {
         } catch (ParseException | ClassCastException e) {
             throw new IdentityEventServerException("Error while parsing JSON string", e);
         }
+    }
+
+    private ComplexCondition createPublisherConfigFilterCondition() {
+
+        List<Condition> conditionList = new ArrayList<>();
+        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS,
+                Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
+        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS,
+                Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_NAME));
+        return new ComplexCondition(ConditionType.ComplexOperator.AND, conditionList);
     }
 }

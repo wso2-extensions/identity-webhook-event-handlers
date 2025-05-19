@@ -35,8 +35,11 @@ import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.UserOperationEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.UserOperationEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
@@ -63,14 +66,20 @@ public class EventHookHandlerServiceComponent {
             log.debug("Event Handler is activated.");
             String isLoginEventHandlerEnabled = getIdentityEventProperty(Constants.LOGIN_EVENT_HOOK_NAME,
                     Constants.LOGIN_EVENT_HOOK_ENABLED);
+            String isUserOperationEventHandlerEnabled =
+                    getIdentityEventProperty(Constants.USER_OPERATION_EVENT_HOOK_NAME,
+                            Constants.USER_OPERATION_EVENT_HOOK_ENABLED);
             BundleContext bundleContext = context.getBundleContext();
 
             if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled
                     .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
                         new LoginEventHookHandler(EventConfigManager.getInstance()), null);
-            } else {
-                log.error("Login Event Handler is not enabled.");
+            }
+            if (isUserOperationEventHandlerEnabled != null && isUserOperationEventHandlerEnabled
+                    .equalsIgnoreCase(Boolean.TRUE.toString())) {
+                bundleContext.registerService(AbstractEventHandler.class.getName(),
+                        new UserOperationEventHookHandler(EventConfigManager.getInstance()), null);
             }
 
             String isSessionEventHandlerEnabled = getIdentityEventProperty(Constants.SESSION_EVENT_HOOK_NAME,
@@ -200,6 +209,30 @@ public class EventHookHandlerServiceComponent {
         log.debug("Removing the Login Event Payload Builder Service : " +
                 loginEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().removeLoginEventPayloadBuilder(loginEventPayloadBuilder);
+    }
+
+    @Reference(
+            name = "user.operation.event.payload.builder",
+            service = UserOperationEventPayloadBuilder.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeUserOperationEventPayloadBuilder"
+    )
+    protected void addUserOperationEventPayloadBuilder(
+            UserOperationEventPayloadBuilder userOperationEventPayloadBuilder) {
+
+        log.debug("Adding the User Operation Event Payload Builder Service : " +
+                userOperationEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().addUserOperationEventPayloadBuilder(userOperationEventPayloadBuilder);
+    }
+
+    protected void removeUserOperationEventPayloadBuilder(
+            UserOperationEventPayloadBuilder userOperationEventPayloadBuilder) {
+
+        log.debug("Removing the User Operation Event Payload Builder Service : " +
+                userOperationEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance()
+                .removeUserOperationEventPayloadBuilder(userOperationEventPayloadBuilder);
     }
 
     @Reference(
