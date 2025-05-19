@@ -37,7 +37,6 @@ import org.wso2.carbon.identity.configuration.mgt.core.model.Resource;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
@@ -204,7 +203,8 @@ public class UserOperationEventHookHandlerTest {
     }
 
     @Test(expectedExceptions = IdentityEventException.class)
-    public void testHandleEventThrowsExceptionAtNoProperties() throws IdentityEventException, ConfigurationManagementException {
+    public void testHandleEventThrowsExceptionAtNoProperties() throws IdentityEventException,
+            ConfigurationManagementException {
 
         Event event = new Event(IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE, null);
         Resources resources =
@@ -229,7 +229,8 @@ public class UserOperationEventHookHandlerTest {
     @Test(expectedExceptions = IdentityEventException.class)
     public void testExceptionOnNullTenant() throws IdentityEventException {
         EventConfigManager eventConfigManager =  EventConfigManager.getInstance();
-        eventConfigManager.getEventPublisherConfigForTenant(null, IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE);
+        eventConfigManager.getEventPublisherConfigForTenant(null,
+                IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE);
     }
 
     private void setupDataHolderMocks() {
