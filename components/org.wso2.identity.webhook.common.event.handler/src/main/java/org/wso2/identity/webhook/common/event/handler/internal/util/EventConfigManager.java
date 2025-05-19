@@ -154,7 +154,8 @@ public class EventConfigManager {
      * @param tenantDomain the domain name of the tenant for which the configuration is being retrieved.
      * @param eventName    the name of the event for which the publisher configuration is required.
      * @return the EventPublisherConfig corresponding to the specified tenant and event.
-     * @throws IdentityEventException if the tenant domain is invalid or an error occurs while retrieving the configuration.
+     * @throws IdentityEventException if the tenant domain is invalid or an error occurs while retrieving the
+     * configuration.
      */
     public EventPublisherConfig getEventPublisherConfigForTenant(String tenantDomain, String eventName)
             throws IdentityEventException {
