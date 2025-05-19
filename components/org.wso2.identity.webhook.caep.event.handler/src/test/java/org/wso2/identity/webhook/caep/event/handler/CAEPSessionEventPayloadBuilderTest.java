@@ -23,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.ExternalIdPConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
@@ -30,6 +31,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPSessionEventPayloadBuilder;
@@ -105,13 +107,33 @@ public class CAEPSessionEventPayloadBuilderTest {
         assertEquals(eventSchema, EventSchema.CAEP, "Event schema should be CAEP");
     }
 
-    @Test
-    public void testBuildSessionTerminateEvent() throws IdentityEventException {
+    @DataProvider(name = "sessionTerminationDataProvider")
+    public Object[][] sessionTerminationDataProvider() {
+
+        return new Object[][]{
+                {new Flow.Builder().name(Flow.Name.ACCOUNT_DISABLE)
+                        .initiatingPersona(Flow.InitiatingPersona.ADMIN).build()},
+                {new Flow.Builder().name(Flow.Name.ACCOUNT_LOCK)
+                        .initiatingPersona(Flow.InitiatingPersona.SYSTEM).build()},
+                {new Flow.Builder().name(Flow.Name.LOGOUT)
+                        .initiatingPersona(Flow.InitiatingPersona.APPLICATION).build()},
+                {new Flow.Builder().name(Flow.Name.DELETE_USER)
+                        .initiatingPersona(Flow.InitiatingPersona.ADMIN).build()},
+                {new Flow.Builder().name(Flow.Name.SESSION_REVOKE)
+                        .initiatingPersona(Flow.InitiatingPersona.USER).build()},
+                {new Flow.Builder().name(Flow.Name.SESSION_REVOKE)
+                        .initiatingPersona(Flow.InitiatingPersona.ADMIN).build()},
+        };
+    }
+
+    @Test(dataProvider = "sessionTerminationDataProvider")
+    public void testBuildSessionTerminateEvent(Flow flow) throws IdentityEventException {
 
         when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
         when(mockEventData.getAuthenticatedUser()).thenReturn(mockAuthenticatedUser);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("eventTimestamp", System.currentTimeMillis());
+        when(mockEventData.getFlow()).thenReturn(flow);
         when(mockEventData.getEventParams()).thenReturn(paramMap);
 
         CAEPSessionRevokedEventPayload eventPayload = (CAEPSessionRevokedEventPayload)
