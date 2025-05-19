@@ -21,8 +21,6 @@ package org.wso2.identity.webhook.common.event.handler.internal.component;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.testng.annotations.BeforeMethod;
@@ -43,7 +41,6 @@ import static org.mockito.Mockito.when;
 public class EventHookHandlerServiceComponentTest {
 
     @InjectMocks
-    private EventHookHandlerServiceComponent eventHookHandlerServiceComponent;
     private EventHookHandlerServiceComponent serviceComponent;
 
     @Mock
@@ -70,7 +67,7 @@ public class EventHookHandlerServiceComponentTest {
     @Mock
     private EventPublisherService eventPublisherService;
 
-    @BeforeClass
+    @BeforeMethod
     public void setUp() {
 
         MockitoAnnotations.openMocks(this);

@@ -41,6 +41,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -117,7 +118,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
             return new WSO2SessionRevokedEventPayload.Builder()
                     .user(user)
                     .tenant(tenant)
-                    .userResidentOrganization(b2bUserResidentOrganization)
+                    .organization(b2bUserResidentOrganization)
                     .sessionId(sessions.get(0).getSessionId().toString())
                     .userStore(userStore)
                     .initiatorType(initiatorType)
@@ -127,7 +128,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         return new WSO2SessionRevokedEventPayload.Builder()
                 .user(user)
                 .tenant(tenant)
-                .userResidentOrganization(b2bUserResidentOrganization)
+                .organization(b2bUserResidentOrganization)
                 .userStore(userStore)
                 .initiatorType(initiatorType)
                 .applications(applications)
@@ -178,7 +179,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         List<org.wso2.carbon.identity.application.authentication.framework.model.Application> sessionApplications =
                 params.containsKey("applications") ?
                         (List<org.wso2.carbon.identity.application.authentication.framework.model.Application>)
-                        params.get("applications") : null;
+                        params.get("applications") : Collections.emptyList();
         for (org.wso2.carbon.identity.application.authentication.framework.model.Application sessionApplication :
                 sessionApplications) {
             Application application = new Application(
@@ -192,7 +193,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 .currentAcr(authenticationContext.getSelectedAcr())
                 .user(user)
                 .tenant(tenant)
-                .userResidentOrganization(b2bUserResidentOrganization)
+                .organization(b2bUserResidentOrganization)
                 .userStore(userStore)
                 .applications(applications)
                 .build();

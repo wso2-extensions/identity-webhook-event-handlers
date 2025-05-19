@@ -35,7 +35,7 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
 
         this.user = builder.user;
         this.tenant = builder.tenant;
-        this.userResidentOrganization = builder.userResidentOrganization;
+        this.organization = builder.organization;
         this.userStore = builder.userStore;
         this.applications = builder.applications;
         this.initiatorType = builder.initiatorType;
@@ -65,7 +65,7 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
 
         private User user;
         private Organization tenant;
-        private Organization userResidentOrganization;
+        private Organization organization;
         private UserStore userStore;
         private List<Application> applications;
         private String initiatorType;
@@ -95,9 +95,9 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public Builder userResidentOrganization(Organization userResidentOrganization) {
+        public Builder organization(Organization organization) {
 
-            this.userResidentOrganization = userResidentOrganization;
+            this.organization = organization;
             return this;
         }
 

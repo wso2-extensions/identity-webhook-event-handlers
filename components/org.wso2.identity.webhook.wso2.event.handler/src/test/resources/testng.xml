@@ -21,6 +21,7 @@
         <classes>
             <class name="org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2LoginEventPayloadBuilderTest"/>
             <class name="org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2UserOperationEventPayloadBuilderTest"/>
+            <class name="org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2SessionEventPayloadBuilderTest"/>
         </classes>
     </test>
 </suite>
