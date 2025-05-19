@@ -41,6 +41,7 @@ import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
@@ -54,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedServiceURLBuilder;
@@ -111,6 +113,13 @@ public class WSO2SessionEventPayloadBuilderTest {
         closeMockedIdentityTenantUtil();
     }
 
+    @Test
+    public void testGetEventSchema() {
+
+        EventSchema schema = payloadBuilder.getEventSchemaType();
+        assertEquals(schema, EventSchema.WSO2);
+    }
+
     @DataProvider(name = "revokedEventDataProvider")
     public Object[][] revokedEventDataProvider() {
 
@@ -123,7 +132,8 @@ public class WSO2SessionEventPayloadBuilderTest {
         return new Object[][]{
                 {Flow.InitiatingPersona.ADMIN, sessions},
                 {Flow.InitiatingPersona.USER, sessions},
-                {Flow.InitiatingPersona.APPLICATION, sessions}
+                {Flow.InitiatingPersona.APPLICATION, null},
+                {Flow.InitiatingPersona.SYSTEM, sessions.subList(0, 1)}
         };
     }
 
@@ -195,6 +205,27 @@ public class WSO2SessionEventPayloadBuilderTest {
         assertEquals(sessionCreatePayload.getUserStore().getName(), SAMPLE_USERSTORE_NAME);
         assertEquals(sessionCreatePayload.getTenant().getId(), SAMPLE_TENANT_ID);
         assertEquals(sessionCreatePayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
+    }
+
+    @Test
+    public void testSessionUpdateEvent() throws IdentityEventException {
+
+        EventPayload payload = payloadBuilder.buildSessionUpdateEvent(mockEventData);
+        assertNull(payload);
+    }
+
+    @Test
+    public void testSessionExtend() throws IdentityEventException {
+
+        EventPayload payload = payloadBuilder.buildSessionExtendEvent(mockEventData);
+        assertNull(payload);
+    }
+
+    @Test
+    public void testSessionExpire() throws IdentityEventException {
+
+        EventPayload payload = payloadBuilder.buildSessionExpireEvent(mockEventData);
+        assertNull(payload);
     }
 
     private SessionContext createMockSessionContext() {
