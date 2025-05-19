@@ -98,7 +98,8 @@ public class PayloadBuilderFactoryTest {
         UserOperationEventPayloadBuilder builder = PayloadBuilderFactory.
                 getUserOperationEventPayloadBuilder(EventSchema.WSO2);
         assertNotNull(builder, "The builder should not be null.");
-        assertEquals(builder.getEventSchemaType(), "WSO2", "The schema type should match 'WSO2'.");
+        assertEquals(builder.getEventSchemaType(),
+                EventSchema.WSO2, "The schema type should match 'WSO2'.");
     }
 
     @Test

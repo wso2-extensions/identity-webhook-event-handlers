@@ -44,6 +44,7 @@ import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
@@ -161,7 +162,7 @@ public class UserOperationEventHookHandlerTest {
                 new ResourceConfig(new JSONObject()));
 
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
-            mocked.when(() -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder(anyString()))
+            mocked.when(() -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder(any(EventSchema.class)))
                     .thenReturn(mockedUserOperationEventPayloadBuilder);
             when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
             when(mockedEventConfigManager.getEventUri(anyString())).thenReturn(expectedEventKey);
@@ -187,7 +188,7 @@ public class UserOperationEventHookHandlerTest {
                 new ResourceConfig(new JSONObject()));
 
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
-            mocked.when(() -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder(anyString()))
+            mocked.when(() -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder(any(EventSchema.class)))
                     .thenReturn(mockedUserOperationEventPayloadBuilder);
             reset(mockedConfigurationManager);
             when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
@@ -213,7 +214,7 @@ public class UserOperationEventHookHandlerTest {
                 new ResourceConfig(new JSONObject()));
 
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
-            mocked.when(() -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder(anyString()))
+            mocked.when(() -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder(any(EventSchema.class)))
                     .thenReturn(mockedUserOperationEventPayloadBuilder);
             reset(mockedConfigurationManager);
             when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
@@ -241,7 +242,7 @@ public class UserOperationEventHookHandlerTest {
 
     private void setupPayloadBuilderMocks() throws IdentityEventException {
 
-        when(mockedUserOperationEventPayloadBuilder.getEventSchemaType()).thenReturn("WSO2");
+        when(mockedUserOperationEventPayloadBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
         when(mockedUserOperationEventPayloadBuilder.buildUserGroupUpdateEvent(any(EventData.class)))
                 .thenReturn(mockedEventPayload);
     }

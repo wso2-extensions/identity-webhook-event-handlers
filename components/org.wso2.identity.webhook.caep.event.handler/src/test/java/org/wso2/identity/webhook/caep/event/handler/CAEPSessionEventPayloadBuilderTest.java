@@ -34,6 +34,7 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPSessionEventPayloadBuilder;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedEventPayload;
+import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionPresentedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
@@ -145,8 +146,8 @@ public class CAEPSessionEventPayloadBuilderTest {
         when(mockSessionContext.getProperty("UpdatedTimestamp")).thenReturn(systemTime);
         when(mockEventData.getSessionContext()).thenReturn(mockSessionContext);
 
-        CAEPSessionEstablishedEventPayload eventPayload =
-                (CAEPSessionEstablishedEventPayload) caepSessionEventPayloadBuilder
+        CAEPSessionPresentedEventPayload eventPayload =
+                (CAEPSessionPresentedEventPayload) caepSessionEventPayloadBuilder
                         .buildSessionUpdateEvent(mockEventData);
 
         assertNotNull(eventPayload, "Event payload should not be null");

@@ -135,7 +135,7 @@ public class VerificationEventHookHandlerTest {
     @Test
     public void testCanHandle() {
 
-        Event event = new Event("VERIFICATION");
+        Event event = createEventWithProperties("VERIFICATION");
         IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);
         boolean canHandle = verificationEventHookHandler.canHandle(messageContext);
         assertTrue(canHandle, "The event handler should be able to handle the event.");
