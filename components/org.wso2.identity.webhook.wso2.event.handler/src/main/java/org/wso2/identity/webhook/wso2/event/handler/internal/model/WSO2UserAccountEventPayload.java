@@ -18,37 +18,27 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 
-import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Group;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
-/**
- * Model Class for user group update events in WSO2.
- */
-public class WSO2UserGroupUpdateEventPayload extends WSO2BaseEventPayload {
+public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
 
-    private Group group;
-
-    private WSO2UserGroupUpdateEventPayload(Builder builder) {
+    private WSO2UserAccountEventPayload(Builder builder) {
 
         this.initiatorType = builder.initiatorType;
-        this.group = builder.group;
         this.organization = builder.organization;
+        this.user = builder.user;
         this.userStore = builder.userStore;
     }
 
-    public Group getGroup() {
-
-        return group;
-    }
-
     /**
-     * Builder class to build WSO2UserGroupUpdateEventPayload.
+     * Builder class to build WSO2UserDeleteEventPayload.
      */
     public static class Builder {
 
         private String initiatorType;
-        private Group group;
+        private User user;
         private Organization organization;
         private UserStore userStore;
 
@@ -70,15 +60,15 @@ public class WSO2UserGroupUpdateEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public Builder group(Group group) {
+        public Builder user(User user) {
 
-            this.group = group;
+            this.user = user;
             return this;
         }
 
-        public WSO2UserGroupUpdateEventPayload build() {
+        public WSO2UserAccountEventPayload build() {
 
-            return new WSO2UserGroupUpdateEventPayload(this);
+            return new WSO2UserAccountEventPayload(this);
         }
     }
 }

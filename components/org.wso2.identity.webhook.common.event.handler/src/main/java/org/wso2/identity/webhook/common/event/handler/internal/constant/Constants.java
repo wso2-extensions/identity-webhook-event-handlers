@@ -74,6 +74,8 @@ public class Constants {
         public static final String FLOW = "flow";
     }
 
+    public static final String PRE_DELETE_USER_ID = "PRE_DELETE_USER_ID";
+
     /**
      * Constants for event config names (keys).
      * These names will be equal to the config attribute keys stored in the core config store.
@@ -85,6 +87,8 @@ public class Constants {
             public static final String LOGIN_SUCCESS_EVENT = "logins.loginSuccess";
             public static final String LOGIN_FAILED_EVENT = "logins.loginFailed";
             public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "user-operations.updateUserGroup";
+            public static final String POST_DELETE_USER_EVENT = "user-operations.deleteUser";
+            public static final String POST_UNLOCK_ACCOUNT_EVENT = "user-operations.unlockUser";
             public static final String SESSION_REVOKED_EVENT = "sessions.sessionRevoked";
             public static final String SESSION_CREATED_EVENT = "sessions.sessionCreated";
 
