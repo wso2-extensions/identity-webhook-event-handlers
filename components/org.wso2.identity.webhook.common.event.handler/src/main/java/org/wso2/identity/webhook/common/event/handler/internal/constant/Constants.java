@@ -72,7 +72,7 @@ public class Constants {
         public static final String STATE = "state";
     }
 
-    public static final String PRE_DELETE_USER_USER_ID_FOR_WEB_SUB_HUB = "preDeleteUserUserIdForWebSubHub";
+    public static final String PRE_DELETE_USER_ID = "PRE_DELETE_USER_ID";
 
     /**
      * Constants for event config names (keys).

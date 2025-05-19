@@ -39,7 +39,7 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigM
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
-import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_USER_ID_FOR_WEB_SUB_HUB;
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
 
 /**
  * User Operation Event Hook Handler.
@@ -117,7 +117,7 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                 String userId =
                         (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.USER_ID);
                 // Setting the thread-local to keep user-ID for use when publishing post delete user event.
-                IdentityUtil.threadLocalProperties.get().put(PRE_DELETE_USER_USER_ID_FOR_WEB_SUB_HUB, userId);
+                IdentityUtil.threadLocalProperties.get().put(PRE_DELETE_USER_ID, userId);
 
             } else if (IdentityEventConstants.Event.POST_DELETE_USER.equals(event.getEventName()) &&
                     userOperationEventPublisherConfig.isPublishEnabled()) {

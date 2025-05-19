@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
-import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_USER_ID_FOR_WEB_SUB_HUB;
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_ENDPOINT;
 
 /**
@@ -94,35 +94,40 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         String userName =
                 String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
-        String userId =
-                String.valueOf(IdentityUtil.threadLocalProperties.get().get(PRE_DELETE_USER_USER_ID_FOR_WEB_SUB_HUB));
+        String userId;
 
-        String emailAddress;
         try {
-            emailAddress = userStoreManager.getUserClaimValue(userName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
-                    UserCoreConstants.DEFAULT_PROFILE);
-        } catch (UserStoreException e) {
-            throw new IdentityEventException("Error while extracting user claims for the user : " + userName, e);
+            userId = String.valueOf(IdentityUtil.threadLocalProperties.get().get(PRE_DELETE_USER_ID));
+
+            String emailAddress;
+            try {
+                emailAddress = userStoreManager.getUserClaimValue(userName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
+                        UserCoreConstants.DEFAULT_PROFILE);
+            } catch (UserStoreException e) {
+                throw new IdentityEventException("Error while extracting user claims for the user : " + userName, e);
+            }
+
+            UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
+            List<UserClaim> userClaims = new ArrayList<>();
+            userClaims.add(emailAddressUserClaim);
+
+            User deletedUser = new User();
+            deletedUser.setId(userId);
+            deletedUser.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + userId);
+            deletedUser.setClaims(userClaims);
+
+            Organization organization = new Organization(tenantId, tenantDomain);
+            String initiatorType = String.valueOf(properties.get(IdentityEventConstants.EventProperty.INITIATOR_TYPE));
+
+            return new WSO2UserAccountEventPayload.Builder()
+                    .initiatorType(initiatorType)
+                    .user(deletedUser)
+                    .organization(organization)
+                    .userStore(userStore)
+                    .build();
+        } finally {
+            IdentityUtil.threadLocalProperties.get().remove(PRE_DELETE_USER_ID);
         }
-
-        UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
-        List<UserClaim> userClaims = new ArrayList<>();
-        userClaims.add(emailAddressUserClaim);
-
-        User deletedUser = new User();
-        deletedUser.setId(userId);
-        deletedUser.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + userId);
-        deletedUser.setClaims(userClaims);
-
-        Organization organization = new Organization(tenantId, tenantDomain);
-        String initiatorType = String.valueOf(properties.get(IdentityEventConstants.EventProperty.INITIATOR_TYPE));
-
-        return new WSO2UserAccountEventPayload.Builder()
-                .initiatorType(initiatorType)
-                .user(deletedUser)
-                .organization(organization)
-                .userStore(userStore)
-                .build();
     }
 
     @Override

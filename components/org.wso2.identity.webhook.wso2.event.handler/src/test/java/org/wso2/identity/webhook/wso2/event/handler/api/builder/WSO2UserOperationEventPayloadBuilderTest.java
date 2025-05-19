@@ -52,7 +52,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
-import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_USER_ID_FOR_WEB_SUB_HUB;
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
 import static org.wso2.identity.webhook.wso2.event.handler.builder.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.builder.util.TestUtils.closeMockedServiceURLBuilder;
 import static org.wso2.identity.webhook.wso2.event.handler.builder.util.TestUtils.mockIdentityTenantUtil;
@@ -105,7 +105,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         mockIdentityTenantUtil();
 
         Map<String, Object> threadLocalMap = new HashMap<>();
-        threadLocalMap.put(PRE_DELETE_USER_USER_ID_FOR_WEB_SUB_HUB, DELETED_USER_ID);
+        threadLocalMap.put(PRE_DELETE_USER_ID, DELETED_USER_ID);
         IdentityUtil.threadLocalProperties.set(threadLocalMap);
     }
 
