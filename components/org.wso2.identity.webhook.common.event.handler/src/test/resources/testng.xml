@@ -19,14 +19,15 @@
 <suite name="org.wso2.identity.webhook.common.event.handler">
     <test name="login-event-hook-handler-tests" parallel="false">
         <classes>
-            <class name="org.wso2.identity.webhook.common.event.handler.EventConfigManagerTest"/>
-            <class name="org.wso2.identity.webhook.common.event.handler.util.EventHookHandlerUtilsTest"/>
-            <class name="org.wso2.identity.webhook.common.event.handler.util.EventPayloadUtilsTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManagerTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtilsTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtilsTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerServiceComponentTest"/>
-            <class name="org.wso2.identity.webhook.common.event.handler.LoginEventHookHandlerTest"/>
-            <class name="org.wso2.identity.webhook.common.event.handler.SessionEventHookHandlerTest"/>
-            <class name="org.wso2.identity.webhook.common.event.handler.CredentialEventHookHandlerTest"/>
-            <class name="org.wso2.identity.webhook.common.event.handler.PayloadBuilderFactoryTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandlerTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.SessionEventHookHandlerTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.UserOperationEventHookHandlerTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.CredentialEventHookHandlerTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactoryTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolderTest"/>
         </classes>
     </test>

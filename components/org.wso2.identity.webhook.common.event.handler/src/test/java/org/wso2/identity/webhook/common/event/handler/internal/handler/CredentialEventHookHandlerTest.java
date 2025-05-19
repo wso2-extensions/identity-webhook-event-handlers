@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler;
+package org.wso2.identity.webhook.common.event.handler.internal.handler;
 
 import org.apache.commons.logging.Log;
 import org.mockito.Mock;
@@ -25,7 +25,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.handler.CredentialEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 
 import static org.testng.Assert.assertEquals;

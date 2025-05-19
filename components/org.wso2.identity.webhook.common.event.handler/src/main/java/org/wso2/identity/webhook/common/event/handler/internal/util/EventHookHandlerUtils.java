@@ -189,6 +189,8 @@ public class EventHookHandlerUtils {
                     setLocalUserClaimsToAuthenticatedUser(authenticatedUser, context);
                 }
             }
+        } else {
+            params = properties;
         }
 
         SessionContext sessionContext = properties.containsKey("sessionContext") ?

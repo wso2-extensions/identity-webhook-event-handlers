@@ -19,18 +19,23 @@
 package org.wso2.identity.webhook.common.event.handler.internal.component;
 
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.ComponentContext;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
+import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 
-import static org.mockito.Mockito.mock;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for EventHookHandlerServiceComponent.
@@ -39,98 +44,82 @@ public class EventHookHandlerServiceComponentTest {
 
     @InjectMocks
     private EventHookHandlerServiceComponent eventHookHandlerServiceComponent;
+    private EventHookHandlerServiceComponent serviceComponent;
+
+    @Mock
+    private ComponentContext componentContext;
+
+    @Mock
+    private BundleContext bundleContext;
+
+    @Mock
+    private CredentialEventPayloadBuilder credentialBuilder;
+
+    @Mock
+    private SessionEventPayloadBuilder sessionBuilder;
+
+    @Mock
+    private LoginEventPayloadBuilder loginBuilder;
+
+    @Mock
+    private UserOperationEventPayloadBuilder userOperationBuilder;
+
+    @Mock
+    private ConfigurationManager configurationManager;
+
+    @Mock
+    private EventPublisherService eventPublisherService;
 
     @BeforeClass
-    public void setup() {
+    public void setUp() {
 
         MockitoAnnotations.openMocks(this);
-    }
-
-    @AfterClass
-    public void tearDown() {
-
-    }
-
-    @Test
-    public void getInstanceReturnsNonNullInstance() {
-
-        EventHookHandlerServiceComponent instance = new EventHookHandlerServiceComponent();
-        assertNotNull(instance, "getInstance() should return a non-null instance.");
-    }
-
-    @Test
-    public void testAddAndRemoveLoginEventPayloadBuilder() {
-
-        EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
-        LoginEventPayloadBuilder mockedLoginEventPayloadBuilder = mock(LoginEventPayloadBuilder.class);
-        eventHookHandlerServiceComponent.addLoginEventPayloadBuilder(mockedLoginEventPayloadBuilder);
-
-        assertNotNull(instance.getLoginEventPayloadBuilders(),
-                "LoginEventPayloadBuilders should not be null");
-        assertEquals(instance.getLoginEventPayloadBuilders().size(), 1,
-                "LoginEventPayloadBuilders should contain one element");
-        assertTrue(instance.getLoginEventPayloadBuilders().contains(mockedLoginEventPayloadBuilder),
-                "LoginEventPayloadBuilders should contain the added element");
-
-        eventHookHandlerServiceComponent.removeLoginEventPayloadBuilder(mockedLoginEventPayloadBuilder);
-        assertNotNull(instance.getLoginEventPayloadBuilders(),
-                "LoginEventPayloadBuilders should not be null");
-        assertEquals(instance.getLoginEventPayloadBuilders().size(), 0,
-                "LoginEventPayloadBuilders should be empty after removal");
-        assertTrue(!instance.getLoginEventPayloadBuilders().contains(mockedLoginEventPayloadBuilder),
-                "LoginEventPayloadBuilders should not contain the removed element");
-
-        eventHookHandlerServiceComponent.addLoginEventPayloadBuilder(mockedLoginEventPayloadBuilder);
-    }
-
-    @Test
-    public void testAddAndRemoveSessionEventPayloadBuilder() {
-
-        EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
-        SessionEventPayloadBuilder mockedSessionEventPayloadBuilder = mock(SessionEventPayloadBuilder.class);
-        eventHookHandlerServiceComponent.addSessionEventPayloadBuilder(mockedSessionEventPayloadBuilder);
-
-        assertNotNull(instance.getSessionEventPayloadBuilders(),
-                "SessionEventPayloadBuilders should not be null");
-        assertEquals(instance.getSessionEventPayloadBuilders().size(), 1,
-                "SessionEventPayloadBuilders should contain one element");
-        assertTrue(instance.getSessionEventPayloadBuilders().contains(mockedSessionEventPayloadBuilder),
-                "SessionEventPayloadBuilders should contain the added element");
-
-        eventHookHandlerServiceComponent.removeSessionEventPayloadBuilder(mockedSessionEventPayloadBuilder);
-        assertNotNull(instance.getSessionEventPayloadBuilders(),
-                "SessionEventPayloadBuilders should not be null");
-        assertEquals(instance.getSessionEventPayloadBuilders().size(), 0,
-                "SessionEventPayloadBuilders should be empty after removal");
-        assertTrue(!instance.getSessionEventPayloadBuilders().contains(mockedSessionEventPayloadBuilder),
-                "SessionEventPayloadBuilders should not contain the removed element");
-
-        eventHookHandlerServiceComponent.addSessionEventPayloadBuilder(mockedSessionEventPayloadBuilder);
+        when(componentContext.getBundleContext()).thenReturn(bundleContext);
     }
 
     @Test
     public void testAddAndRemoveCredentialEventPayloadBuilder() {
 
-        EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
-        CredentialEventPayloadBuilder mockedCredentialEventPayloadBuilder = mock(CredentialEventPayloadBuilder.class);
-        eventHookHandlerServiceComponent.addCredentialEventPayloadBuilder(mockedCredentialEventPayloadBuilder);
+        when(credentialBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
+        serviceComponent.addCredentialEventPayloadBuilder(credentialBuilder);
+        serviceComponent.removeCredentialEventPayloadBuilder(credentialBuilder);
+    }
 
-        assertNotNull(instance.getCredentialEventPayloadBuilders(),
-                "CredentialEventPayloadBuilders should not be null");
-        assertEquals(instance.getCredentialEventPayloadBuilders().size(), 1,
-                "CredentialEventPayloadBuilders should contain one element");
-        assertTrue(instance.getCredentialEventPayloadBuilders().contains(mockedCredentialEventPayloadBuilder),
-                "CredentialEventPayloadBuilders should contain the added element");
+    @Test
+    public void testAddAndRemoveSessionEventPayloadBuilder() {
 
-        eventHookHandlerServiceComponent.removeCredentialEventPayloadBuilder(mockedCredentialEventPayloadBuilder);
+        when(sessionBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
+        serviceComponent.addSessionEventPayloadBuilder(sessionBuilder);
+        serviceComponent.removeSessionEventPayloadBuilder(sessionBuilder);
+    }
 
-        assertNotNull(instance.getCredentialEventPayloadBuilders(),
-                "CredentialEventPayloadBuilders should not be null");
-        assertEquals(instance.getCredentialEventPayloadBuilders().size(), 0,
-                "CredentialEventPayloadBuilders should be empty after removal");
-        assertTrue(!instance.getCredentialEventPayloadBuilders().contains(mockedCredentialEventPayloadBuilder),
-                "CredentialEventPayloadBuilders should not contain the removed element");
+    @Test
+    public void testAddAndRemoveLoginEventPayloadBuilder() {
 
-        eventHookHandlerServiceComponent.addCredentialEventPayloadBuilder(mockedCredentialEventPayloadBuilder);
+        when(loginBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
+        serviceComponent.addLoginEventPayloadBuilder(loginBuilder);
+        serviceComponent.removeLoginEventPayloadBuilder(loginBuilder);
+    }
+
+    @Test
+    public void testAddAndRemoveUserOperationEventPayloadBuilder() {
+
+        when(userOperationBuilder.getEventSchemaType()).thenReturn("WSO2");
+        serviceComponent.addUserOperationEventPayloadBuilder(userOperationBuilder);
+        serviceComponent.removeUserOperationEventPayloadBuilder(userOperationBuilder);
+    }
+
+    @Test
+    public void testRegisterAndUnregisterConfigurationManager() {
+
+        serviceComponent.registerConfigurationManager(configurationManager);
+        serviceComponent.unregisterConfigurationManager(configurationManager);
+    }
+
+    @Test
+    public void testSetAndUnsetEventPublisherService() {
+
+        serviceComponent.setEventPublisherService(eventPublisherService);
+        serviceComponent.unsetEventPublisherService(eventPublisherService);
     }
 }

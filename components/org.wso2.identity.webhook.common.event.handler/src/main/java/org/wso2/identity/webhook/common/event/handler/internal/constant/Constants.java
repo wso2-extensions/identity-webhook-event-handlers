@@ -26,6 +26,10 @@ public class Constants {
     public static final String LOGIN_EVENT_HOOK_NAME = "LoginEventHook";
     public static final String EVENT_SCHEMA_EVENTS_KEY = "events";
     public static final String LOGIN_EVENT_HOOK_ENABLED = "LoginEventHook.enable";
+
+    public static final String USER_OPERATION_EVENT_HOOK_NAME = "UserOperationEventHook";
+    public static final String USER_OPERATION_EVENT_HOOK_ENABLED = "UserOperationEventHook.enable";
+
     public static final String ENABLE = "enable";
     public static final String EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY = "publishEnabled";
 
@@ -58,6 +62,7 @@ public class Constants {
 
             public static final String LOGIN_SUCCESS_EVENT = "logins.loginSuccess";
             public static final String LOGIN_FAILED_EVENT = "logins.loginFailed";
+            public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "user-operations.updateUserGroup";
             public static final String SESSION_REVOKED_EVENT = "sessions.sessionRevoked";
             public static final String SESSION_CREATED_EVENT = "sessions.sessionCreated";
 
@@ -79,7 +84,7 @@ public class Constants {
             }
         }
 
-        private EventHandlerKey() {
+            private EventHandlerKey() {
 
         }
     }
