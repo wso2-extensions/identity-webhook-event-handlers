@@ -72,6 +72,8 @@ public class Constants {
         public static final String STATE = "state";
     }
 
+    public static final String PRE_DELETE_USER_USER_ID_FOR_WEB_SUB_HUB = "preDeleteUserUserIdForWebSubHub";
+
     /**
      * Constants for event config names (keys).
      * These names will be equal to the config attribute keys stored in the core config store.
@@ -83,6 +85,8 @@ public class Constants {
             public static final String LOGIN_SUCCESS_EVENT = "logins.loginSuccess";
             public static final String LOGIN_FAILED_EVENT = "logins.loginFailed";
             public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "user-operations.updateUserGroup";
+            public static final String POST_DELETE_USER_EVENT = "user-operations.deleteUser";
+            public static final String POST_UNLOCK_ACCOUNT_EVENT = "user-operations.unlockUser";
 
             private WSO2() {
 

@@ -29,6 +29,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
  */
 public abstract class WSO2BaseEventPayload extends EventPayload {
 
+    protected String initiatorType;
     protected User user;
     protected Organization tenant;
     protected Organization organization;
@@ -58,5 +59,10 @@ public abstract class WSO2BaseEventPayload extends EventPayload {
     public Organization getOrganization() {
 
         return organization;
+    }
+
+    public String getInitiatorType() {
+
+        return initiatorType;
     }
 }
