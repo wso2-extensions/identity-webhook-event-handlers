@@ -134,6 +134,13 @@ public class SessionEventHookHandlerTest {
         Mockito.reset(mockedEventPublisherService);
     }
 
+    @AfterClass
+    public void tearDownClass() {
+
+        closeMockedServiceURLBuilder();
+        closeMockedIdentityTenantUtil();
+    }
+
     @DataProvider(name = "eventDataProvider")
     public Object[][] eventDataProvider() {
 

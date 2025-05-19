@@ -24,6 +24,7 @@ import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPCredentia
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPTokenClaimsChangeEventPayload;
+import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPVerificationEventPayload;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,10 +39,10 @@ import static org.testng.Assert.assertNotNull;
  */
 public class CAEPEventPayloadModelTest {
 
-    private static Map<String, String> sampleReasonAdmin = new HashMap<>();
-    private static Map<String, String> sampleReasonUser = new HashMap<>();
-    private static String initiatingEntity = "admin";
-    private static long eventTimeStamp = System.currentTimeMillis();
+    private static final Map<String, String> sampleReasonAdmin = new HashMap<>();
+    private static final Map<String, String> sampleReasonUser = new HashMap<>();
+    private static final String initiatingEntity = "admin";
+    private static final long eventTimeStamp = System.currentTimeMillis();
 
     @BeforeClass
     public void setUp() {
@@ -162,5 +163,18 @@ public class CAEPEventPayloadModelTest {
         assertEquals(payload.getX509Issuer(), x509Issuer);
         assertEquals(payload.getX509Serial(), x509Serial);
         assertEquals(payload.getFidoAaguid(), fidoAaguid);
+    }
+
+    @Test
+    public void testCAEPVerificationEventPayload() {
+
+        String state = "state";
+
+        CAEPVerificationEventPayload payload = new CAEPVerificationEventPayload.Builder()
+                .state(state)
+                .build();
+
+        assertNotNull(payload);
+        assertEquals(payload.getState(), state);
     }
 }

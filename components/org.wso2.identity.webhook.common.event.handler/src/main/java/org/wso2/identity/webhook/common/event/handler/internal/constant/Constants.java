@@ -50,7 +50,29 @@ public class Constants {
     public static final String CREDENTIAL_EVENT_HOOK_NAME = "CredentialEventHook";
     public static final String CREDENTIAL_EVENT_HOOK_ENABLED = "CredentialEventHook.enable";
 
-    public static final String SESSION_ID = "sessionId";
+    public static final String VERIFICATION_EVENT_HOOK_NAME = "VerificationEventHook";
+    public static final String VERIFICATION_EVENT_HOOK_ENABLED = "VerificationEventHook.enable";
+
+    /**
+     * Constants for event data keys.
+     * These names will be equal to the keys in the event data map.
+     */
+    public static class EventDataProperties {
+
+        public static final String CONTEXT = "context";
+        public static final String USER = "user";
+        public static final String SESSION_DATA = "sessionData";
+        public static final String SESSIONS = "sessions";
+        public static final String SESSION_ID = "sessionId";
+        public static final String SESSION_CONTEXT = "sessionContext";
+        public static final String EVENT_TIMESTAMP = "eventTimestamp";
+        public static final String STREAM_ID = "streamId";
+        public static final String PARAMS = "params";
+        public static final String AUTHENTICATION_STATUS = "authenticationStatus";
+        public static final String REQUEST = "request";
+        public static final String STATE = "state";
+        public static final String FLOW = "flow";
+    }
 
     /**
      * Constants for event config names (keys).
@@ -78,6 +100,8 @@ public class Constants {
             public static final String SESSION_PRESENTED_EVENT = "caep.sessionPresented";
 
             public static final String CREDENTIAL_CHANGE_EVENT = "caep.credentialChange";
+
+            public static final String VERIFICATION_EVENT = "caep.verification";
 
             private CAEP() {
 

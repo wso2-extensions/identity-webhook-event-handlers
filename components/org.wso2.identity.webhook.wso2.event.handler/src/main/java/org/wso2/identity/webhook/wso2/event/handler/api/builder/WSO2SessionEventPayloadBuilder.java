@@ -119,7 +119,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
                     .user(user)
                     .tenant(tenant)
                     .organization(b2bUserResidentOrganization)
-                    .sessionId(sessions.get(0).getSessionId().toString())
+                    .sessionId(sessions.get(0).getSessionId())
                     .userStore(userStore)
                     .initiatorType(initiatorType)
                     .applications(applications)
@@ -168,9 +168,9 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         String sessionId;
 
         Map<String, Object> params = eventData.getEventParams();
-        if (params.containsKey(Constants.SESSION_ID) &&
-                params.get(Constants.SESSION_ID) != null) {
-            sessionId =  params.get(Constants.SESSION_ID).toString();
+        if (params.containsKey(Constants.EventDataProperties.SESSION_ID) &&
+                params.get(Constants.EventDataProperties.SESSION_ID) != null) {
+            sessionId =  params.get(Constants.EventDataProperties.SESSION_ID).toString();
         } else {
             sessionId = authenticationContext.getSessionIdentifier();
         }

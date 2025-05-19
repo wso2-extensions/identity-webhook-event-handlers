@@ -43,5 +43,4 @@ public class EventPayloadUtils {
         endpoint = EventHookHandlerUtils.constructBaseURL() + endpoint;
         return endpoint;
     }
-
 }

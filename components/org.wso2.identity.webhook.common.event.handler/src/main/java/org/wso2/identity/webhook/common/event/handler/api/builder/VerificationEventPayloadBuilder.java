@@ -18,22 +18,30 @@
 
 package org.wso2.identity.webhook.common.event.handler.api.builder;
 
-import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
 /**
- * Interface for User Operation Event Payload Builder.
+ * This interface defines the contract for building verification event payloads.
+ * Implementations of this interface should provide the logic to build the payload
+ * for different types of verification events.
  */
-public interface UserOperationEventPayloadBuilder {
-
-    EventPayload buildUserGroupUpdateEvent(EventData eventData) throws IdentityEventException;
+public interface VerificationEventPayloadBuilder {
 
     /**
-     * Get the event schema type.
+     * Build the verification event payload.
      *
-     * @return Event schema type.
+     * @param eventData Event Data.
+     * @return The verification event payload.
+     */
+    EventPayload buildVerificationEventPayload(EventData eventData);
+
+    /**
+     * Get the verification event schema type.
+     *
+     * @return The verification event schema type.
      */
     EventSchema getEventSchemaType();
+
 }

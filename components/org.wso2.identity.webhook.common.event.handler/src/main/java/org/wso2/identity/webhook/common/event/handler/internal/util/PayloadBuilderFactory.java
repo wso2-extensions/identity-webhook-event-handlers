@@ -22,6 +22,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEven
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 
@@ -87,7 +88,26 @@ public class PayloadBuilderFactory {
         return null;
     }
 
-    public static UserOperationEventPayloadBuilder getUserOperationEventPayloadBuilder(String eventSchemaType) {
+    /**
+     * Get the verification event payload builder.
+     *
+     * @param eventSchemaType Event schema type.
+     * @return Verification event payload builder.
+     */
+    public static VerificationEventPayloadBuilder getVerificationEventPayloadBuilder(
+            EventSchema eventSchemaType) {
+
+        List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders =
+                EventHookHandlerDataHolder.getInstance().getVerificationEventPayloadBuilders();
+        for (VerificationEventPayloadBuilder verificationEventPayloadBuilder : verificationEventPayloadBuilders) {
+            if (verificationEventPayloadBuilder.getEventSchemaType().equals(eventSchemaType)) {
+                return verificationEventPayloadBuilder;
+            }
+        }
+        return null;
+    }
+
+    public static UserOperationEventPayloadBuilder getUserOperationEventPayloadBuilder(EventSchema eventSchemaType) {
 
         List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getUserOperationEventPayloadBuilders();
@@ -96,6 +116,6 @@ public class PayloadBuilderFactory {
                 return userOperationEventPayloadBuilder;
             }
         }
-        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType);
+        return null;
     }
 }

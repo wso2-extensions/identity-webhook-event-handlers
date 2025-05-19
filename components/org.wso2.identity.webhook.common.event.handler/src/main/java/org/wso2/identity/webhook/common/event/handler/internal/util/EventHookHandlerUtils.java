@@ -28,7 +28,6 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Ses
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
-import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
@@ -91,7 +90,7 @@ public class EventHookHandlerUtils {
         try {
             if (authenticatedUser == null) {
                 authenticatedUser = (AuthenticatedUser) eventData.getEventParams().
-                        get(FrameworkConstants.AnalyticsAttributes.USER);
+                        get(Constants.EventDataProperties.USER);
             }
             return authenticatedUser;
         } catch (ClassCastException e) {
@@ -111,8 +110,8 @@ public class EventHookHandlerUtils {
         Map<String, Object> params = eventData.getEventParams();
         // For Session Terminate Events, only extract sessionId if a single session is terminated
         if (eventData.getEventName().equals(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name())) {
-            List<UserSession> sessions = params.containsKey("sessions") ?
-                    (List<UserSession>) params.get("sessions") : null;
+            List<UserSession> sessions = params.containsKey(Constants.EventDataProperties.SESSIONS) ?
+                    (List<UserSession>) params.get(Constants.EventDataProperties.SESSIONS) : null;
             if (sessions != null) {
                 if (sessions.size() == 1) {
                     return sessions.get(0).getSessionId();
@@ -121,9 +120,9 @@ public class EventHookHandlerUtils {
                 }
             }
         }
-        if (eventData.getEventParams().containsKey(Constants.SESSION_ID) &&
-                eventData.getEventParams().get(Constants.SESSION_ID) != null) {
-            return eventData.getEventParams().get(Constants.SESSION_ID).toString();
+        if (eventData.getEventParams().containsKey(Constants.EventDataProperties.SESSION_ID) &&
+                eventData.getEventParams().get(Constants.EventDataProperties.SESSION_ID) != null) {
+            return eventData.getEventParams().get(Constants.EventDataProperties.SESSION_ID).toString();
         } else if (eventData.getAuthenticationContext() != null) {
             return eventData.getAuthenticationContext().getSessionIdentifier();
         }
@@ -158,6 +157,19 @@ public class EventHookHandlerUtils {
                 .build();
     }
 
+    public static Subject buildVerificationSubject(EventData eventData) throws IdentityEventException {
+
+        Map<String, Object> params = eventData.getEventParams();
+        String streamId = params.get(Constants.EventDataProperties.STREAM_ID) != null ?
+                params.get(Constants.EventDataProperties.STREAM_ID).toString() : null;
+        if (streamId == null) {
+            throw new IdentityEventException("Stream ID cannot be null");
+        }
+
+        return SimpleSubject.createOpaqueSubject(streamId);
+
+    }
+
     /**
      * Build the event data provider.
      *
@@ -171,18 +183,20 @@ public class EventHookHandlerUtils {
             throw new IdentityEventException("Properties cannot be null");
         }
 
-        Map<String, Object> params = properties.containsKey("params") ?
-                (Map<String, Object>) properties.get("params") : null;
-        AuthenticationContext context = properties.containsKey("context") ?
-                (AuthenticationContext) properties.get("context") : null;
-        AuthenticatorStatus status = properties.containsKey("authenticationStatus") ?
-                (AuthenticatorStatus) properties.get("authenticationStatus") : null;
-        Flow flow = properties.containsKey("flow") ? (Flow) properties.get("flow") : null;
-        HttpServletRequest request = params != null ? (HttpServletRequest) params.get("request") : null;
+        Map<String, Object> params = properties.containsKey(Constants.EventDataProperties.PARAMS) ?
+                (Map<String, Object>) properties.get(Constants.EventDataProperties.PARAMS) : null;
+        AuthenticationContext context = properties.containsKey(Constants.EventDataProperties.CONTEXT) ?
+                (AuthenticationContext) properties.get(Constants.EventDataProperties.CONTEXT) : null;
+        AuthenticatorStatus status = properties.containsKey(Constants.EventDataProperties.AUTHENTICATION_STATUS) ?
+                (AuthenticatorStatus) properties.get(Constants.EventDataProperties.AUTHENTICATION_STATUS) : null;
+        Flow flow = properties.containsKey(Constants.EventDataProperties.FLOW) ?
+                (Flow) properties.get(Constants.EventDataProperties.FLOW) : null;
+        HttpServletRequest request = params != null ? (HttpServletRequest)
+                params.get(Constants.EventDataProperties.REQUEST) : null;
 
         AuthenticatedUser authenticatedUser = null;
         if (params != null) {
-            Object user = params.get("user");
+            Object user = params.get(Constants.EventDataProperties.USER);
             if (user instanceof AuthenticatedUser) {
                 authenticatedUser = (AuthenticatedUser) user;
                 if (context != null) {
@@ -193,8 +207,8 @@ public class EventHookHandlerUtils {
             params = properties;
         }
 
-        SessionContext sessionContext = properties.containsKey("sessionContext") ?
-                (SessionContext) properties.get("sessionContext") : null;
+        SessionContext sessionContext = properties.containsKey(Constants.EventDataProperties.SESSION_CONTEXT) ?
+                (SessionContext) properties.get(Constants.EventDataProperties.SESSION_CONTEXT) : null;
 
         return EventData.builder()
                 .eventName(event.getEventName())
@@ -409,6 +423,8 @@ public class EventHookHandlerUtils {
                     case SESSION_EXTEND:
                     case SESSION_UPDATE:
                         return Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT;
+                    case VERIFICATION:
+                        return Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT;
                 }
         }
         return null;

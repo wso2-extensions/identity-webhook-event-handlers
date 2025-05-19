@@ -24,6 +24,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEven
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +37,11 @@ public class EventHookHandlerDataHolder {
     private static final EventHookHandlerDataHolder instance = new EventHookHandlerDataHolder();
     private ConfigurationManager configurationManager;
     private EventPublisherService eventPublisherService;
-    private List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
-    private List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
-    private List<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
-    private List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
+    private final List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
+    private final List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
+    private final List<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
+    private final List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
+    private final List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
 
@@ -48,6 +50,36 @@ public class EventHookHandlerDataHolder {
     public static EventHookHandlerDataHolder getInstance() {
 
         return instance;
+    }
+
+    /**
+     * Get the list of verification event payload builder implementations available.
+     *
+     * @return List of verification event payload builder implementations.
+     */
+    public List<VerificationEventPayloadBuilder> getVerificationEventPayloadBuilders() {
+
+        return verificationEventPayloadBuilders;
+    }
+
+    /**
+     * Add a verification event payload builder to the list.
+     *
+     * @param verificationEventPayloadBuilder A verification event payload builders.
+     */
+    public void addVerificationEventPayloadBuilder(VerificationEventPayloadBuilder verificationEventPayloadBuilder) {
+
+        verificationEventPayloadBuilders.add(verificationEventPayloadBuilder);
+    }
+
+    /**
+     * Remove a verification event payload builder from the list.
+     *
+     * @param verificationEventPayloadBuilder A verification event payload builders.
+     */
+    public void removeVerificationEventPayloadBuilder(VerificationEventPayloadBuilder verificationEventPayloadBuilder) {
+
+        verificationEventPayloadBuilders.remove(verificationEventPayloadBuilder);
     }
 
     /**
@@ -81,16 +113,6 @@ public class EventHookHandlerDataHolder {
     }
 
     /**
-     * Set a list of credential event payload builders.
-     *
-     * @param credentialEventPayloadBuilders List of credential event payload builders.
-     */
-    public void setCredentialEventPayloadBuilders(List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders) {
-
-        this.credentialEventPayloadBuilders = credentialEventPayloadBuilders;
-    }
-
-    /**
      * Get the list of session event payload builder implementations available.
      *
      * @return List of session event payload builder implementations.
@@ -118,16 +140,6 @@ public class EventHookHandlerDataHolder {
     public void removeSessionEventPayloadBuilder(SessionEventPayloadBuilder sessionEventPayloadBuilder) {
 
         sessionEventPayloadBuilders.remove(sessionEventPayloadBuilder);
-    }
-
-    /**
-     * Set a list of session event payload builders.
-     *
-     * @param sessionEventPayloadBuilders List of session event payload builders.
-     */
-    public void setSessionEventPayloadBuilders(List<SessionEventPayloadBuilder> sessionEventPayloadBuilders) {
-
-        this.sessionEventPayloadBuilders = sessionEventPayloadBuilders;
     }
 
     /**
@@ -160,25 +172,9 @@ public class EventHookHandlerDataHolder {
         loginEventPayloadBuilders.remove(loginEventPayloadBuilder);
     }
 
-    /**
-     * Set a list of login event payload builders.
-     *
-     * @param loginEventPayloadBuilders List of login event payload builders.
-     */
-    public void setLoginEventPayloadBuilders(List<LoginEventPayloadBuilder> loginEventPayloadBuilders) {
-
-        this.loginEventPayloadBuilders = loginEventPayloadBuilders;
-    }
-
     public List<UserOperationEventPayloadBuilder> getUserOperationEventPayloadBuilders() {
 
         return userOperationEventPayloadBuilders;
-    }
-
-    public void setUserOperationEventPayloadBuilders(
-            List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders) {
-
-        this.userOperationEventPayloadBuilders = userOperationEventPayloadBuilders;
     }
 
     /**

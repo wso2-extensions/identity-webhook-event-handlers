@@ -25,6 +25,7 @@ import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedEventPayload;
+import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionPresentedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
@@ -159,7 +160,8 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         String extId = null;
 
         // TODO: Add Acr
-        String acr = eventData.getAuthenticationContext().getSelectedAcr();
+        String acr = eventData.getAuthenticationContext() != null ?
+                eventData.getAuthenticationContext().getSelectedAcr() : null;
 
         return new CAEPSessionEstablishedEventPayload.Builder()
                 .eventTimeStamp(eventTimeStamp)
@@ -207,7 +209,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         // TODO: Add ExtId
         String extId = null;
 
-        return new CAEPSessionEstablishedEventPayload.Builder()
+        return new CAEPSessionPresentedEventPayload.Builder()
                 .eventTimeStamp(eventTimeStamp)
                 .initiatingEntity(initiatingEntity)
                 .reasonUser(reasonUser)

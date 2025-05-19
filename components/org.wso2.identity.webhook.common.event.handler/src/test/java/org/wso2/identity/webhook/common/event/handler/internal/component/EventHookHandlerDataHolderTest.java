@@ -19,14 +19,7 @@
 package org.wso2.identity.webhook.common.event.handler.internal.component;
 
 import org.testng.annotations.Test;
-import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 
-import java.util.ArrayList;
-
-import static org.mockito.Mockito.mock;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertSame;
 
@@ -44,52 +37,4 @@ public class EventHookHandlerDataHolderTest {
         assertSame(instance1, instance2, "Both instances should be the same (singleton)");
     }
 
-    @Test
-    public void testSetLoginEventPayloadBuilder() {
-
-        EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
-        LoginEventPayloadBuilder mockedLoginEventPayloadBuilder = mock(LoginEventPayloadBuilder.class);
-        ArrayList<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
-        loginEventPayloadBuilders.add(mockedLoginEventPayloadBuilder);
-        instance.setLoginEventPayloadBuilders(loginEventPayloadBuilders);
-        assertNotNull(instance.getLoginEventPayloadBuilders(),
-                "LoginEventPayloadBuilders should not be null");
-    }
-
-    @Test
-    public void testSetSessionEventPayloadBuilder() {
-
-        EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
-        SessionEventPayloadBuilder mockedSessionEventPayloadBuilder = mock(SessionEventPayloadBuilder.class);
-        ArrayList<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
-        sessionEventPayloadBuilders.add(mockedSessionEventPayloadBuilder);
-        instance.setSessionEventPayloadBuilders(sessionEventPayloadBuilders);
-        assertNotNull(instance.getSessionEventPayloadBuilders(),
-                "SessionEventPayloadBuilders should not be null");
-    }
-
-    @Test
-    public void testSetCredentialEventPayloadBuilder() {
-
-        EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
-        CredentialEventPayloadBuilder mockedCredentialEventPayloadBuilder = mock(CredentialEventPayloadBuilder.class);
-        ArrayList<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
-        credentialEventPayloadBuilders.add(mockedCredentialEventPayloadBuilder);
-        instance.setCredentialEventPayloadBuilders(credentialEventPayloadBuilders);
-        assertNotNull(instance.getCredentialEventPayloadBuilders(),
-                "CredentialEventPayloadBuilders should not be null");
-    }
-
-    @Test
-    public void testSetUserOperationPayloadBuilder() {
-
-        EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
-        UserOperationEventPayloadBuilder mockedUserOperationPayloadBuilder =
-                mock(UserOperationEventPayloadBuilder.class);
-        ArrayList<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
-        userOperationEventPayloadBuilders.add(mockedUserOperationPayloadBuilder);
-        instance.setUserOperationEventPayloadBuilders(userOperationEventPayloadBuilders);
-        assertNotNull(instance.getUserOperationEventPayloadBuilders(),
-                "UserOperationEventPayloadBuilder should not be null");
-    }
 }
