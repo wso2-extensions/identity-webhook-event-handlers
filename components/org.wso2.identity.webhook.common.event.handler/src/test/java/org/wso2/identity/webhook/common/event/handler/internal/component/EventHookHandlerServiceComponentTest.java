@@ -33,7 +33,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPa
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for EventHookHandlerServiceComponent.

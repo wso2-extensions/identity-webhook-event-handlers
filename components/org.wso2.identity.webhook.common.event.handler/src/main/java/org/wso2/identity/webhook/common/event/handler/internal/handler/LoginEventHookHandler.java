@@ -94,33 +94,34 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                 .getLoginEventPayloadBuilder(schema);
         EventPublisherConfig loginEventPublisherConfig = null;
         try {
+            String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
             loginEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
-                    eventData.getAuthenticationContext().getLoginTenantDomain(),
-                    event.getEventName(), eventConfigManager);
+                   tenantDomain, event.getEventName(), eventConfigManager);
 
             EventPayload eventPayload;
             String eventUri;
-
-            if (IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name().equals(event.getEventName()) &&
-                    loginEventPublisherConfig.isPublishEnabled()) {
-                eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
-                eventUri = eventConfigManager.getEventUri(EventHookHandlerUtils
-                        .resolveEventHandlerKey(schema, IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS));
-                String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
-                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-            } else if (IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()
-                    .equals(event.getEventName()) &&
-                    loginEventPublisherConfig.isPublishEnabled()) {
-                eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
-                eventUri = eventConfigManager.getEventUri(EventHookHandlerUtils.
-                        resolveEventHandlerKey(schema, IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE));
-                String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
+            if (loginEventPublisherConfig.isPublishEnabled()) {
+                eventUri = eventConfigManager.getEventUri(
+                        EventHookHandlerUtils.resolveEventHandlerKey(schema,
+                                IdentityEventConstants.EventName.valueOf(event.getEventName())));
+                switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
+                    case AUTHENTICATION_SUCCESS:
+                        eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
+                        break;
+                    case AUTHENTICATION_STEP_FAILURE:
+                        eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
+                        break;
+                    case AUTHENTICATION_FAILURE:
+                        eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
+                        break;
+                    default:
+                        throw new IdentityRuntimeException("Unsupported event type: " + event.getEventName());
+                }
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                         .buildSecurityEventToken(eventPayload, eventUri);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             }
+
         } catch (IdentityEventException e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }

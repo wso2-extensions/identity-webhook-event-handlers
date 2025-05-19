@@ -154,7 +154,8 @@ public class EventConfigManager {
      * @param tenantDomain the domain name of the tenant for which the configuration is being retrieved.
      * @param eventName    the name of the event for which the publisher configuration is required.
      * @return the EventPublisherConfig corresponding to the specified tenant and event.
-     * @throws IdentityEventException if the tenant domain is invalid or an error occurs while retrieving the configuration.
+     * @throws IdentityEventException if the tenant domain is invalid or an error occurs while retrieving the
+     * configuration.
      */
     public EventPublisherConfig getEventPublisherConfigForTenant(String tenantDomain, String eventName)
             throws IdentityEventException {
@@ -179,13 +180,15 @@ public class EventConfigManager {
                 && (eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name()))) {
             return true;
         }
-        if ((Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT.equals(attribute.getKey()))
-                && (eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()))) {
-            return true;
+        if ((Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT.equals(attribute.getKey()))) {
+            return ((eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()))) ||
+                    (eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_FAILURE.name()));
         }
 
-        if ( (Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_LIST_OF_ROLE_EVENT.equals(attribute.getKey()) &&
-                eventName.equals(IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE)))
+        if ((Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_LIST_OF_ROLE_EVENT.equals(attribute.getKey()) &&
+                eventName.equals(IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE))) {
+            return true;
+        }
 
         if (Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT.equals(attribute.getKey())) {
             return eventName.equals(IdentityEventConstants.EventName.SESSION_TERMINATE.name());
@@ -196,6 +199,9 @@ public class EventConfigManager {
         if (Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT.equals(attribute.getKey())) {
             return (eventName.equals(IdentityEventConstants.EventName.SESSION_UPDATE.name())
                     || eventName.equals(IdentityEventConstants.EventName.SESSION_EXTEND.name()));
+        }
+        if (Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT.equals(attribute.getKey())) {
+            return (eventName.equals(IdentityEventConstants.EventName.VERIFICATION.name()));
         }
         return false;
     }

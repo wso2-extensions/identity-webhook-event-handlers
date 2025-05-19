@@ -18,6 +18,8 @@
 
 package org.wso2.identity.webhook.common.event.handler.internal.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -28,9 +30,12 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
+import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
@@ -40,11 +45,16 @@ import org.wso2.identity.event.common.publisher.model.common.SimpleSubject;
 import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.util.TestUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -63,6 +73,7 @@ public class EventHookHandlerUtilsTest {
 
     private static final String SAMPLE_TENANT_DOMAIN = "myorg";
     private static final String SAMPLE_TENANT_ID = "100";
+    private static final Log log = LogFactory.getLog(EventHookHandlerUtilsTest.class);
 
     @Mock
     private AuthenticationContext mockedAuthenticationContext;
@@ -110,7 +121,7 @@ public class EventHookHandlerUtilsTest {
     @Test(expectedExceptions = IdentityEventException.class)
     public void testBuildSecurityEventTokenWithNullEventURI() throws IdentityEventException {
 
-        EventPayload payload = Mockito.mock(EventPayload.class);
+        EventPayload payload = mock(EventPayload.class);
         EventHookHandlerUtils.buildSecurityEventToken(payload, null);
     }
 
@@ -128,13 +139,13 @@ public class EventHookHandlerUtilsTest {
         try (MockedStatic<EventHookHandlerDataHolder> mockedDataHolder =
                      Mockito.mockStatic(EventHookHandlerDataHolder.class)) {
 
-            EventHookHandlerDataHolder mockDataHolderInstance = Mockito.mock(EventHookHandlerDataHolder.class);
+            EventHookHandlerDataHolder mockDataHolderInstance = mock(EventHookHandlerDataHolder.class);
             when(EventHookHandlerDataHolder.getInstance()).thenReturn(mockDataHolderInstance);
 
             when(mockDataHolderInstance.getEventPublisherService()).thenReturn(mockedEventPublisherService);
 
             Map<String, EventPayload> eventMap = new HashMap<>();
-            EventPayload sampleEventPayload = Mockito.mock(EventPayload.class);
+            EventPayload sampleEventPayload = mock(EventPayload.class);
             eventMap.put("sampleEvent", sampleEventPayload);
 
             SecurityEventTokenPayload properPayload = SecurityEventTokenPayload.builder()
@@ -182,6 +193,60 @@ public class EventHookHandlerUtilsTest {
         closeMockedServiceURLBuilder();
     }
 
+    @Test(expectedExceptions = IdentityEventException.class)
+    public void testBuildEventDataProviderWithNullProperties() throws IdentityEventException {
+
+        Event event = new Event(IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name(), null);
+
+        EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
+    }
+
+    @Test
+    public void testBuildEventDataProviderSuccess() throws IdentityEventException {
+
+        Map<String, Object> properties = new HashMap<>();
+        Map<String, Object> eventParams = new HashMap<>();
+        eventParams.put(Constants.EventDataProperties.USER, mockedAuthenticatedUser);
+        eventParams.put(Constants.EventDataProperties.EVENT_TIMESTAMP, System.currentTimeMillis());
+        eventParams.put(Constants.EventDataProperties.SESSION_DATA, "SessionData");
+        eventParams.put(Constants.EventDataProperties.SESSION_ID, "SessionID");
+        eventParams.put(Constants.EventDataProperties.STATE, "State");
+        eventParams.put(Constants.EventDataProperties.STREAM_ID, "StreamID");
+        eventParams.put(Constants.EventDataProperties.REQUEST, mock(HttpServletRequest.class));
+        properties.put(Constants.EventDataProperties.CONTEXT, mockedAuthenticationContext);
+        properties.put(Constants.EventDataProperties.PARAMS, eventParams);
+        properties.put(Constants.EventDataProperties.SESSION_CONTEXT, mock(SessionContext.class));
+        Event event = new Event(IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name(), properties);
+
+        EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
+
+        assertNotNull(eventData, "EventData should not be null");
+        assertEquals(eventData.getEventName(), IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name(),
+                "Event name should match");
+        assertEquals(eventData.getEventName(), IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name(),
+                "Event name should match");
+        assertEquals(eventData.getAuthenticatedUser(), mockedAuthenticatedUser,
+                "Authenticated user should match");
+        assertEquals(eventData.getAuthenticationContext(), mockedAuthenticationContext,
+                "Authentication context should match");
+        assertNotNull(eventData.getSessionContext(), "Session context should not be null");
+        assertEquals(eventData.getEventParams().get(Constants.EventDataProperties.USER), mockedAuthenticatedUser,
+                "Event parameter 'USER' should match");
+        assertNotNull(eventData.getEventParams().get(Constants.EventDataProperties.EVENT_TIMESTAMP),
+                "Event parameter 'EVENT_TIMESTAMP' should not be null");
+        assertEquals(eventData.getEventParams().get(Constants.EventDataProperties.SESSION_DATA), "SessionData",
+                "Event parameter 'SESSION_DATA' should match");
+        assertEquals(eventData.getEventParams().get(Constants.EventDataProperties.SESSION_ID), "SessionID",
+                "Event parameter 'SESSION_ID' should match");
+        assertEquals(eventData.getEventParams().get(Constants.EventDataProperties.STATE), "State",
+                "Event parameter 'STATE' should match");
+        assertEquals(eventData.getEventParams().get(Constants.EventDataProperties.STREAM_ID), "StreamID",
+                "Event parameter 'STREAM_ID' should match");
+        assertNotNull(eventData.getEventParams().get(Constants.EventDataProperties.REQUEST),
+                "Event parameter 'REQUEST' should not be null");
+
+    }
+
     @Test
     public void testGetCorrelationIDWithExistingCorrelationID() {
 
@@ -219,7 +284,7 @@ public class EventHookHandlerUtilsTest {
     @Test
     public void testExtractSubjectFromEventData() throws IdentityEventException, UserIdNotFoundException {
 
-        EventData eventData = Mockito.mock(EventData.class);
+        EventData eventData = mock(EventData.class);
 
         when(eventData.getAuthenticatedUser()).thenReturn(mockedAuthenticatedUser);
         when(mockedAuthenticatedUser.getUserId()).thenReturn("user-id-123");
@@ -249,5 +314,20 @@ public class EventHookHandlerUtilsTest {
                 assertEquals(simpleSubject.getProperty("id"), "session-id-123", "Session ID should match");
             }
         });
+    }
+
+    @Test
+    public void testBuildVerificationSubject() throws IdentityEventException {
+
+        EventData eventData = mock(EventData.class);
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("streamId", "stream-id-123");
+        when(eventData.getEventParams()).thenReturn(Collections.unmodifiableMap(dataMap));
+
+        Subject subject = EventHookHandlerUtils.buildVerificationSubject(eventData);
+
+        assertNotNull(subject, "Subject should not be null");
+        assertTrue(subject instanceof SimpleSubject, "Subject should be of type SimpleSubject");
+        assertEquals(subject.getProperty("id"), "stream-id-123", "Stream ID should match");
     }
 }

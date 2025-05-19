@@ -23,8 +23,9 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 
@@ -45,6 +46,7 @@ public class PayloadBuilderFactoryTest {
     private LoginEventPayloadBuilder mockWSO2LoginBuilder;
     private SessionEventPayloadBuilder mockCAEPSessionBuilder;
     private CredentialEventPayloadBuilder mockCAEPCredentialBuilder;
+    private VerificationEventPayloadBuilder mockCAEPVerificationBuilder;
 
     @BeforeClass
     public void setup() {
@@ -53,16 +55,20 @@ public class PayloadBuilderFactoryTest {
         mockUserOperationEventPayloadBuilder = Mockito.mock(UserOperationEventPayloadBuilder.class);
         mockCAEPSessionBuilder = Mockito.mock(SessionEventPayloadBuilder.class);
         mockCAEPCredentialBuilder = Mockito.mock(CredentialEventPayloadBuilder.class);
+        mockCAEPVerificationBuilder = Mockito.mock(VerificationEventPayloadBuilder.class);
         Mockito.when(mockWSO2LoginBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
         Mockito.when(mockUserOperationEventPayloadBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2.name());
         Mockito.when(mockCAEPSessionBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
         Mockito.when(mockCAEPCredentialBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
+        Mockito.when(mockCAEPVerificationBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
+
 
         EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(mockWSO2LoginBuilder);
         EventHookHandlerDataHolder.getInstance().addSessionEventPayloadBuilder(mockCAEPSessionBuilder);
         EventHookHandlerDataHolder.getInstance().addCredentialEventPayloadBuilder(mockCAEPCredentialBuilder);
         EventHookHandlerDataHolder.getInstance()
                 .addUserOperationEventPayloadBuilder(mockUserOperationEventPayloadBuilder);
+        EventHookHandlerDataHolder.getInstance().addVerificationEventPayloadBuilder(mockCAEPVerificationBuilder);
     }
 
     @Test
@@ -144,6 +150,23 @@ public class PayloadBuilderFactoryTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> PayloadBuilderFactory.getCredentialEventPayloadBuilder(EventSchema.RISC));
+    }
+
+    @Test
+    public void testGetVerificationEventPayloadBuilderReturnsRegisteredBuilder() {
+
+        VerificationEventPayloadBuilder builder =
+                PayloadBuilderFactory.getVerificationEventPayloadBuilder(EventSchema.CAEP);
+        assertNotNull(builder, "The builder should not be null.");
+        assertEquals(builder.getEventSchemaType(),
+                EventSchema.CAEP, "The schema type should match 'CAEP'.");
+    }
+
+    @Test
+    public void testGetVerificationEventPayloadBuilderUnknownSchema() {
+
+        assertThrows(IllegalArgumentException.class,
+                () -> PayloadBuilderFactory.getVerificationEventPayloadBuilder(EventSchema.RISC));
     }
 
     @Test

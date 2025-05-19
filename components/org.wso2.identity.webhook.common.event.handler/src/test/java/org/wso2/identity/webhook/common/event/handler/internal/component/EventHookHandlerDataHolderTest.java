@@ -57,11 +57,13 @@ public class EventHookHandlerDataHolderTest {
     public void testSetUserOperationPayloadBuilder() {
 
         EventHookHandlerDataHolder instance = EventHookHandlerDataHolder.getInstance();
-        UserOperationEventPayloadBuilder mockedUserOperationPayloadBuilder = mock(UserOperationEventPayloadBuilder.class);
+        UserOperationEventPayloadBuilder mockedUserOperationPayloadBuilder =
+                mock(UserOperationEventPayloadBuilder.class);
         ArrayList<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
         userOperationEventPayloadBuilders.add(mockedUserOperationPayloadBuilder);
         instance.setUserOperationEventPayloadBuilders(userOperationEventPayloadBuilders);
-        assertNotNull(instance.getUserOperationEventPayloadBuilders(), "UserOperationEventPayloadBuilder should not be null");
+        assertNotNull(instance.getUserOperationEventPayloadBuilders(),
+                "UserOperationEventPayloadBuilder should not be null");
     }
 
 }
