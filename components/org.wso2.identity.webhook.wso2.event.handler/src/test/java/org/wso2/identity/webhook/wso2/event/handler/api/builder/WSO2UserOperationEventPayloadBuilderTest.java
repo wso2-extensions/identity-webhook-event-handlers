@@ -38,6 +38,7 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCredentialUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserGroupUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Group;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
@@ -77,9 +78,10 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     private static final String ADDED_USER_EMAIL = "john@gmail.com";
     private static final String DELETED_USER_EMAIL = "pearl@gmail.com";
     private static final String UNLOCKED_USER_EMAIL = "tom@gmail.com";
-    private static final String DOMAIN_QUALIFIED_ADDED_USER_NAME = "PRIMARY/john";
-    private static final String DOMAIN_QUALIFIED_DELETED_USER_NAME = "PRIMARY/pearl";
-    private static final String DOMAIN_QUALIFIED_UNLOCKED_USER_NAME = "PRIMARY/tom";
+    private static final String USER_NAME = "tom";
+    private static final String DOMAIN_QUALIFIED_ADDED_USER_NAME = "DEFAULT/john";
+    private static final String DOMAIN_QUALIFIED_DELETED_USER_NAME = "DEFAULT/pearl";
+    private static final String DOMAIN_QUALIFIED_UNLOCKED_USER_NAME = "DEFAULT/tom";
     @Mock
     private EventData mockEventData;
 
@@ -98,7 +100,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         MockitoAnnotations.openMocks(this);
 
         when(realmConfiguration.getUserStoreProperty(
-                UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME)).thenReturn("PRIMARY");
+                UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME)).thenReturn("DEFAULT");
         when(userStoreManager.getRealmConfiguration()).thenReturn(realmConfiguration);
 
         mockServiceURLBuilder();
@@ -279,7 +281,49 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertEquals(wso2BaseEventPayload.getOrganization().getName(), TENANT_DOMAIN);
 
         assertNotNull(wso2BaseEventPayload.getUserStore());
-        assertEquals(wso2BaseEventPayload.getUserStore().getId(), "UFJJTUFSWQ==");
-        assertEquals(wso2BaseEventPayload.getUserStore().getName(), "PRIMARY");
+        assertEquals(wso2BaseEventPayload.getUserStore().getId(), "REVGQVVMVA==");
+        assertEquals(wso2BaseEventPayload.getUserStore().getName(), "DEFAULT");
+    }
+
+    @Test
+    public void testBuildCredentialUpdateEvent() throws UserStoreException, IdentityEventException {
+
+        Map<String, Object> params = new HashMap<>();
+        params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
+        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        params.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, "DEFAULT");
+        params.put("credential-type", "password");
+        params.put("action", "update");
+        params.put(USER_STORE_MANAGER, userStoreManager);
+        params.put(IdentityEventConstants.EventProperty.USER_NAME, USER_NAME);
+        params.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, "admin");
+
+        when(mockEventData.getEventParams()).thenReturn(params);
+        when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_UNLOCKED_USER_NAME),
+                eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(UNLOCKED_USER_EMAIL);
+        when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_UNLOCKED_USER_NAME),
+                eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(UNLOCKED_USER_ID);
+
+        EventPayload eventPayload = payloadBuilder.buildCredentialUpdateEvent(mockEventData);
+        assertCommonFields((WSO2BaseEventPayload) eventPayload);
+
+        WSO2UserCredentialUpdateEventPayload userCredentialUpdateEventPayload =
+                (WSO2UserCredentialUpdateEventPayload) eventPayload;
+
+        assertNotNull(userCredentialUpdateEventPayload.getUser());
+        assertEquals(userCredentialUpdateEventPayload.getUser().getId(), UNLOCKED_USER_ID);
+        assertEquals(userCredentialUpdateEventPayload.getUser().getRef(),
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + DELETED_USER_ID);
+        assertNotNull(userCredentialUpdateEventPayload.getUser().getClaims());
+        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().size(), 1);
+        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getUri(),
+                FrameworkConstants.EMAIL_ADDRESS_CLAIM);
+        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getValue(), UNLOCKED_USER_EMAIL);
+
+        assertNotNull(userCredentialUpdateEventPayload.getCredentialType());
+        assertEquals(userCredentialUpdateEventPayload.getCredentialType(), "password");
+        assertNotNull(userCredentialUpdateEventPayload.getAction());
+        assertEquals(userCredentialUpdateEventPayload.getAction(), "update");
+
     }
 }

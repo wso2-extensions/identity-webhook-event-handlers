@@ -89,6 +89,7 @@ public class Constants {
             public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "user-operations.updateUserGroup";
             public static final String POST_DELETE_USER_EVENT = "user-operations.deleteUser";
             public static final String POST_UNLOCK_ACCOUNT_EVENT = "user-operations.unlockUser";
+            public static final String POST_UPDATE_USER_CREDENTIAL = "user-operations.updateUserCredentials";
             public static final String SESSION_REVOKED_EVENT = "sessions.sessionRevoked";
             public static final String SESSION_CREATED_EVENT = "sessions.sessionCreated";
 

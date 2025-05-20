@@ -28,6 +28,7 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.recovery.RecoveryScenarios;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
@@ -80,6 +81,7 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
         return IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(eventName) ||
                 IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(eventName) ||
                 IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName) ||
+                IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) ||
                 IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName);
     }
 
@@ -133,7 +135,28 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                         .buildSecurityEventToken(eventPayload, eventUri);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-            }
+            } else if (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(event.getEventName()) &&
+                    userOperationEventPublisherConfig.isPublishEnabled()) {
+
+                String recoveryScenario = "";
+                if (event.getEventProperties().get(
+                        IdentityEventConstants.EventProperty.RECOVERY_SCENARIO) != null) {
+                    recoveryScenario = (String) event.getEventProperties().get(
+                            IdentityEventConstants.EventProperty.RECOVERY_SCENARIO);
+                }
+                // Proceed only if the recovery scenario equals to NOTIFICATION_BASED_PW_RECOVERY or
+                // ADMIN_FORCED_PASSWORD_RESET_VIA_EMAIL_LINK.
+                if (!RecoveryScenarios.NOTIFICATION_BASED_PW_RECOVERY.name().equals(recoveryScenario) &&
+                        !RecoveryScenarios.ADMIN_FORCED_PASSWORD_RESET_VIA_EMAIL_LINK.name().equals(recoveryScenario)) {
+                    return;
+                }
+
+                eventPayload = payloadBuilder.buildCredentialUpdateEvent(eventData);
+                eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_CREDENTIAL);
+                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                        .buildSecurityEventToken(eventPayload, eventUri);
+            EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+        }
         } catch (IdentityEventException e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }

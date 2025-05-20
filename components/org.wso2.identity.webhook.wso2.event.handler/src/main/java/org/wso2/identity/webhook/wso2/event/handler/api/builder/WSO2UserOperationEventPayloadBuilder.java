@@ -32,6 +32,7 @@ import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCredentialUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserGroupUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Group;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
@@ -162,6 +163,46 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .build();
     }
 
+    @Override
+    public EventPayload buildCredentialUpdateEvent(EventData eventData) throws IdentityEventException {
+
+        Map<String, Object> properties = eventData.getEventParams();
+        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
+        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+        String userName =
+                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
+
+        String userStoreDomainName =
+                String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
+        UserStore userStore = new UserStore(userStoreDomainName);
+
+        User user = new User();
+        //TODO add the credential type and the action based on the scenarios
+        String credentialType = String.valueOf(properties.get("credential-type"));
+        String action = String.valueOf(properties.get("action"));
+
+        if (properties.containsKey(USER_STORE_MANAGER)) {
+            AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
+
+            String domainQualifiedUserName = userStoreDomainName + "/" + userName;
+            enrichUser(userStoreManager, domainQualifiedUserName, user);
+        }
+        user.setRef(
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + user.getId());
+
+        Organization organization = new Organization(tenantId, tenantDomain);
+        String initiatorType = String.valueOf(properties.get(IdentityEventConstants.EventProperty.INITIATOR_TYPE));
+
+        return new WSO2UserCredentialUpdateEventPayload.Builder()
+                .initiatorType(initiatorType)
+                .action(action)
+                .credentialType(credentialType)
+                .user(user)
+                .organization(organization)
+                .userStore(userStore)
+                .build();
+    }
+
     private List<User> buildUserList(AbstractUserStoreManager userStoreManager, Map<String, Object> properties,
                                      String userListPropertyName)
             throws IdentityEventException {
@@ -179,17 +220,18 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return users;
     }
 
-    private static void enrichUser(AbstractUserStoreManager userStoreManager, String userName, User user)
+    private static void enrichUser(AbstractUserStoreManager userStoreManager, String domainQualifiedUserName, User user)
             throws IdentityEventException {
 
         String userId;
         try {
-            userId = userStoreManager.getUserClaimValue(userName, FrameworkConstants.USER_ID_CLAIM,
+            userId = userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.USER_ID_CLAIM,
                     UserCoreConstants.DEFAULT_PROFILE);
             user.setId(userId);
 
-            String emailAddress = userStoreManager.getUserClaimValue(userName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
-                    UserCoreConstants.DEFAULT_PROFILE);
+            String emailAddress =
+                    userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
+                            UserCoreConstants.DEFAULT_PROFILE);
             UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
             List<UserClaim> userClaims = new ArrayList<>();
             userClaims.add(emailAddressUserClaim);
@@ -197,7 +239,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             user.setClaims(userClaims);
 
         } catch (UserStoreException e) {
-            throw new IdentityEventException("Error while extracting user claims for the user : " + userName, e);
+            throw new IdentityEventException(
+                    "Error while extracting user claims for the user : " + domainQualifiedUserName, e);
         }
     }
 
