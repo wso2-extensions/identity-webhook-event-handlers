@@ -39,6 +39,7 @@ import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationMa
 import org.wso2.carbon.identity.configuration.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resource;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
@@ -144,7 +145,7 @@ public class SessionEventHookHandlerTest {
     public Object[][] eventDataProvider() {
 
         return new Object[][]{
-                {IdentityEventConstants.EventName.SESSION_TERMINATE.name(),
+                {IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name(),
                         Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT,
                         SAMPLE_EVENT_KEY_SESSION_REVOKED
                 },
@@ -155,10 +156,6 @@ public class SessionEventHookHandlerTest {
                 {IdentityEventConstants.EventName.SESSION_UPDATE.name(),
                         Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT,
                         SAMPLE_EVENT_KEY_SESSION_PRESENTED
-                },
-                {IdentityEventConstants.EventName.SESSION_EXPIRE.name(),
-                        Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT,
-                        SAMPLE_EVENT_KEY_SESSION_REVOKED
                 },
                 {IdentityEventConstants.EventName.SESSION_EXTEND.name(),
                         Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT,
@@ -202,7 +199,7 @@ public class SessionEventHookHandlerTest {
     public void testHandleEventWithPublishingDisabled() throws
             ConfigurationManagementException, IdentityEventException {
 
-        Event event = createEventWithProperties(IdentityEventConstants.EventName.SESSION_TERMINATE.name());
+        Event event = createEventWithProperties(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name());
         Resources resources = createResourcesWithAttributes(Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT);
         EventPublisherConfig eventPublisherConfig = new EventPublisherConfig(false,
                 new ResourceConfig(new JSONObject()));
@@ -259,6 +256,8 @@ public class SessionEventHookHandlerTest {
         SessionContext sessionContext = createSessionContext();
         params.put("request", mock(HttpServletRequest.class));
         params.put("user", mockAuthenticatedUser());
+        params.put("flow", mock(Flow.class));
+        params.put("sessionData", "sample-sessionId");
         properties.put("context", context);
         properties.put("authenticationStatus", AuthenticatorStatus.PASS);
         properties.put("params", params);

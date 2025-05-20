@@ -33,4 +33,6 @@ public class Constants {
     public static final String DATA_MAP = "dataMap";
     public static final String WSO2_EVENT_SCHEMA = "WSO2";
     public static final String ORGANIZATION_AUTHENTICATOR = "OrganizationAuthenticator";
+
+    public static final String SESSION_ID = "sessionId";
 }

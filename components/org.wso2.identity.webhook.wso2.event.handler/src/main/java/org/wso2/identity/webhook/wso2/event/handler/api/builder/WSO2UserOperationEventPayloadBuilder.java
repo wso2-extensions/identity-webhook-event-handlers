@@ -202,9 +202,9 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     }
 
     @Override
-    public String getEventSchemaType() {
+    public EventSchema getEventSchemaType() {
 
-        return EventSchema.WSO2.name();
+        return EventSchema.WSO2;
     }
 
     private Group buildGroup(Map<String, Object> properties, AbstractUserStoreManager userStoreManager)

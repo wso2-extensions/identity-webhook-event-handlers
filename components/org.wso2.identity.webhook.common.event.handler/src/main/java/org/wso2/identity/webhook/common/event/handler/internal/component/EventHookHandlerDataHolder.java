@@ -37,11 +37,11 @@ public class EventHookHandlerDataHolder {
     private static final EventHookHandlerDataHolder instance = new EventHookHandlerDataHolder();
     private ConfigurationManager configurationManager;
     private EventPublisherService eventPublisherService;
-    private List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
-    private List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
-    private List<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
-    private List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
-    private List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders = new ArrayList<>();
+    private final List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
+    private final List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
+    private final List<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
+    private final List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
+    private final List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
 
@@ -172,25 +172,9 @@ public class EventHookHandlerDataHolder {
         loginEventPayloadBuilders.remove(loginEventPayloadBuilder);
     }
 
-    /**
-     * Set a list of login event payload builders.
-     *
-     * @param loginEventPayloadBuilders List of login event payload builders.
-     */
-    public void setLoginEventPayloadBuilders(List<LoginEventPayloadBuilder> loginEventPayloadBuilders) {
-
-        this.loginEventPayloadBuilders = loginEventPayloadBuilders;
-    }
-
     public List<UserOperationEventPayloadBuilder> getUserOperationEventPayloadBuilders() {
 
         return userOperationEventPayloadBuilders;
-    }
-
-    public void setUserOperationEventPayloadBuilders(
-            List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders) {
-
-        this.userOperationEventPayloadBuilders = userOperationEventPayloadBuilders;
     }
 
     /**

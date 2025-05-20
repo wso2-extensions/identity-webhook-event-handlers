@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -28,10 +28,16 @@ import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.ExternalIdPConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
+import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
+import org.wso2.carbon.identity.application.authentication.framework.model.Application;
+import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedIdPData;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
+import org.wso2.carbon.identity.core.context.model.Flow;
+import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
@@ -39,24 +45,24 @@ import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
-import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationFailedEventPayload;
-import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationSuccessEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionCreatedEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionRevokedEventPayload;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedServiceURLBuilder;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockServiceURLBuilder;
 
-/**
- * Test class for WSO2LoginEventPayloadBuilder.
- */
-public class WSO2LoginEventPayloadBuilderTest {
+public class WSO2SessionEventPayloadBuilderTest {
 
     private static final String SAMPLE_TENANT_DOMAIN = "myorg";
     private static final String SAMPLE_USER_NAME = "sampleUser";
@@ -77,13 +83,16 @@ public class WSO2LoginEventPayloadBuilderTest {
     private OrganizationManager mockOrganizationManager;
 
     @InjectMocks
-    private WSO2LoginEventPayloadBuilder payloadBuilder;
+    private WSO2SessionEventPayloadBuilder payloadBuilder;
 
     @Mock
     private AuthenticationContext mockAuthenticationContext;
 
     @Mock
     private AuthenticatedUser mockAuthenticatedUser;
+
+    @Mock
+    private SessionContext mockSessionContext;
 
     @BeforeClass
     public void setup() {
@@ -92,6 +101,7 @@ public class WSO2LoginEventPayloadBuilderTest {
         WSO2EventHookHandlerDataHolder.getInstance().setOrganizationManager(mockOrganizationManager);
         mockAuthenticationContext = createMockAuthenticationContext();
         mockAuthenticatedUser = createMockAuthenticatedUser();
+        mockSessionContext = createMockSessionContext();
         mockServiceURLBuilder();
         mockIdentityTenantUtil();
     }
@@ -103,106 +113,129 @@ public class WSO2LoginEventPayloadBuilderTest {
         closeMockedIdentityTenantUtil();
     }
 
-    @DataProvider(name = "successEventDataProvider")
-    public Object[][] successEventDataProvider() {
+    @Test
+    public void testGetEventSchema() {
+
+        EventSchema schema = payloadBuilder.getEventSchemaType();
+        assertEquals(schema, EventSchema.WSO2);
+    }
+
+    @DataProvider(name = "revokedEventDataProvider")
+    public Object[][] revokedEventDataProvider() {
+
+        List<UserSession> sessions = new ArrayList<>();
+        UserSession session1 = getUserSession("sessionId1", "Sample1", "SampleApp1", "1");
+        sessions.add(session1);
+        UserSession session2 = getUserSession("sessionId2", "Sample2", "SampleApp2", "2");
+        sessions.add(session2);
 
         return new Object[][]{
-                {SAMPLE_USER_ID, SAMPLE_USERSTORE_NAME, SAMPLE_SP_ID, SAMPLE_SERVICE_PROVIDER, SAMPLE_TENANT_ID,
-                        SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, 1}
+                {Flow.InitiatingPersona.ADMIN, sessions},
+                {Flow.InitiatingPersona.USER, sessions},
+                {Flow.InitiatingPersona.APPLICATION, null},
+                {Flow.InitiatingPersona.SYSTEM, sessions.subList(0, 1)}
         };
     }
 
-    @Test(dataProvider = "successEventDataProvider")
-    public void testBuildAuthenticationSuccessEvent(String userId, String userStore, String appId, String appName,
-                                                    String tenantId, String tenantName, String userRef,
-                                                    int authMethodsSize) throws IdentityEventException {
+    private UserSession getUserSession(String id, String applicationSample, String applicationName,
+                                       String applicationId) {
 
-        when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
-        when(mockEventData.getAuthenticatedUser()).thenReturn(mockAuthenticatedUser);
-
-        EventPayload eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(mockEventData);
-        assertTrue(eventPayload instanceof WSO2AuthenticationSuccessEventPayload);
-
-        WSO2AuthenticationSuccessEventPayload successPayload = (WSO2AuthenticationSuccessEventPayload) eventPayload;
-
-        assertEquals(successPayload.getUser().getId(), userId);
-        assertEquals(successPayload.getUserStore().getName(), userStore);
-        assertEquals(successPayload.getApplication().getId(), appId);
-        assertEquals(successPayload.getApplication().getName(), appName);
-        assertEquals(successPayload.getTenant().getId(), tenantId);
-        assertEquals(successPayload.getTenant().getName(), tenantName);
-        assertEquals(successPayload.getUser().getRef(), userRef);
-        assertEquals(successPayload.getAuthenticationMethods().size(), authMethodsSize);
+        UserSession session1 = new UserSession();
+        session1.setSessionId(id);
+        Application app = new Application(applicationSample, applicationName, applicationId);
+        session1.setApplications(Collections.singletonList(app));
+        return session1;
     }
 
-    @Test(expectedExceptions = IdentityEventException.class)
-    public void testBuildAuthenticationSuccessEventWithNullUser() throws IdentityEventException {
+    @Test(dataProvider = "revokedEventDataProvider")
+    public void testBuildSessionTerminateEvent
+            (Flow.InitiatingPersona initiatingEntity, List<UserSession> sessions)
+            throws IdentityEventException {
 
-        when(mockEventData.getAuthenticatedUser()).thenReturn(null);
-        payloadBuilder.buildAuthenticationSuccessEvent(mockEventData);
-    }
+        Map<String, Object> params = new HashMap<>();
+        params.put("sessions", sessions);
+        params.put("eventTimeStamp", System.currentTimeMillis());
+        Flow flow = new Flow.Builder()
+                .name(Flow.Name.SESSION_REVOKE)
+                .initiatingPersona(initiatingEntity)
+                .build();
+        EventData eventData = new EventData.Builder()
+                .eventName(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name())
+                .authenticatedUser(mockAuthenticatedUser)
+                .authenticationContext(null)
+                .sessionContext(null)
+                .eventParams(params)
+                .flow(flow)
+                .build();
 
-    @Test
-    public void testGetEventSchemaType() {
-        assertEquals(payloadBuilder.getEventSchemaType(), EventSchema.WSO2);
-    }
+        EventPayload payload = payloadBuilder.buildSessionTerminateEvent(eventData);
+        assertTrue(payload instanceof WSO2SessionRevokedEventPayload);
 
-    @DataProvider(name = "failedEventDataProvider")
-    public Object[][] failedEventDataProvider() {
+        WSO2SessionRevokedEventPayload sessionRevokedPayload =
+                (WSO2SessionRevokedEventPayload) payload;
 
-        return new Object[][]{
-                {SAMPLE_USER_ID, SAMPLE_USERSTORE_NAME, SAMPLE_SP_ID, SAMPLE_SERVICE_PROVIDER, SAMPLE_TENANT_ID,
-                        SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, SAMPLE_ERROR_CODE, 2,
-                        SAMPLE_IDP, SAMPLE_AUTHENTICATOR}
-        };
-    }
-
-    @Test(dataProvider = "failedEventDataProvider")
-    public void testBuildAuthenticationFailedEvent(String userId, String userStore, String appId, String appName,
-                                                   String tenantId, String tenantName, String userRef, String reasonId,
-                                                   int failedStep, String idp,
-                                                   String authenticator) throws IdentityEventException {
-
-        when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
-        mockAuthenticationContext.setSubject(mockAuthenticatedUser);
-
-        EventPayload eventPayload = payloadBuilder.buildAuthenticationFailedEvent(mockEventData);
-        assertTrue(eventPayload instanceof WSO2AuthenticationFailedEventPayload);
-
-        WSO2AuthenticationFailedEventPayload failedPayload = (WSO2AuthenticationFailedEventPayload) eventPayload;
-
-        assertEquals(failedPayload.getUser().getId(), userId);
-        assertEquals(failedPayload.getUserStore().getName(), userStore);
-        assertEquals(failedPayload.getApplication().getId(), appId);
-        assertEquals(failedPayload.getApplication().getName(), appName);
-        assertEquals(failedPayload.getTenant().getId(), tenantId);
-        assertEquals(failedPayload.getTenant().getName(), tenantName);
-        assertEquals(failedPayload.getUser().getRef(), userRef);
-        assertEquals(failedPayload.getReason().getId(), reasonId);
-        assertEquals(failedPayload.getReason().getFailedStep().getStep(), failedStep);
-        assertEquals(failedPayload.getReason().getFailedStep().getIdp(), idp);
-        assertEquals(failedPayload.getReason().getFailedStep().getAuthenticator(), authenticator);
+        assertEquals(sessionRevokedPayload.getUser().getId(), SAMPLE_USER_ID);
+        assertEquals(sessionRevokedPayload.getUserStore().getName(), SAMPLE_USERSTORE_NAME);
+        assertEquals(sessionRevokedPayload.getTenant().getId(), SAMPLE_TENANT_ID);
+        assertEquals(sessionRevokedPayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
     }
 
     @Test
-    public void testBuildAuthenticationFailedEventWithNullUser() throws IdentityEventException {
+    public void testSessionCreateEvent() throws IdentityEventException {
 
-        when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
-        mockAuthenticationContext.setSubject(null);
+        Map<String, Object> params = new HashMap<>();
+        params.put("eventTimeStamp", System.currentTimeMillis());
+        params.put("sessionId", "sessionId");
 
-        EventPayload eventPayload = payloadBuilder.buildAuthenticationFailedEvent(mockEventData);
-        assertTrue(eventPayload instanceof WSO2AuthenticationFailedEventPayload);
+        EventData eventData = new EventData.Builder()
+                .eventName("SESSION_CREATE")
+                .authenticatedUser(mockAuthenticatedUser)
+                .authenticationContext(mockAuthenticationContext)
+                .sessionContext(mockSessionContext)
+                .eventParams(params)
+                .build();
 
-        WSO2AuthenticationFailedEventPayload failedPayload = (WSO2AuthenticationFailedEventPayload) eventPayload;
+        EventPayload payload = payloadBuilder.buildSessionCreateEvent(eventData);
+        assertTrue(payload instanceof WSO2SessionCreatedEventPayload);
 
-        assertEquals(failedPayload.getApplication().getId(), SAMPLE_SP_ID);
-        assertEquals(failedPayload.getApplication().getName(), SAMPLE_SERVICE_PROVIDER);
-        assertEquals(failedPayload.getTenant().getId(), SAMPLE_TENANT_ID);
-        assertEquals(failedPayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
-        assertEquals(failedPayload.getReason().getId(), SAMPLE_ERROR_CODE);
-        assertEquals(failedPayload.getReason().getFailedStep().getStep(), 2);
-        assertEquals(failedPayload.getReason().getFailedStep().getIdp(), SAMPLE_IDP);
-        assertEquals(failedPayload.getReason().getFailedStep().getAuthenticator(), SAMPLE_AUTHENTICATOR);
+        WSO2SessionCreatedEventPayload sessionCreatePayload =
+                (WSO2SessionCreatedEventPayload) payload;
+
+        assertEquals(sessionCreatePayload.getUser().getId(), SAMPLE_USER_ID);
+        assertEquals(sessionCreatePayload.getUserStore().getName(), SAMPLE_USERSTORE_NAME);
+        assertEquals(sessionCreatePayload.getTenant().getId(), SAMPLE_TENANT_ID);
+        assertEquals(sessionCreatePayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
+    }
+
+    @Test
+    public void testSessionUpdateEvent() throws IdentityEventException {
+
+        EventPayload payload = payloadBuilder.buildSessionUpdateEvent(mockEventData);
+        assertNull(payload);
+    }
+
+    @Test
+    public void testSessionExtend() throws IdentityEventException {
+
+        EventPayload payload = payloadBuilder.buildSessionExtendEvent(mockEventData);
+        assertNull(payload);
+    }
+
+    @Test
+    public void testSessionExpire() throws IdentityEventException {
+
+        EventPayload payload = payloadBuilder.buildSessionExpireEvent(mockEventData);
+        assertNull(payload);
+    }
+
+    private SessionContext createMockSessionContext() {
+
+        SessionContext sessionContext = new SessionContext();
+        Map<String, Map<String, AuthenticatedIdPData>> authenticatedIdPsOfApp = new HashMap<>();
+        authenticatedIdPsOfApp.put("SampleApp", new HashMap<>());
+        authenticatedIdPsOfApp.put("SampleApp2", new HashMap<>());
+        sessionContext.setAuthenticatedIdPsOfApp(Collections.unmodifiableMap(authenticatedIdPsOfApp));
+        return sessionContext;
     }
 
     private AuthenticationContext createMockAuthenticationContext() {
@@ -263,3 +296,4 @@ public class WSO2LoginEventPayloadBuilderTest {
         return userAttributes;
     }
 }
+

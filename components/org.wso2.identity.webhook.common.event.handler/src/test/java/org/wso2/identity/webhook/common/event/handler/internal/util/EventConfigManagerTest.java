@@ -116,7 +116,9 @@ public class EventConfigManagerTest {
                 {Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT, IdentityEventConstants.EventName
                         .SESSION_CREATE.name(), true},
                 {Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT, IdentityEventConstants.EventName
-                        .SESSION_TERMINATE.name(), true},
+                        .USER_SESSION_TERMINATE.name(), true},
+                {Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT, IdentityEventConstants.EventName
+                        .SESSION_TERMINATE.name(), false},
                 {Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT, IdentityEventConstants.EventName
                         .SESSION_EXPIRE.name(), false},
                 {Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT, IdentityEventConstants.EventName

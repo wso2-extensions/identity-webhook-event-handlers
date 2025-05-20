@@ -155,7 +155,7 @@ public class EventConfigManager {
      * @param eventName    the name of the event for which the publisher configuration is required.
      * @return the EventPublisherConfig corresponding to the specified tenant and event.
      * @throws IdentityEventException if the tenant domain is invalid or an error occurs while retrieving the
-     * configuration.
+     *                                configuration.
      */
     public EventPublisherConfig getEventPublisherConfigForTenant(String tenantDomain, String eventName)
             throws IdentityEventException {
@@ -191,7 +191,7 @@ public class EventConfigManager {
         }
 
         if (Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT.equals(attribute.getKey())) {
-            return eventName.equals(IdentityEventConstants.EventName.SESSION_TERMINATE.name());
+            return eventName.equals(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name());
         }
         if (Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT.equals(attribute.getKey())) {
             return (eventName.equals(IdentityEventConstants.EventName.SESSION_CREATE.name()));

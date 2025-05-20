@@ -22,6 +22,7 @@ import org.wso2.carbon.identity.application.authentication.framework.Authenticat
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.core.context.model.Flow;
 
 import java.util.Map;
 
@@ -39,6 +40,8 @@ public class EventData {
     private final AuthenticatorStatus authenticatorStatus;
     private final AuthenticatedUser authenticatedUser;
     private final SessionContext sessionContext;
+    private final Flow flow;
+
 
     private EventData(Builder builder) {
 
@@ -49,6 +52,7 @@ public class EventData {
         this.authenticatorStatus = builder.authenticatorStatus;
         this.authenticatedUser = builder.authenticatedUser;
         this.sessionContext = builder.sessionContext;
+        this.flow = builder.flow;
     }
 
     public String getEventName() {
@@ -86,6 +90,11 @@ public class EventData {
         return sessionContext;
     }
 
+    public Flow getFlow() {
+
+        return flow;
+    }
+
     public static Builder builder() {
 
         return new Builder();
@@ -103,6 +112,7 @@ public class EventData {
         private AuthenticatorStatus authenticatorStatus;
         private AuthenticatedUser authenticatedUser;
         private SessionContext sessionContext;
+        private Flow flow;
 
         public Builder eventName(String eventName) {
 
@@ -143,6 +153,12 @@ public class EventData {
         public Builder sessionContext(SessionContext sessionContext) {
 
             this.sessionContext = sessionContext;
+            return this;
+        }
+
+        public Builder flow(Flow flow) {
+
+            this.flow = flow;
             return this;
         }
 

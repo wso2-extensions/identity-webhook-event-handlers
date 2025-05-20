@@ -34,7 +34,7 @@ import java.util.List;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertThrows;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -57,11 +57,10 @@ public class PayloadBuilderFactoryTest {
         mockCAEPCredentialBuilder = Mockito.mock(CredentialEventPayloadBuilder.class);
         mockCAEPVerificationBuilder = Mockito.mock(VerificationEventPayloadBuilder.class);
         Mockito.when(mockWSO2LoginBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
-        Mockito.when(mockUserOperationEventPayloadBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2.name());
+        Mockito.when(mockUserOperationEventPayloadBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
         Mockito.when(mockCAEPSessionBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
         Mockito.when(mockCAEPCredentialBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
         Mockito.when(mockCAEPVerificationBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
-
 
         EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(mockWSO2LoginBuilder);
         EventHookHandlerDataHolder.getInstance().addSessionEventPayloadBuilder(mockCAEPSessionBuilder);
@@ -96,9 +95,11 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetUserOperationEventPayloadBuilderReturnsRegisteredBuilder() {
 
-        UserOperationEventPayloadBuilder builder = PayloadBuilderFactory.getUserOperationEventPayloadBuilder("WSO2");
+        UserOperationEventPayloadBuilder builder = PayloadBuilderFactory.
+                getUserOperationEventPayloadBuilder(EventSchema.WSO2);
         assertNotNull(builder, "The builder should not be null.");
-        assertEquals(builder.getEventSchemaType(), "WSO2", "The schema type should match 'WSO2'.");
+        assertEquals(builder.getEventSchemaType(),
+                EventSchema.WSO2, "The schema type should match 'WSO2'.");
     }
 
     @Test
@@ -114,8 +115,11 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetLoginEventPayloadBuilderUnknownSchema() {
 
-        assertThrows(IllegalArgumentException.class,
-                () -> PayloadBuilderFactory.getLoginEventPayloadBuilder(EventSchema.RISC));
+        LoginEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getLoginEventPayloadBuilder(EventSchema.RISC);
+
+        assertNull(payloadBuilder, "The builder should be null.");
+
     }
 
     @Test
@@ -131,8 +135,10 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetSessionEventPayloadBuilderUnknownSchema() {
 
-        assertThrows(IllegalArgumentException.class,
-                () -> PayloadBuilderFactory.getSessionEventPayloadBuilder(EventSchema.RISC));
+        SessionEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getSessionEventPayloadBuilder(EventSchema.RISC);
+
+        assertNull(payloadBuilder, "The builder should be null.");
     }
 
     @Test
@@ -148,8 +154,10 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetCredentialEventPayloadBuilderUnknownSchema() {
 
-        assertThrows(IllegalArgumentException.class,
-                () -> PayloadBuilderFactory.getCredentialEventPayloadBuilder(EventSchema.RISC));
+        CredentialEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getCredentialEventPayloadBuilder(EventSchema.RISC);
+
+        assertNull(payloadBuilder, "The builder should be null.");
     }
 
     @Test
@@ -165,14 +173,16 @@ public class PayloadBuilderFactoryTest {
     @Test
     public void testGetVerificationEventPayloadBuilderUnknownSchema() {
 
-        assertThrows(IllegalArgumentException.class,
-                () -> PayloadBuilderFactory.getVerificationEventPayloadBuilder(EventSchema.RISC));
+        VerificationEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getVerificationEventPayloadBuilder(EventSchema.RISC);
+        assertNull(payloadBuilder, "The builder should be null.");
     }
 
     @Test
     public void testGetUserOperationEventPayloadBuilderThrowsExceptionForUnknownSchema() {
 
-        assertThrows(IllegalArgumentException.class,
-                () -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder("UnknownSchema"));
+        UserOperationEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getUserOperationEventPayloadBuilder(EventSchema.RISC);
+        assertNull(payloadBuilder, "The builder should be null.");
     }
 }

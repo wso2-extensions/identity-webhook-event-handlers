@@ -28,6 +28,7 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.MDC;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
@@ -281,8 +282,18 @@ public class EventHookHandlerUtilsTest {
                 "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
     }
 
-    @Test
-    public void testExtractSubjectFromEventData() throws IdentityEventException, UserIdNotFoundException {
+    @DataProvider(name = "extractSubjectDataProvider")
+    public Object[][] extractSubjectDataProvider() {
+
+        return new Object[][]{
+                {IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name()},
+                {IdentityEventConstants.EventName.SESSION_CREATE.name()},
+        };
+    }
+
+    @Test(dataProvider = "extractSubjectDataProvider")
+    public void testExtractSubjectFromEventData(String eventName) throws
+            IdentityEventException, UserIdNotFoundException {
 
         EventData eventData = mock(EventData.class);
 
@@ -293,6 +304,8 @@ public class EventHookHandlerUtilsTest {
         when(eventData.getAuthenticationContext()).thenReturn(mockedAuthenticationContext);
         when(mockedAuthenticationContext.getSessionIdentifier()).thenReturn("session-id-123");
         mockIdentityTenantUtil();
+
+        when(eventData.getEventName()).thenReturn(eventName);
 
         Subject subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
 

@@ -27,6 +27,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
@@ -37,6 +38,7 @@ import org.wso2.carbon.identity.configuration.mgt.core.search.PrimitiveCondition
 import org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -103,9 +105,21 @@ public class EventHookHandlerUtils {
      * @return Session ID.
      * @throws IdentityEventException If an error occurs while extracting the session ID.
      */
-    private static String extractSessionId(EventData eventData)
-            throws IdentityEventException {
+    public static String extractSessionId(EventData eventData) {
 
+        Map<String, Object> params = eventData.getEventParams();
+        // For Session Terminate Events, only extract sessionId if a single session is terminated
+        if (eventData.getEventName().equals(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name())) {
+            List<UserSession> sessions = params.containsKey(Constants.EventDataProperties.SESSIONS) ?
+                    (List<UserSession>) params.get(Constants.EventDataProperties.SESSIONS) : null;
+            if (sessions != null) {
+                if (sessions.size() == 1) {
+                    return sessions.get(0).getSessionId();
+                } else {
+                    return null;
+                }
+            }
+        }
         if (eventData.getEventParams().containsKey(Constants.EventDataProperties.SESSION_ID) &&
                 eventData.getEventParams().get(Constants.EventDataProperties.SESSION_ID) != null) {
             return eventData.getEventParams().get(Constants.EventDataProperties.SESSION_ID).toString();
@@ -126,7 +140,7 @@ public class EventHookHandlerUtils {
 
         AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);
         String sessionId = extractSessionId(eventData);
-        SimpleSubject user = null;
+        SimpleSubject user;
         try {
             user = SimpleSubject.createOpaqueSubject(authenticatedUser.getUserId());
         } catch (UserIdNotFoundException e) {
@@ -175,6 +189,8 @@ public class EventHookHandlerUtils {
                 (AuthenticationContext) properties.get(Constants.EventDataProperties.CONTEXT) : null;
         AuthenticatorStatus status = properties.containsKey(Constants.EventDataProperties.AUTHENTICATION_STATUS) ?
                 (AuthenticatorStatus) properties.get(Constants.EventDataProperties.AUTHENTICATION_STATUS) : null;
+        Flow flow = properties.containsKey(Constants.EventDataProperties.FLOW) ?
+                (Flow) properties.get(Constants.EventDataProperties.FLOW) : null;
         HttpServletRequest request = params != null ? (HttpServletRequest)
                 params.get(Constants.EventDataProperties.REQUEST) : null;
 
@@ -202,6 +218,7 @@ public class EventHookHandlerUtils {
                 .authenticatorStatus(status)
                 .authenticatedUser(authenticatedUser)
                 .sessionContext(sessionContext)
+                .flow(flow)
                 .build();
     }
 
@@ -391,12 +408,15 @@ public class EventHookHandlerUtils {
                         return Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT;
                     case AUTHENTICATION_STEP_FAILURE:
                         return Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT;
+                    case USER_SESSION_TERMINATE:
+                        return Constants.EventHandlerKey.WSO2.SESSION_REVOKED_EVENT;
+                    case SESSION_CREATE:
+                        return Constants.EventHandlerKey.WSO2.SESSION_CREATED_EVENT;
                 }
                 break;
             case CAEP:
                 switch (eventName) {
-                    case SESSION_TERMINATE:
-                    case SESSION_EXPIRE:
+                    case USER_SESSION_TERMINATE:
                         return Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT;
                     case SESSION_CREATE:
                         return Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT;

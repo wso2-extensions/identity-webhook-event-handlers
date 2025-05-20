@@ -84,9 +84,14 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
 
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
-        EventSchema eventSchema = EventSchema.CAEP;
+        EventSchema schema = EventSchema.CAEP;
         VerificationEventPayloadBuilder payloadBuilder =
-                PayloadBuilderFactory.getVerificationEventPayloadBuilder(eventSchema);
+                PayloadBuilderFactory.getVerificationEventPayloadBuilder(schema);
+
+        // TODO: Change this when the event schema type is added to the tenant configuration.
+        if (payloadBuilder == null) {
+            throw new IdentityEventException("Login event payload builder not found for schema: " + schema);
+        }
 
         EventPublisherConfig eventPublisherConfig;
         EventPayload eventPayload;
@@ -100,7 +105,7 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
                 eventPayload = payloadBuilder.buildVerificationEventPayload(eventData);
                 Subject subject = EventHookHandlerUtils.buildVerificationSubject(eventData);
                 String eventUri = eventConfigManager.getEventUri(EventHookHandlerUtils.
-                        resolveEventHandlerKey(eventSchema, IdentityEventConstants.EventName.VERIFICATION));
+                        resolveEventHandlerKey(schema, IdentityEventConstants.EventName.VERIFICATION));
 
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
                         buildSecurityEventToken(eventPayload, eventUri, subject);

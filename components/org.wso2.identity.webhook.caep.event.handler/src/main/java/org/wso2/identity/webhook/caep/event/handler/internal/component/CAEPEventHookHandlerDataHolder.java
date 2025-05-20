@@ -23,7 +23,7 @@ package org.wso2.identity.webhook.caep.event.handler.internal.component;
  */
 public class CAEPEventHookHandlerDataHolder {
 
-    private static CAEPEventHookHandlerDataHolder instance = new CAEPEventHookHandlerDataHolder();
+    private static final CAEPEventHookHandlerDataHolder instance = new CAEPEventHookHandlerDataHolder();
 
     private CAEPEventHookHandlerDataHolder() {
 

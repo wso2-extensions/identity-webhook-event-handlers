@@ -101,7 +101,7 @@ public class EventHookHandlerServiceComponentTest {
     @Test
     public void testAddAndRemoveUserOperationEventPayloadBuilder() {
 
-        when(userOperationBuilder.getEventSchemaType()).thenReturn("WSO2");
+        when(userOperationBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
         serviceComponent.addUserOperationEventPayloadBuilder(userOperationBuilder);
         serviceComponent.removeUserOperationEventPayloadBuilder(userOperationBuilder);
     }

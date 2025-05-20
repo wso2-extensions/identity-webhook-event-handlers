@@ -62,6 +62,7 @@ public class Constants {
         public static final String CONTEXT = "context";
         public static final String USER = "user";
         public static final String SESSION_DATA = "sessionData";
+        public static final String SESSIONS = "sessions";
         public static final String SESSION_ID = "sessionId";
         public static final String SESSION_CONTEXT = "sessionContext";
         public static final String EVENT_TIMESTAMP = "eventTimestamp";
@@ -70,6 +71,7 @@ public class Constants {
         public static final String AUTHENTICATION_STATUS = "authenticationStatus";
         public static final String REQUEST = "request";
         public static final String STATE = "state";
+        public static final String FLOW = "flow";
     }
 
     public static final String PRE_DELETE_USER_ID = "PRE_DELETE_USER_ID";
@@ -87,6 +89,8 @@ public class Constants {
             public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "user-operations.updateUserGroup";
             public static final String POST_DELETE_USER_EVENT = "user-operations.deleteUser";
             public static final String POST_UNLOCK_ACCOUNT_EVENT = "user-operations.unlockUser";
+            public static final String SESSION_REVOKED_EVENT = "sessions.sessionRevoked";
+            public static final String SESSION_CREATED_EVENT = "sessions.sessionCreated";
 
             private WSO2() {
 

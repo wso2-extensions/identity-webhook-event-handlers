@@ -92,7 +92,12 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         EventSchema schema = EventSchema.WSO2;
         LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
                 .getLoginEventPayloadBuilder(schema);
-        EventPublisherConfig loginEventPublisherConfig = null;
+
+        // TODO: Change this when the event schema type is added to the tenant configuration.
+        if (payloadBuilder == null) {
+            throw new IdentityEventException("Login event payload builder not found for schema: " + schema);
+        }
+        EventPublisherConfig loginEventPublisherConfig;
         try {
             String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
             loginEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
@@ -109,8 +114,6 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                         eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
                         break;
                     case AUTHENTICATION_STEP_FAILURE:
-                        eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
-                        break;
                     case AUTHENTICATION_FAILURE:
                         eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
                         break;

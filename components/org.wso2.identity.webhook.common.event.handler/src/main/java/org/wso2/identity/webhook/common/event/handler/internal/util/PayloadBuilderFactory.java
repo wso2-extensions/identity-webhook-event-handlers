@@ -48,7 +48,7 @@ public class PayloadBuilderFactory {
                 return loginEventPayloadBuilder;
             }
         }
-        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType.toString());
+        return null;
     }
 
     /**
@@ -66,7 +66,7 @@ public class PayloadBuilderFactory {
                 return sessionEventPayloadBuilder;
             }
         }
-        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType.toString());
+        return null;
     }
 
     /**
@@ -85,7 +85,7 @@ public class PayloadBuilderFactory {
                 return credentialEventPayloadBuilder;
             }
         }
-        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType.toString());
+        return null;
     }
 
     /**
@@ -104,10 +104,10 @@ public class PayloadBuilderFactory {
                 return verificationEventPayloadBuilder;
             }
         }
-        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType.toString());
+        return null;
     }
 
-    public static UserOperationEventPayloadBuilder getUserOperationEventPayloadBuilder(String eventSchemaType) {
+    public static UserOperationEventPayloadBuilder getUserOperationEventPayloadBuilder(EventSchema eventSchemaType) {
 
         List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getUserOperationEventPayloadBuilders();
@@ -116,6 +116,6 @@ public class PayloadBuilderFactory {
                 return userOperationEventPayloadBuilder;
             }
         }
-        throw new IllegalArgumentException("Unknown schema: " + eventSchemaType);
+        return null;
     }
 }

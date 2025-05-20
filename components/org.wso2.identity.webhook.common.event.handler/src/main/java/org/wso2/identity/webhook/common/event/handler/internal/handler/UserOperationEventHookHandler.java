@@ -89,7 +89,7 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
         UserOperationEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                .getUserOperationEventPayloadBuilder(EventSchema.WSO2.name());
+                .getUserOperationEventPayloadBuilder(EventSchema.WSO2);
         EventPublisherConfig userOperationEventPublisherConfig;
         try {
 

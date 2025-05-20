@@ -18,20 +18,18 @@
 
 package org.wso2.identity.webhook.caep.event.handler.internal.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * This class represents the payload for session established and session presented events in CAEP.
+ * This class represents the payload for session presented events in CAEP.
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEventPayload {
 
-    private CAEPSessionEstablishedAndPresentedEventPayload(Builder builder) {
+public class CAEPSessionPresentedEventPayload extends CAEPBaseEventPayload {
+
+    private CAEPSessionPresentedEventPayload(Builder builder) {
 
         this.initiatingEntity = builder.initiatingEntity;
         this.eventTimeStamp = builder.eventTimeStamp;
@@ -39,33 +37,19 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
         this.reasonUser = builder.reasonUser;
         this.ips = builder.ips;
         this.fpUa = builder.fpUa;
-        this.acr = builder.acr;
-        this.amr = builder.amr;
         this.extId = builder.extId;
     }
 
-    private List<String> ips = new ArrayList<>();
+    private final List<String> ips;
 
     @JsonProperty("fp_ua")
     private final String fpUa;
-    private final String acr;
-    private List<String> amr = new ArrayList<>();
     @JsonProperty("ext_id")
     private final String extId;
 
     public String getExtId() {
 
         return extId;
-    }
-
-    public List<String> getAmr() {
-
-        return amr;
-    }
-
-    public String getAcr() {
-
-        return acr;
     }
 
     public String getFpUa() {
@@ -89,8 +73,6 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
         private Map<String, String> reasonUser;
         private List<String> ips;
         private String fpUa;
-        private List<String> amr;
-        private String acr;
         private String extId;
 
         public Builder eventTimeStamp(long eventTimeStamp) {
@@ -129,27 +111,15 @@ public class CAEPSessionEstablishedAndPresentedEventPayload extends CAEPBaseEven
             return this;
         }
 
-        public Builder amr(List<String> amr) {
-
-            this.amr = amr;
-            return this;
-        }
-
         public Builder extId(String extId) {
 
             this.extId = extId;
             return this;
         }
 
-        public Builder acr(String acr) {
+        public CAEPSessionPresentedEventPayload build() {
 
-            this.acr = acr;
-            return this;
-        }
-
-        public CAEPSessionEstablishedAndPresentedEventPayload build() {
-
-            return new CAEPSessionEstablishedAndPresentedEventPayload(this);
+            return new CAEPSessionPresentedEventPayload(this);
         }
     }
 }
