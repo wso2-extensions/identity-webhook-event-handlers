@@ -16,14 +16,13 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.caep.event.handler;
+package org.wso2.identity.webhook.caep.event.handler.api.builder;
 
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPVerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPVerificationEventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;

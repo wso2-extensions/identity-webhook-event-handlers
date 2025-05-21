@@ -19,6 +19,7 @@
 package org.wso2.identity.webhook.caep.event.handler.internal.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.wso2.identity.webhook.caep.event.handler.internal.constants.Constants;
 
 import java.util.List;
 import java.util.Map;
@@ -42,9 +43,9 @@ public class CAEPSessionPresentedEventPayload extends CAEPBaseEventPayload {
 
     private final List<String> ips;
 
-    @JsonProperty("fp_ua")
+    @JsonProperty(Constants.CAEPFieldNames.FP_UA)
     private final String fpUa;
-    @JsonProperty("ext_id")
+    @JsonProperty(Constants.CAEPFieldNames.EXT_ID)
     private final String extId;
 
     public String getExtId() {

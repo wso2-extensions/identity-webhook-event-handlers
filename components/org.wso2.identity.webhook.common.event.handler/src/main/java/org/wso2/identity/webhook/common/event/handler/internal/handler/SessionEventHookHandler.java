@@ -66,6 +66,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
+        // TODO:
         for (EventSchema schema : EventSchema.values()) {
             SessionEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getSessionEventPayloadBuilder(schema);
 

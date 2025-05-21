@@ -19,6 +19,7 @@
 package org.wso2.identity.webhook.caep.event.handler.internal.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.wso2.identity.webhook.caep.event.handler.internal.constants.Constants;
 
 import java.util.Map;
 
@@ -26,6 +27,24 @@ import java.util.Map;
  * This class represents the payload for credential change events in CAEP.
  */
 public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
+
+    @JsonProperty(Constants.CAEPFieldNames.CREDENTIAL_TYPE)
+    private final String credentialType;
+
+    @JsonProperty(Constants.CAEPFieldNames.CHANGE_TYPE)
+    private ChangeType changeType;
+
+    @JsonProperty(Constants.CAEPFieldNames.FRIENDLY_NAME)
+    private final String friendlyName;
+
+    @JsonProperty(Constants.CAEPFieldNames.X509_ISSUER)
+    private final String x509Issuer;
+
+    @JsonProperty(Constants.CAEPFieldNames.X509_SERIAL)
+    private final String x509Serial;
+
+    @JsonProperty(Constants.CAEPFieldNames.FIDO_AAGUID)
+    private final String fidoAaguid;
 
     private CAEPCredentialChangeEventPayload(Builder builder) {
 
@@ -41,30 +60,12 @@ public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
         this.fidoAaguid = builder.fidoAaguid;
     }
 
-    @JsonProperty("credential_type")
-    private final String credentialType;
-
-    @JsonProperty("change_type")
-    private final String changeType;
-
-    @JsonProperty("friendly_name")
-    private final String friendlyName;
-
-    @JsonProperty("x509_issuer")
-    private final String x509Issuer;
-
-    @JsonProperty("x509_serial")
-    private final String x509Serial;
-
-    @JsonProperty("fido_aaguid")
-    private final String fidoAaguid;
-
     public String getCredentialType() {
 
         return credentialType;
     }
 
-    public String getChangeType() {
+    public ChangeType getChangeType() {
 
         return changeType;
     }
@@ -89,6 +90,25 @@ public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
         return fidoAaguid;
     }
 
+    public enum ChangeType {
+        CREATE("create"),
+        UPDATE("update"),
+        DELETE("delete"),
+        REVOKE("revoke");
+
+        private final String value;
+
+        ChangeType(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+
+            return value;
+        }
+    }
+
     /*
      * Builder class for CAEPCredentialChangeEventPayload.
      */
@@ -99,7 +119,7 @@ public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
         private Map<String, String> reasonAdmin;
         private Map<String, String> reasonUser;
         private String credentialType;
-        private String changeType;
+        private ChangeType changeType;
         private String friendlyName;
         private String x509Issuer;
         private String x509Serial;
@@ -135,7 +155,7 @@ public class CAEPCredentialChangeEventPayload extends CAEPBaseEventPayload {
             return this;
         }
 
-        public Builder changeType(String changeType) {
+        public Builder changeType(ChangeType changeType) {
 
             this.changeType = changeType;
             return this;

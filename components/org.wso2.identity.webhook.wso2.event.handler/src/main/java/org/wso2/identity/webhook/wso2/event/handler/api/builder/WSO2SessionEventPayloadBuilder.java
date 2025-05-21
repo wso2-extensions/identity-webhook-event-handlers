@@ -56,6 +56,8 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
         String tenantDomain = authenticatedUser.getTenantDomain();
         Map<String, Object> params = eventData.getEventParams();
+        boolean isBulkTerminate = params.containsKey(Constants.EventDataProperties.IS_BULK_TERMINATE) &&
+                (Boolean) params.get(Constants.EventDataProperties.IS_BULK_TERMINATE);
 
         User user = new User();
         WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
@@ -99,22 +101,9 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
 
         Flow flow = eventData.getFlow();
         if (flow != null) {
-            switch (flow.getInitiatingPersona()) {
-                case ADMIN:
-                    initiatorType = "admin";
-                    break;
-                case USER:
-                    initiatorType = "user";
-                    break;
-                case APPLICATION:
-                    initiatorType = "application";
-                    break;
-                case SYSTEM:
-                    initiatorType = "system";
-                    break;
-            }
+            initiatorType = flow.getInitiatingPersona().name().toLowerCase();
         }
-        if (sessions != null && sessions.size() == 1) {
+        if (!isBulkTerminate && sessions != null && sessions.size() == 1) {
             return new WSO2SessionRevokedEventPayload.Builder()
                     .user(user)
                     .tenant(tenant)

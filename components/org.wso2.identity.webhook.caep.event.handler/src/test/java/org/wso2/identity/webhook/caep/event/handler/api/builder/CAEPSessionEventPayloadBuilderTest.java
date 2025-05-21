@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.caep.event.handler;
+package org.wso2.identity.webhook.caep.event.handler.api.builder;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -34,7 +34,7 @@ import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPSessionEventPayloadBuilder;
+import org.wso2.identity.webhook.caep.event.handler.internal.constants.Constants;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionPresentedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
@@ -165,7 +165,7 @@ public class CAEPSessionEventPayloadBuilderTest {
         SessionContext mockSessionContext = mock(SessionContext.class);
         when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
         when(mockEventData.getAuthenticatedUser()).thenReturn(mockAuthenticatedUser);
-        when(mockSessionContext.getProperty("UpdatedTimestamp")).thenReturn(systemTime);
+        when(mockSessionContext.getProperty(Constants.UPDATED_TIMESTAMP)).thenReturn(systemTime);
         when(mockEventData.getSessionContext()).thenReturn(mockSessionContext);
 
         CAEPSessionPresentedEventPayload eventPayload =
@@ -183,7 +183,7 @@ public class CAEPSessionEventPayloadBuilderTest {
         SessionContext mockSessionContext = mock(SessionContext.class);
         when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
         when(mockEventData.getAuthenticatedUser()).thenReturn(mockAuthenticatedUser);
-        when(mockSessionContext.getProperty("CreatedTimestamp")).thenReturn(systemTime);
+        when(mockSessionContext.getProperty(Constants.CREATED_TIMESTAMP)).thenReturn(systemTime);
         when(mockEventData.getSessionContext()).thenReturn(mockSessionContext);
 
         CAEPSessionEstablishedEventPayload eventPayload =

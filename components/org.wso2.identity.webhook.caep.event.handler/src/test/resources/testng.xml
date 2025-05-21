@@ -19,9 +19,10 @@
 <suite name="org.wso2.identity.webhook.caep.event.handler">
     <test name="caep-event-hook-handler-tests" parallel="false">
         <classes>
-            <class name="org.wso2.identity.webhook.caep.event.handler.CAEPSessionEventPayloadBuilderTest"/>
-            <class name="org.wso2.identity.webhook.caep.event.handler.CAEPEventPayloadModelTest"/>
-            <class name="org.wso2.identity.webhook.caep.event.handler.CAEPVerificationEventPayloadBuilderTest"/>
+            <class name="org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPSessionEventPayloadBuilderTest"/>
+            <class name="org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPEventPayloadModelTest"/>
+            <class name="org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPVerificationEventPayloadBuilderTest"/>
+            <class name="org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPCredentialEventPayloadBuilderTest"/>
         </classes>
     </test>
 </suite>
