@@ -60,7 +60,8 @@ public class CAEPCredentialEventPayloadBuilderTest {
 
         assertNotNull(eventPayload);
         assertTrue(eventPayload instanceof CAEPCredentialChangeEventPayload);
-        CAEPCredentialChangeEventPayload caepCredentialChangeEventPayload = (CAEPCredentialChangeEventPayload) eventPayload;
+        CAEPCredentialChangeEventPayload caepCredentialChangeEventPayload =
+                (CAEPCredentialChangeEventPayload) eventPayload;
         assertEquals(caepCredentialChangeEventPayload.getEventTimeStamp(), 1234567890L);
         assertEquals(caepCredentialChangeEventPayload.getInitiatingEntity(), "user");
         assertEquals(caepCredentialChangeEventPayload.getReasonAdmin().get("en"), "Password Update by User");
@@ -83,7 +84,8 @@ public class CAEPCredentialEventPayloadBuilderTest {
 
         assertNotNull(eventPayload);
         assertTrue(eventPayload instanceof CAEPCredentialChangeEventPayload);
-        CAEPCredentialChangeEventPayload caepCredentialChangeEventPayload = (CAEPCredentialChangeEventPayload) eventPayload;
+        CAEPCredentialChangeEventPayload caepCredentialChangeEventPayload =
+                (CAEPCredentialChangeEventPayload) eventPayload;
         assertEquals(caepCredentialChangeEventPayload.getEventTimeStamp(), 1234567890L);
         assertEquals(caepCredentialChangeEventPayload.getInitiatingEntity(), "admin");
         assertEquals(caepCredentialChangeEventPayload.getReasonAdmin().get("en"), "Password Update by Admin");
