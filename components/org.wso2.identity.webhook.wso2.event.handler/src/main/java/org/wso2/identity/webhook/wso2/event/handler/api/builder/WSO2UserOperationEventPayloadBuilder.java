@@ -20,9 +20,13 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.recovery.RecoveryScenarios;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
@@ -46,6 +50,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.Scenario.ScenarioTypes.POST_CREDENTIAL_UPDATE_BY_ADMIN;
+import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.Scenario.ScenarioTypes.POST_CREDENTIAL_UPDATE_BY_USER;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_ENDPOINT;
@@ -65,8 +71,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
         AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration().getUserStoreProperty
-                (UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+        String userStoreDomainName = userStoreManager.getRealmConfiguration()
+                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
 
         Group group = buildGroup(properties, userStoreManager);
         UserStore userStore = new UserStore(userStoreDomainName);
@@ -90,8 +96,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
         AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration().getUserStoreProperty
-                (UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+        String userStoreDomainName = userStoreManager.getRealmConfiguration()
+                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
 
         UserStore userStore = new UserStore(userStoreDomainName);
 
@@ -141,8 +147,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
         AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration().getUserStoreProperty
-                (UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+        String userStoreDomainName = userStoreManager.getRealmConfiguration()
+                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
 
         UserStore userStore = new UserStore(userStoreDomainName);
 
@@ -169,31 +175,27 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     public EventPayload buildCredentialUpdateEvent(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> properties = eventData.getEventParams();
-        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
-        String userName =
-                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
-
-        String userStoreDomainName =
-                String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
-        UserStore userStore = new UserStore(userStoreDomainName);
-
-        User user = new User();
-        //TODO add the credential type and the action based on the scenarios
-        String credentialType = String.valueOf(properties.get("credential-type"));
-        String action = String.valueOf(properties.get("action"));
+        String tenantId = String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain));
+        String userName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_NAME));
+        String userStoreDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
 
         UserStoreManager userStoreManager = WSO2PayloadUtils.getUserStoreManagerByTenantDomain(tenantDomain);
-
-        if (userStoreManager != null) {
-            String domainQualifiedUserName = userStoreDomainName + "/" + userName;
-            enrichUser(userStoreManager, domainQualifiedUserName, user);
-        }
-        user.setRef(
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + user.getId());
+        User user = buildUser(userStoreManager, userStoreDomain, userName);
 
         Organization organization = new Organization(tenantId, tenantDomain);
-        String initiatorType = String.valueOf(properties.get(IdentityEventConstants.EventProperty.INITIATOR_TYPE));
+        UserStore userStore = new UserStore(userStoreDomain);
+
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        String action = "";
+        String initiatorType = "";
+
+        if (flow != null) {
+            action = flow.getName().name();
+            initiatorType = flow.getInitiatingPersona().name();
+        }
+
+        String credentialType = extractCredentialType(properties);
 
         return new WSO2UserCredentialUpdateEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -205,9 +207,29 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .build();
     }
 
-    private List<User> buildUserList(AbstractUserStoreManager userStoreManager, Map<String, Object> properties,
-                                     String userListPropertyName)
+    private User buildUser(UserStoreManager userStoreManager, String userStoreDomain, String userName)
             throws IdentityEventException {
+
+        User user = new User();
+        if (userStoreManager != null) {
+            String domainQualifiedUserName = userStoreDomain + "/" + userName;
+            enrichUser(userStoreManager, domainQualifiedUserName, user);
+            user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + user.getId());
+        }
+        return user;
+    }
+
+    private String extractCredentialType(Map<String, Object> properties) {
+
+        if (properties.containsKey(IdentityEventConstants.EventProperty.SCENARIO)) {
+            String scenario = String.valueOf(properties.get(IdentityEventConstants.EventProperty.SCENARIO));
+            return getRecoveryCredentialType(scenario).name();
+        }
+        return "";
+    }
+
+    private List<User> buildUserList(AbstractUserStoreManager userStoreManager, Map<String, Object> properties,
+                                     String userListPropertyName) throws IdentityEventException {
 
         List<User> users = new ArrayList<>();
 
@@ -279,4 +301,44 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         return group;
     }
+
+    public enum RecoveryCredentialType {
+        PASSWORD, USERNAME, NONE
+    }
+
+    private static RecoveryCredentialType getRecoveryCredentialType(String scenario) {
+
+        if (scenario == null) {
+            return RecoveryCredentialType.NONE;
+        }
+
+        // Handle constant string-based scenarios first
+        if (POST_CREDENTIAL_UPDATE_BY_ADMIN.equals(scenario) || POST_CREDENTIAL_UPDATE_BY_USER.equals(scenario)) {
+            return RecoveryCredentialType.PASSWORD;
+        }
+
+        try {
+            RecoveryScenarios recoveryScenario = RecoveryScenarios.valueOf(scenario);
+
+            switch (recoveryScenario) {
+                case NOTIFICATION_BASED_PW_RECOVERY:
+                case QUESTION_BASED_PWD_RECOVERY:
+                case ASK_PASSWORD:
+                case ADMIN_FORCED_PASSWORD_RESET_VIA_EMAIL_LINK:
+                case ADMIN_FORCED_PASSWORD_RESET_VIA_OTP:
+                case TENANT_ADMIN_ASK_PASSWORD:
+                case PASSWORD_EXPIRY:
+                    return RecoveryCredentialType.PASSWORD;
+
+                case USERNAME_RECOVERY:
+                    return RecoveryCredentialType.USERNAME;
+
+                default:
+                    return RecoveryCredentialType.NONE;
+            }
+        } catch (IllegalArgumentException e) {
+            return RecoveryCredentialType.NONE;
+        }
+    }
+
 }

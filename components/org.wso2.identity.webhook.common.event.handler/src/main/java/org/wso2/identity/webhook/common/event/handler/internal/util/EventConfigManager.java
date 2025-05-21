@@ -197,7 +197,8 @@ public class EventConfigManager {
             return true;
         }
         if ((Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_CREDENTIAL.equals(attribute.getKey()) &&
-                eventName.equals(IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD))) {
+                (eventName.equals(IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD) ||
+                        eventName.equals(IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM)))) {
             return true;
         }
         if (Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT.equals(attribute.getKey())) {
