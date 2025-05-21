@@ -21,6 +21,8 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -28,14 +30,18 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.user.api.UserRealm;
+import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.config.RealmConfiguration;
+import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
+import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCredentialUpdateEventPayload;
@@ -47,6 +53,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -82,8 +89,18 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     private static final String DOMAIN_QUALIFIED_ADDED_USER_NAME = "DEFAULT/john";
     private static final String DOMAIN_QUALIFIED_DELETED_USER_NAME = "DEFAULT/pearl";
     private static final String DOMAIN_QUALIFIED_UNLOCKED_USER_NAME = "DEFAULT/tom";
+    private static final Logger log = LoggerFactory.getLogger(WSO2UserOperationEventPayloadBuilderTest.class);
     @Mock
     private EventData mockEventData;
+
+    @Mock
+    private RealmService realmService;
+
+    @Mock
+    UserStoreManager userStoreManagerMock;
+
+    @Mock
+    private UserRealm userRealm;
 
     @Mock
     private RealmConfiguration realmConfiguration;
@@ -294,15 +311,19 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         params.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, "DEFAULT");
         params.put("credential-type", "password");
         params.put("action", "update");
-        params.put(USER_STORE_MANAGER, userStoreManager);
         params.put(IdentityEventConstants.EventProperty.USER_NAME, USER_NAME);
         params.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, "admin");
 
         when(mockEventData.getEventParams()).thenReturn(params);
-        when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_UNLOCKED_USER_NAME),
-                eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(UNLOCKED_USER_EMAIL);
-        when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_UNLOCKED_USER_NAME),
-                eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(UNLOCKED_USER_ID);
+        mockUserStoreManager();
+        try {
+            when(userStoreManagerMock.getUserClaimValue(eq(DOMAIN_QUALIFIED_UNLOCKED_USER_NAME),
+                    eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(UNLOCKED_USER_EMAIL);
+            when(userStoreManagerMock.getUserClaimValue(eq(DOMAIN_QUALIFIED_UNLOCKED_USER_NAME),
+                    eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(UNLOCKED_USER_ID);
+        } catch (org.wso2.carbon.user.api.UserStoreException e) {
+            log.error("Error while getting user claim value.", e);
+        }
 
         EventPayload eventPayload = payloadBuilder.buildCredentialUpdateEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
@@ -325,5 +346,17 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userCredentialUpdateEventPayload.getAction());
         assertEquals(userCredentialUpdateEventPayload.getAction(), "update");
 
+    }
+
+    private void mockUserStoreManager() {
+
+        try {
+            when(realmService.getTenantUserRealm(anyInt())).thenReturn(userRealm);
+            when(userRealm.getUserStoreManager()).thenReturn(userStoreManagerMock);
+        } catch (org.wso2.carbon.user.api.UserStoreException e) {
+            log.error("Error while getting user store manager.", e);
+        }
+
+        WSO2EventHookHandlerDataHolder.getInstance().setRealmService(realmService);
     }
 }

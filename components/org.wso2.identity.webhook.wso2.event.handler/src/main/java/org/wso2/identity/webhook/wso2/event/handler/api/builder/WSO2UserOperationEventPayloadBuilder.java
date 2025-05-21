@@ -24,6 +24,7 @@ import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
@@ -39,6 +40,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organi
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
+import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -181,9 +183,9 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String credentialType = String.valueOf(properties.get("credential-type"));
         String action = String.valueOf(properties.get("action"));
 
-        if (properties.containsKey(USER_STORE_MANAGER)) {
-            AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
+        UserStoreManager userStoreManager = WSO2PayloadUtils.getUserStoreManagerByTenantDomain(tenantDomain);
 
+        if (userStoreManager != null) {
             String domainQualifiedUserName = userStoreDomainName + "/" + userName;
             enrichUser(userStoreManager, domainQualifiedUserName, user);
         }
@@ -220,7 +222,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return users;
     }
 
-    private static void enrichUser(AbstractUserStoreManager userStoreManager, String domainQualifiedUserName, User user)
+    private static void enrichUser(UserStoreManager userStoreManager, String domainQualifiedUserName, User user)
             throws IdentityEventException {
 
         String userId;

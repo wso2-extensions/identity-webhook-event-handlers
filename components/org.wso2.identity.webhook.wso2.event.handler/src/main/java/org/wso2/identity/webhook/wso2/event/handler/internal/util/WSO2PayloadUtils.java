@@ -23,7 +23,12 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
+import org.wso2.carbon.user.api.UserRealm;
+import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.api.UserStoreManager;
+import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
@@ -107,4 +112,50 @@ public class WSO2PayloadUtils {
         }
     }
 
+    /**
+     * Retrieves the UserStoreManager for the given tenant domain.
+     *
+     * @param tenantDomain The tenant domain.
+     * @return The UserStoreManager for the specified tenant domain, or null if not found.
+     */
+    public static UserStoreManager getUserStoreManagerByTenantDomain(String tenantDomain) {
+
+        try {
+            int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+            RealmService realmService = WSO2EventHookHandlerDataHolder.getInstance().getRealmService();
+
+            if (realmService == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("RealmService is not available. Skipping setting user store manager.");
+                }
+                return null;
+            }
+
+            UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
+            if (userRealm == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("UserRealm is null for tenant: " + tenantId);
+                }
+                return null;
+            }
+
+            UserStoreManager userStoreManager = userRealm.getUserStoreManager();
+
+            if (userStoreManager == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("UserStoreManager is null for tenant: " + tenantId);
+                }
+                return null;
+            }
+            return userStoreManager;
+
+        } catch (UserStoreException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Error occurred while retrieving user store manager for tenant: " +
+                        tenantDomain + ". Error: " + e.getMessage(), e);
+            }
+        }
+
+        return null;
+    }
 }
