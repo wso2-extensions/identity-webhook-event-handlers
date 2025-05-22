@@ -333,31 +333,31 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
-            EventPayload eventPayload = payloadBuilder.buildCredentialUpdateEvent(mockEventData);
+        EventPayload eventPayload = payloadBuilder.buildCredentialUpdateEvent(mockEventData);
 
-            assertCommonFields((WSO2BaseEventPayload) eventPayload);
+        assertCommonFields((WSO2BaseEventPayload) eventPayload);
 
-            WSO2UserCredentialUpdateEventPayload userCredentialUpdateEventPayload =
-                    (WSO2UserCredentialUpdateEventPayload) eventPayload;
+        WSO2UserCredentialUpdateEventPayload userCredentialUpdateEventPayload =
+                (WSO2UserCredentialUpdateEventPayload) eventPayload;
 
-            assertNotNull(userCredentialUpdateEventPayload.getUser());
-            assertEquals(userCredentialUpdateEventPayload.getUser().getId(), UNLOCKED_USER_ID);
-            assertEquals(userCredentialUpdateEventPayload.getUser().getRef(),
-                    EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + DELETED_USER_ID);
-            assertNotNull(userCredentialUpdateEventPayload.getUser().getClaims());
-            assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().size(), 1);
-            assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getUri(),
-                    FrameworkConstants.EMAIL_ADDRESS_CLAIM);
-            assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getValue(), UNLOCKED_USER_EMAIL);
+        assertNotNull(userCredentialUpdateEventPayload.getUser());
+        assertEquals(userCredentialUpdateEventPayload.getUser().getId(), UNLOCKED_USER_ID);
+        assertEquals(userCredentialUpdateEventPayload.getUser().getRef(),
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + DELETED_USER_ID);
+        assertNotNull(userCredentialUpdateEventPayload.getUser().getClaims());
+        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().size(), 1);
+        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getUri(),
+                FrameworkConstants.EMAIL_ADDRESS_CLAIM);
+        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getValue(), UNLOCKED_USER_EMAIL);
 
-            assertNotNull(userCredentialUpdateEventPayload.getCredentialType());
-            assertEquals(userCredentialUpdateEventPayload.getCredentialType(),
-                    WSO2UserOperationEventPayloadBuilder.RecoveryCredentialType.PASSWORD.name());
-            assertNotNull(userCredentialUpdateEventPayload.getAction());
-            assertEquals(userCredentialUpdateEventPayload.getAction(), Flow.Name.PASSWORD_RESET.name());
-            assertEquals(userCredentialUpdateEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
+        assertNotNull(userCredentialUpdateEventPayload.getCredentialType());
+        assertEquals(userCredentialUpdateEventPayload.getCredentialType(), "PASSWORD");
+        assertNotNull(userCredentialUpdateEventPayload.getAction());
+        assertEquals(userCredentialUpdateEventPayload.getAction(),
+                WSO2UserOperationEventPayloadBuilder.PasswordUpdateAction.RESET.name());
+        assertEquals(userCredentialUpdateEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
-            IdentityContext.destroyCurrentContext();
+        IdentityContext.destroyCurrentContext();
     }
 
     private void mockUserStoreManager() {

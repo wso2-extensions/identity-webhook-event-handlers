@@ -26,7 +26,6 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.recovery.RecoveryScenarios;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
@@ -50,8 +49,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.Scenario.ScenarioTypes.POST_CREDENTIAL_UPDATE_BY_ADMIN;
-import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.Scenario.ScenarioTypes.POST_CREDENTIAL_UPDATE_BY_USER;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_ENDPOINT;
@@ -191,16 +188,14 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String initiatorType = "";
 
         if (flow != null) {
-            action = flow.getName().name();
+            action = getAction(flow.getName()).name();
             initiatorType = flow.getInitiatingPersona().name();
         }
-
-        String credentialType = extractCredentialType(properties);
 
         return new WSO2UserCredentialUpdateEventPayload.Builder()
                 .initiatorType(initiatorType)
                 .action(action)
-                .credentialType(credentialType)
+                .credentialType("PASSWORD")
                 .user(user)
                 .organization(organization)
                 .userStore(userStore)
@@ -217,15 +212,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + user.getId());
         }
         return user;
-    }
-
-    private String extractCredentialType(Map<String, Object> properties) {
-
-        if (properties.containsKey(IdentityEventConstants.EventProperty.SCENARIO)) {
-            String scenario = String.valueOf(properties.get(IdentityEventConstants.EventProperty.SCENARIO));
-            return getRecoveryCredentialType(scenario).name();
-        }
-        return "";
     }
 
     private List<User> buildUserList(AbstractUserStoreManager userStoreManager, Map<String, Object> properties,
@@ -302,43 +288,26 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return group;
     }
 
-    public enum RecoveryCredentialType {
-        PASSWORD, USERNAME, NONE
+    public enum PasswordUpdateAction {
+        UPDATE, RESET, INVITE, NONE
     }
 
-    private static RecoveryCredentialType getRecoveryCredentialType(String scenario) {
+    private PasswordUpdateAction getAction(Flow.Name name) {
 
-        if (scenario == null) {
-            return RecoveryCredentialType.NONE;
+        if (name == null) {
+            return PasswordUpdateAction.NONE;
         }
 
-        // Handle constant string-based scenarios first
-        if (POST_CREDENTIAL_UPDATE_BY_ADMIN.equals(scenario) || POST_CREDENTIAL_UPDATE_BY_USER.equals(scenario)) {
-            return RecoveryCredentialType.PASSWORD;
+        switch (name) {
+            case PROFILE_UPDATE:
+                return PasswordUpdateAction.UPDATE;
+            case PASSWORD_RESET:
+                return PasswordUpdateAction.RESET;
+            case USER_REGISTRATION_INVITE_WITH_PASSWORD:
+                return PasswordUpdateAction.INVITE;
+            default:
+                break;
         }
-
-        try {
-            RecoveryScenarios recoveryScenario = RecoveryScenarios.valueOf(scenario);
-
-            switch (recoveryScenario) {
-                case NOTIFICATION_BASED_PW_RECOVERY:
-                case QUESTION_BASED_PWD_RECOVERY:
-                case ASK_PASSWORD:
-                case ADMIN_FORCED_PASSWORD_RESET_VIA_EMAIL_LINK:
-                case ADMIN_FORCED_PASSWORD_RESET_VIA_OTP:
-                case TENANT_ADMIN_ASK_PASSWORD:
-                case PASSWORD_EXPIRY:
-                    return RecoveryCredentialType.PASSWORD;
-
-                case USERNAME_RECOVERY:
-                    return RecoveryCredentialType.USERNAME;
-
-                default:
-                    return RecoveryCredentialType.NONE;
-            }
-        } catch (IllegalArgumentException e) {
-            return RecoveryCredentialType.NONE;
-        }
+        return PasswordUpdateAction.NONE;
     }
-
 }
