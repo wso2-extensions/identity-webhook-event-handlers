@@ -48,6 +48,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUti
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
@@ -188,10 +189,11 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String initiatorType = "";
 
         if (flow != null) {
-            action = getAction(flow.getName()).name();
+            action = Optional.ofNullable(getAction(flow.getName()))
+                    .map(Enum::name)
+                    .orElse(null);
             initiatorType = flow.getInitiatingPersona().name();
         }
-
         return new WSO2UserCredentialUpdateEventPayload.Builder()
                 .initiatorType(initiatorType)
                 .action(action)
@@ -289,13 +291,13 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     }
 
     public enum PasswordUpdateAction {
-        UPDATE, RESET, INVITE, NONE
+        UPDATE, RESET, INVITE
     }
 
     private PasswordUpdateAction getAction(Flow.Name name) {
 
         if (name == null) {
-            return PasswordUpdateAction.NONE;
+            return null;
         }
 
         switch (name) {
@@ -305,9 +307,10 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 return PasswordUpdateAction.RESET;
             case USER_REGISTRATION_INVITE_WITH_PASSWORD:
                 return PasswordUpdateAction.INVITE;
-            default:
-                break;
+            default: {
+                log.warn( name + " is not a valid password update action.");
+                return null;
+            }
         }
-        return PasswordUpdateAction.NONE;
     }
 }
