@@ -33,7 +33,23 @@ public interface CredentialEventPayloadBuilder {
      * @param eventData Event data.
      * @return Event payload.
      */
-    EventPayload buildCredentialChange(EventData eventData);
+    EventPayload buildUpdatePasswordByUser(EventData eventData);
+
+    /**
+     * Build the add new password event.
+     *
+     * @param eventData Event data.
+     * @return Event payload.
+     */
+    EventPayload buildUpdatePasswordByAdmin(EventData eventData);
+
+    /**
+     * Build the add new password event.
+     *
+     * @param eventData Event data.
+     * @return Event payload.
+     */
+    EventPayload buildAddNewPassword(EventData eventData);
 
     /**
      * Returns the EventSchema type of the event payload.

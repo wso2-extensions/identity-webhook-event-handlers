@@ -245,7 +245,7 @@ public class EventHookHandlerUtils {
     public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload,
                                                                     String eventUri, Subject subId)
             throws IdentityEventException {
-
+        // TODO: Add factory support to build SecurityEventPayload based on schema type.
         if (eventPayload == null) {
             throw new IdentityEventException("Invalid event payload input: Event payload input cannot be null.");
         }

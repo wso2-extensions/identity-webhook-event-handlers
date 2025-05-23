@@ -72,6 +72,7 @@ public class Constants {
         public static final String REQUEST = "request";
         public static final String STATE = "state";
         public static final String FLOW = "flow";
+        public static final String IS_BULK_TERMINATE = "isBulkTerminate";
     }
 
     public static final String PRE_DELETE_USER_ID = "PRE_DELETE_USER_ID";

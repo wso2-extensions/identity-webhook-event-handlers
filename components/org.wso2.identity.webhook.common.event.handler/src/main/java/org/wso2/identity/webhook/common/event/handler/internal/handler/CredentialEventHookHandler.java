@@ -33,6 +33,8 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigM
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
+import static org.wso2.carbon.identity.event.IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD;
+
 /**
  * This class handles credential events and builds the event payload.
  */
@@ -57,21 +59,37 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
 
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
-        EventSchema schema = EventSchema.CAEP;
-        CredentialEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                .getCredentialEventPayloadBuilder(schema);
+        for (EventSchema schema : EventSchema.values()) {
 
-        EventPublisherConfig credentialEventPublisherConfig;
+            CredentialEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
+                    .getCredentialEventPayloadBuilder(schema);
 
-        try {
-            credentialEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
-                    (String) eventData.getSessionContext().getProperty("tenantDomain"),
-                    event.getEventName(), eventConfigManager);
+            if (payloadBuilder == null) {
+                log.debug("No payload builder found for the schema: " + schema);
+                continue;
+            }
 
-            EventPayload eventPayload = null;
-            String eventUri = null;
-        } catch (Exception e) {
-            throw new IdentityEventException("Error occurred while building event payload", e);
+            EventPublisherConfig credentialEventPublisherConfig;
+
+            try {
+                credentialEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
+                        (String) eventData.getSessionContext().getProperty("tenantDomain"),
+                        event.getEventName(), eventConfigManager);
+
+                EventPayload eventPayload = null;
+                String eventUri = null;
+
+                if (credentialEventPublisherConfig.isPublishEnabled()) {
+                    switch (event.getEventName()) {
+                        case POST_ADD_NEW_PASSWORD:
+
+                            break;
+                    }
+                }
+
+            } catch (Exception e) {
+                throw new IdentityEventException("Error occurred while building event payload", e);
+            }
         }
     }
 }

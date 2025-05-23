@@ -24,6 +24,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Ses
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.identity.webhook.caep.event.handler.internal.constants.Constants;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionPresentedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
@@ -35,23 +36,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.wso2.identity.webhook.caep.event.handler.internal.utils.CAEPEventUtils.extractEventTimeStamp;
+import static org.wso2.identity.webhook.caep.event.handler.internal.utils.CAEPEventUtils.extractInitiatingEntity;
+
 /**
  * This class is responsible for building CAEP session event payloads.
  */
 public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilder {
 
-    private static final Log log = LogFactory.getLog(CAEPSessionEventPayloadBuilder.class);
-
-    static final String CREATED_TIMESTAMP = "CreatedTimestamp";
-    static final String UPDATED_TIMESTAMP = "UpdatedTimestamp";
-    static final String EVENT_TIMESTAMP = "eventTimestamp";
-
-    private long extractEventTimeStamp(Map<String, Object> params) {
-
-        return params.containsKey(EVENT_TIMESTAMP) ?
-                Long.parseLong(params.get(EVENT_TIMESTAMP).toString()) :
-                System.currentTimeMillis();
-    }
+    private static final Log log = LogFactory.getLog(CAEPSessionEventPayloadBuilder.class);;
 
     @Override
     public EventPayload buildSessionTerminateEvent(EventData eventData) throws IdentityEventException {
@@ -65,21 +58,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Flow flow = eventData.getFlow();
         if (flow != null) {
             // TODO: Switch these with relevant flow names
-            switch (flow.getInitiatingPersona()) {
-                case USER:
-                    initiatingEntity = "user";
-                    break;
-                case ADMIN:
-                    initiatingEntity = "admin";
-                    break;
-                // Due to CAEP definitions, "SYSTEM" initiatingPersona corresponds to "policy" initiatingEntity Value
-                case APPLICATION:
-                    initiatingEntity = "system";
-                    break;
-                case SYSTEM:
-                    initiatingEntity = "policy";
-                    break;
-            }
+            initiatingEntity = extractInitiatingEntity(flow.getInitiatingPersona());
             // TODO: Define Flows and change names accordingly
             switch (flow.getName()) {
                 case LOGOUT:
@@ -89,6 +68,21 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 case DELETE_USER:
                     reasonAdmin.put("en", "User Deleted");
                     reasonUser.put("en", "User Deleted");
+                    initiatingEntity = "policy";
+                    break;
+                case SESSION_REVOKE:
+                    if (flow.getInitiatingPersona() == Flow.InitiatingPersona.ADMIN) {
+                        reasonAdmin.put("en", "Session Revoked by Admin");
+                        reasonUser.put("en", "Session Revoked by Admin");
+                    } else if (flow.getInitiatingPersona() == Flow.InitiatingPersona.USER) {
+                        reasonAdmin.put("en", "Session Revoked by User");
+                        reasonUser.put("en", "Session Revoked by User");
+                    }
+                    break;
+                // Currently LOCK and DISABLE FLOWS are preceded by PROFILE_UPDATE flow.
+                case PROFILE_UPDATE:
+                    reasonAdmin.put("en", "User Profile Locked or Disabled");
+                    reasonUser.put("en", "User Profile Locked or Disabled");
                     initiatingEntity = "policy";
                     break;
                 case ACCOUNT_DISABLE:
@@ -101,14 +95,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
                     reasonUser.put("en", "User Account was Locked");
                     initiatingEntity = "policy";
                     break;
-                case SESSION_REVOKE:
-                    if (flow.getInitiatingPersona() == Flow.InitiatingPersona.ADMIN) {
-                        reasonAdmin.put("en", "Session Revoked by Admin");
-                        reasonUser.put("en", "Session Revoked by Admin");
-                    } else if (flow.getInitiatingPersona() == Flow.InitiatingPersona.USER) {
-                        reasonAdmin.put("en", "Session Revoked by User");
-                        reasonUser.put("en", "Session Revoked by User");
-                    }
             }
         }
 
@@ -132,8 +118,8 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         SessionContext sessionContext = eventData.getSessionContext();
         final Map<String, Object> params = eventData.getEventParams();
         Long eventTimeStamp = null;
-        if (sessionContext != null && sessionContext.getProperty(CREATED_TIMESTAMP) != null) {
-            eventTimeStamp = Long.parseLong(sessionContext.getProperty(CREATED_TIMESTAMP).toString());
+        if (sessionContext != null && sessionContext.getProperty(Constants.CREATED_TIMESTAMP) != null) {
+            eventTimeStamp = Long.parseLong(sessionContext.getProperty(Constants.CREATED_TIMESTAMP).toString());
         }
 
         if (eventTimeStamp == null) {
@@ -188,8 +174,8 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         final Map<String, Object> params = eventData.getEventParams();
         SessionContext sessionContext = eventData.getSessionContext();
         Long eventTimeStamp = null;
-        if (sessionContext != null && sessionContext.getProperty(UPDATED_TIMESTAMP) != null) {
-            eventTimeStamp = Long.parseLong(sessionContext.getProperty(UPDATED_TIMESTAMP).toString());
+        if (sessionContext != null && sessionContext.getProperty(Constants.UPDATED_TIMESTAMP) != null) {
+            eventTimeStamp = Long.parseLong(sessionContext.getProperty(Constants.UPDATED_TIMESTAMP).toString());
         }
 
         if (eventTimeStamp == null) {

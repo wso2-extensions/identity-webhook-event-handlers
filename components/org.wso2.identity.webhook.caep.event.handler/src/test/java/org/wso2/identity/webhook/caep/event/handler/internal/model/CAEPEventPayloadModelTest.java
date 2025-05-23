@@ -16,15 +16,10 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.caep.event.handler;
+package org.wso2.identity.webhook.caep.event.handler.internal.model;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPCredentialChangeEventPayload;
-import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedEventPayload;
-import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
-import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPTokenClaimsChangeEventPayload;
-import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPVerificationEventPayload;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -145,7 +140,7 @@ public class CAEPEventPayloadModelTest {
                 .reasonAdmin(sampleReasonAdmin)
                 .reasonUser(sampleReasonUser)
                 .credentialType(credentialType)
-                .changeType(changeType)
+                .changeType(CAEPCredentialChangeEventPayload.ChangeType.valueOf(changeType.toUpperCase()))
                 .friendlyName(friendlyName)
                 .x509Serial(x509Serial)
                 .x509Issuer(x509Issuer)
@@ -158,7 +153,7 @@ public class CAEPEventPayloadModelTest {
         assertEquals(payload.getReasonAdmin(), sampleReasonAdmin);
         assertEquals(payload.getReasonUser(), sampleReasonUser);
         assertEquals(payload.getCredentialType(), credentialType);
-        assertEquals(payload.getChangeType(), changeType);
+        assertEquals(payload.getChangeType().toString(), changeType);
         assertEquals(payload.getFriendlyName(), friendlyName);
         assertEquals(payload.getX509Issuer(), x509Issuer);
         assertEquals(payload.getX509Serial(), x509Serial);

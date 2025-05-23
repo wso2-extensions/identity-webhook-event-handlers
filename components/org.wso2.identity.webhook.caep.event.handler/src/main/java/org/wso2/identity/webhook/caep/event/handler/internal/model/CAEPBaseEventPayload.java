@@ -21,6 +21,7 @@ package org.wso2.identity.webhook.caep.event.handler.internal.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.identity.webhook.caep.event.handler.internal.constants.Constants;
 
 import java.util.Map;
 
@@ -30,16 +31,16 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class CAEPBaseEventPayload extends EventPayload {
 
-    @JsonProperty("event_timestamp")
+    @JsonProperty(Constants.CAEPFieldNames.EVENT_TIMESTAMP)
     protected long eventTimeStamp;
 
-    @JsonProperty("initiating_entity")
+    @JsonProperty(Constants.CAEPFieldNames.INITIATING_ENTITY)
     protected String initiatingEntity;
 
-    @JsonProperty("reason_admin")
+    @JsonProperty(Constants.CAEPFieldNames.REASON_ADMIN)
     protected Map<String, String> reasonAdmin;
 
-    @JsonProperty("reason_user")
+    @JsonProperty(Constants.CAEPFieldNames.REASON_USER)
     protected Map<String, String> reasonUser;
 
     public long getEventTimeStamp() {

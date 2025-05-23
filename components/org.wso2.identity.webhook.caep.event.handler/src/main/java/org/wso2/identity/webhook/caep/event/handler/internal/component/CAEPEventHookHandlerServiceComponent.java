@@ -24,8 +24,12 @@ import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPCredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPSessionEventPayloadBuilder;
+import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPVerificationEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 
 /**
  * CAEP Event Handler Service Component.
@@ -44,6 +48,10 @@ public class CAEPEventHookHandlerServiceComponent {
             log.debug("WSO2 CAEP Event Handler is activated.");
             context.getBundleContext().registerService(SessionEventPayloadBuilder.class.getName(),
                     new CAEPSessionEventPayloadBuilder(), null);
+            context.getBundleContext().registerService(VerificationEventPayloadBuilder.class.getName(),
+                    new CAEPVerificationEventPayloadBuilder(), null);
+            context.getBundleContext().registerService(CredentialEventPayloadBuilder.class.getName(),
+                    new CAEPCredentialEventPayloadBuilder(), null);
         } catch (Exception e) {
             log.error("Error while activating CAEP event handler.", e);
         }
