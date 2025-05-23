@@ -19,6 +19,7 @@
 package org.wso2.identity.webhook.wso2.event.handler.internal.component;
 
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
+import org.wso2.carbon.user.core.service.RealmService;
 
 /**
  * A data holder class to keep the data of the event handler component.
@@ -27,6 +28,7 @@ public class WSO2EventHookHandlerDataHolder {
 
     private static final WSO2EventHookHandlerDataHolder instance = new WSO2EventHookHandlerDataHolder();
     private OrganizationManager organizationManager;
+    private RealmService realmService;
 
     private WSO2EventHookHandlerDataHolder() {
 
@@ -55,5 +57,25 @@ public class WSO2EventHookHandlerDataHolder {
     public void setOrganizationManager(OrganizationManager organizationManager) {
 
         this.organizationManager = organizationManager;
+    }
+
+    /**
+     * Get {@link RealmService}.
+     *
+     * @return realm service instance {@link RealmService}.
+     */
+    public RealmService getRealmService() {
+
+        return realmService;
+    }
+
+    /**
+     * Set {@link RealmService}.
+     *
+     * @param realmService Instance of {@link RealmService}.
+     */
+    public void setRealmService(RealmService realmService) {
+
+        this.realmService = realmService;
     }
 }

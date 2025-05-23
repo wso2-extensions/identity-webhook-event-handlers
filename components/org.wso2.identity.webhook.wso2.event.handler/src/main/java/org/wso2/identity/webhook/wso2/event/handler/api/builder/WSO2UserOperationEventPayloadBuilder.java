@@ -20,10 +20,14 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
@@ -32,16 +36,19 @@ import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCredentialUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserGroupUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Group;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
+import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
@@ -62,8 +69,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
         AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration().getUserStoreProperty
-                (UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+        String userStoreDomainName = userStoreManager.getRealmConfiguration()
+                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
 
         Group group = buildGroup(properties, userStoreManager);
         UserStore userStore = new UserStore(userStoreDomainName);
@@ -87,8 +94,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
         AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration().getUserStoreProperty
-                (UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+        String userStoreDomainName = userStoreManager.getRealmConfiguration()
+                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
 
         UserStore userStore = new UserStore(userStoreDomainName);
 
@@ -138,8 +145,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
         AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration().getUserStoreProperty
-                (UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+        String userStoreDomainName = userStoreManager.getRealmConfiguration()
+                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
 
         UserStore userStore = new UserStore(userStoreDomainName);
 
@@ -162,9 +169,55 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .build();
     }
 
-    private List<User> buildUserList(AbstractUserStoreManager userStoreManager, Map<String, Object> properties,
-                                     String userListPropertyName)
+    @Override
+    public EventPayload buildCredentialUpdateEvent(EventData eventData) throws IdentityEventException {
+
+        Map<String, Object> properties = eventData.getEventParams();
+        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+        String tenantId = String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain));
+        String userName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_NAME));
+        String userStoreDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
+
+        UserStoreManager userStoreManager = WSO2PayloadUtils.getUserStoreManagerByTenantDomain(tenantDomain);
+        User user = buildUser(userStoreManager, userStoreDomain, userName);
+
+        Organization organization = new Organization(tenantId, tenantDomain);
+        UserStore userStore = new UserStore(userStoreDomain);
+
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        String action = "";
+        String initiatorType = "";
+
+        if (flow != null) {
+            action = Optional.ofNullable(getAction(flow.getName()))
+                    .map(Enum::name)
+                    .orElse(null);
+            initiatorType = flow.getInitiatingPersona().name();
+        }
+        return new WSO2UserCredentialUpdateEventPayload.Builder()
+                .initiatorType(initiatorType)
+                .action(action)
+                .credentialType("PASSWORD")
+                .user(user)
+                .organization(organization)
+                .userStore(userStore)
+                .build();
+    }
+
+    private User buildUser(UserStoreManager userStoreManager, String userStoreDomain, String userName)
             throws IdentityEventException {
+
+        User user = new User();
+        if (userStoreManager != null) {
+            String domainQualifiedUserName = userStoreDomain + "/" + userName;
+            enrichUser(userStoreManager, domainQualifiedUserName, user);
+            user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + user.getId());
+        }
+        return user;
+    }
+
+    private List<User> buildUserList(AbstractUserStoreManager userStoreManager, Map<String, Object> properties,
+                                     String userListPropertyName) throws IdentityEventException {
 
         List<User> users = new ArrayList<>();
 
@@ -179,17 +232,18 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return users;
     }
 
-    private static void enrichUser(AbstractUserStoreManager userStoreManager, String userName, User user)
+    private static void enrichUser(UserStoreManager userStoreManager, String domainQualifiedUserName, User user)
             throws IdentityEventException {
 
         String userId;
         try {
-            userId = userStoreManager.getUserClaimValue(userName, FrameworkConstants.USER_ID_CLAIM,
+            userId = userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.USER_ID_CLAIM,
                     UserCoreConstants.DEFAULT_PROFILE);
             user.setId(userId);
 
-            String emailAddress = userStoreManager.getUserClaimValue(userName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
-                    UserCoreConstants.DEFAULT_PROFILE);
+            String emailAddress =
+                    userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
+                            UserCoreConstants.DEFAULT_PROFILE);
             UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
             List<UserClaim> userClaims = new ArrayList<>();
             userClaims.add(emailAddressUserClaim);
@@ -197,7 +251,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             user.setClaims(userClaims);
 
         } catch (UserStoreException e) {
-            throw new IdentityEventException("Error while extracting user claims for the user : " + userName, e);
+            throw new IdentityEventException(
+                    "Error while extracting user claims for the user : " + domainQualifiedUserName, e);
         }
     }
 
@@ -233,5 +288,29 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         group.setAddedUsers(addedUsers);
 
         return group;
+    }
+
+    public enum PasswordUpdateAction {
+        UPDATE, RESET, INVITE
+    }
+
+    private PasswordUpdateAction getAction(Flow.Name name) {
+
+        if (name == null) {
+            return null;
+        }
+
+        switch (name) {
+            case PROFILE_UPDATE:
+                return PasswordUpdateAction.UPDATE;
+            case PASSWORD_RESET:
+                return PasswordUpdateAction.RESET;
+            case USER_REGISTRATION_INVITE_WITH_PASSWORD:
+                return PasswordUpdateAction.INVITE;
+            default: {
+                log.warn( name + " is not a valid password update action.");
+                return null;
+            }
+        }
     }
 }

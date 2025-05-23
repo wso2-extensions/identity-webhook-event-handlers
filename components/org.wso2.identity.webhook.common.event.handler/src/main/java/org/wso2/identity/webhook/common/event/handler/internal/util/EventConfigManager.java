@@ -184,12 +184,23 @@ public class EventConfigManager {
             return ((eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name()))) ||
                     (eventName.equals(IdentityEventConstants.EventName.AUTHENTICATION_FAILURE.name()));
         }
-
         if ((Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_LIST_OF_ROLE_EVENT.equals(attribute.getKey()) &&
                 eventName.equals(IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE))) {
             return true;
         }
-
+        if ((Constants.EventHandlerKey.WSO2.POST_DELETE_USER_EVENT.equals(attribute.getKey()) &&
+                eventName.equals(IdentityEventConstants.Event.POST_DELETE_USER))) {
+            return true;
+        }
+        if ((Constants.EventHandlerKey.WSO2.POST_UNLOCK_ACCOUNT_EVENT.equals(attribute.getKey()) &&
+                eventName.equals(IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT))) {
+            return true;
+        }
+        if ((Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_CREDENTIAL.equals(attribute.getKey()) &&
+                (eventName.equals(IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD) ||
+                        eventName.equals(IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM)))) {
+            return true;
+        }
         if (Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT.equals(attribute.getKey())) {
             return eventName.equals(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name());
         }
