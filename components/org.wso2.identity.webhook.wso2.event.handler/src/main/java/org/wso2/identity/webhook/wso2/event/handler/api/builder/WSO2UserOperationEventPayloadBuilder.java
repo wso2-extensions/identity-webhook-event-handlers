@@ -140,6 +140,11 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     @Override
     public EventPayload buildUserUnlockAccountEvent(EventData eventData) throws IdentityEventException {
 
+        return this.buildUserAccountEvent(eventData);
+    }
+
+    private EventPayload buildUserAccountEvent(EventData eventData) throws IdentityEventException {
+
         Map<String, Object> properties = eventData.getEventParams();
         String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
@@ -159,7 +164,11 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + unlockedUser.getId());
 
         Organization organization = new Organization(tenantId, tenantDomain);
-        String initiatorType = String.valueOf(properties.get(IdentityEventConstants.EventProperty.INITIATOR_TYPE));
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        String initiatorType = "";
+        if (flow != null) {
+            initiatorType = flow.getInitiatingPersona().name();
+        }
 
         return new WSO2UserAccountEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -214,6 +223,12 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + user.getId());
         }
         return user;
+    }
+
+    @Override
+    public EventPayload buildUserLockAccountEvent(EventData eventData) throws IdentityEventException {
+
+        return this.buildUserAccountEvent(eventData);
     }
 
     private List<User> buildUserList(AbstractUserStoreManager userStoreManager, Map<String, Object> properties,
@@ -308,7 +323,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             case USER_REGISTRATION_INVITE_WITH_PASSWORD:
                 return PasswordUpdateAction.INVITE;
             default: {
-                log.warn( name + " is not a valid password update action.");
+                log.warn(name + " is not a valid password update action.");
                 return null;
             }
         }
