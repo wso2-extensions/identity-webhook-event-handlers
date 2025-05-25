@@ -29,6 +29,7 @@ import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
@@ -60,6 +61,9 @@ public class EventHookHandlerServiceComponentTest {
 
     @Mock
     private UserOperationEventPayloadBuilder userOperationBuilder;
+
+    @Mock
+    private RegistrationEventPayloadBuilder registrationBuilder;
 
     @Mock
     private ConfigurationManager configurationManager;
@@ -118,5 +122,13 @@ public class EventHookHandlerServiceComponentTest {
 
         serviceComponent.setEventPublisherService(eventPublisherService);
         serviceComponent.unsetEventPublisherService(eventPublisherService);
+    }
+
+    @Test
+    public void testAddAndRemoveRegistrationEventPayloadBuilder() {
+
+        when(registrationBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
+        serviceComponent.addRegistrationEventPayloadBuilder(registrationBuilder);
+        serviceComponent.removeRegistrationEventPayloadBuilder(registrationBuilder);
     }
 }
