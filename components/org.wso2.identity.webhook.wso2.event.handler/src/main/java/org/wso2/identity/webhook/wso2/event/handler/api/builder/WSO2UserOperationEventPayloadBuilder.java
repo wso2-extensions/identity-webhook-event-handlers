@@ -158,10 +158,10 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String userName =
                 String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
 
-        User unlockedUser = new User();
-        enrichUser(userStoreManager, userName, unlockedUser);
-        unlockedUser.setRef(
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + unlockedUser.getId());
+        User user = new User();
+        enrichUser(userStoreManager, userName, user);
+        user.setRef(
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + user.getId());
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
@@ -172,7 +172,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         return new WSO2UserAccountEventPayload.Builder()
                 .initiatorType(initiatorType)
-                .user(unlockedUser)
+                .user(user)
                 .organization(organization)
                 .userStore(userStore)
                 .build();
