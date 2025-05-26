@@ -82,7 +82,8 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                 IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName) ||
                 IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) ||
                 IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName) ||
-                IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName);
+                IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName) ||
+                IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName);
     }
 
     @Override
@@ -142,8 +143,15 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                 eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_CREDENTIAL);
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                         .buildSecurityEventToken(eventPayload, eventUri);
-            EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-        }
+                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+            } else if (IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(event.getEventName()) &&
+                    userOperationEventPublisherConfig.isPublishEnabled()) {
+                eventPayload = payloadBuilder.buildUserLockAccountEvent(eventData);
+                eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.WSO2.POST_LOCK_ACCOUNT_EVENT);
+                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                        .buildSecurityEventToken(eventPayload, eventUri);
+                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+            }
         } catch (IdentityEventException e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }

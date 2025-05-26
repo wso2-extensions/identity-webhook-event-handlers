@@ -92,6 +92,7 @@ public class Constants {
             public static final String POST_UPDATE_USER_CREDENTIAL = "user-operations.updateUserCredentials";
             public static final String SESSION_REVOKED_EVENT = "sessions.sessionRevoked";
             public static final String SESSION_CREATED_EVENT = "sessions.sessionCreated";
+            public static final String POST_LOCK_ACCOUNT_EVENT = "user-operations.lockUser";
 
             private WSO2() {
 
@@ -113,7 +114,7 @@ public class Constants {
             }
         }
 
-            private EventHandlerKey() {
+        private EventHandlerKey() {
 
         }
     }
