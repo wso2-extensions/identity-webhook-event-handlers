@@ -119,7 +119,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
                 eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(TEST_USER_ID);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.ACCOUNT_LOCK)
+                .name(Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
