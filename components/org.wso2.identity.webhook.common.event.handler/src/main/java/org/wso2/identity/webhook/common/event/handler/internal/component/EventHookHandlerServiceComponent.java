@@ -135,14 +135,14 @@ public class EventHookHandlerServiceComponent {
     protected void addSecurityEventTokenBuilder(SecurityEventTokenBuilder securityEventTokenBuilder) {
 
         log.debug("Adding the Security Event Token Builder Service : " +
-                securityEventTokenBuilder.getEvenSchema().name());
+                securityEventTokenBuilder.getEventSchema().name());
         EventHookHandlerDataHolder.getInstance().addSecurityEventTokenBuilder(securityEventTokenBuilder);
     }
 
     protected void removeSecurityEventTokenBuilder(SecurityEventTokenBuilder securityEventTokenBuilder) {
 
         log.debug("Removing the Security Event Token Builder Service : " +
-                securityEventTokenBuilder.getEvenSchema().name());
+                securityEventTokenBuilder.getEventSchema().name());
         EventHookHandlerDataHolder.getInstance().removeSecurityEventTokenBuilder(securityEventTokenBuilder);
     }
 

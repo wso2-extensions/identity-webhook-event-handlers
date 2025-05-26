@@ -43,7 +43,7 @@ public class WSO2SecurityEventTokenBuilder implements SecurityEventTokenBuilder 
     }
 
     @Override
-    public EventSchema getEvenSchema() {
+    public EventSchema getEventSchema() {
 
         return EventSchema.WSO2;
     }

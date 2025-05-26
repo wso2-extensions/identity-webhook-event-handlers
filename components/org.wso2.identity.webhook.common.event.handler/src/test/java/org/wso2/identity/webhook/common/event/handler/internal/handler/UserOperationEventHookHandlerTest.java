@@ -46,6 +46,7 @@ import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.util.SecurityEventTokenBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.config.ResourceConfig;
@@ -53,9 +54,11 @@ import org.wso2.identity.webhook.common.event.handler.internal.constant.Constant
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
+import org.wso2.identity.webhook.common.event.handler.internal.util.SecurityEventTokenBuilderFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.Answers.CALLS_REAL_METHODS;
 import static org.mockito.ArgumentMatchers.any;
@@ -92,6 +95,10 @@ public class UserOperationEventHookHandlerTest {
     @Mock
     private EventPublisherService mockedEventPublisherService;
     @Mock
+    private SecurityEventTokenPayload mockedSecurityEventTokenPayload;
+    @Mock
+    private SecurityEventTokenBuilder mockedSecurityEventTokenBuilder;
+    @Mock
     private EventPayload mockedEventPayload;
     @InjectMocks
     private UserOperationEventHookHandler userOperationEventHookHandler;
@@ -108,6 +115,7 @@ public class UserOperationEventHookHandlerTest {
         MockitoAnnotations.openMocks(this);
         setupDataHolderMocks();
         setupPayloadBuilderMocks();
+        setupSecurityTokenBuilderMocks();
         setupUtilities();
     }
 
@@ -164,16 +172,26 @@ public class UserOperationEventHookHandlerTest {
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
             mocked.when(() -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder(any(EventSchema.class)))
                     .thenReturn(mockedUserOperationEventPayloadBuilder);
-            when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
-            when(mockedEventConfigManager.getEventUri(anyString())).thenReturn(expectedEventKey);
-            when(mockedEventConfigManager.getEventPublisherConfigForTenant(anyString(), anyString())).thenReturn(
-                    eventPublisherConfig);
-            when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString()))
-                    .thenReturn(eventPublisherConfig);
+            try (MockedStatic<SecurityEventTokenBuilderFactory> mockedSecurityEventTokenBuilderFactory =
+                         mockStatic(SecurityEventTokenBuilderFactory.class)) {
+                mockedSecurityEventTokenBuilderFactory.when(() ->
+                                SecurityEventTokenBuilderFactory.getSecurityEventTokenBuilder(any(EventSchema.class)))
+                        .thenReturn(mockedSecurityEventTokenBuilder);
+                Map<String, EventPayload> eventMap = new HashMap<>();
+                eventMap.put(expectedEventKey, mockedEventPayload);
+                when(mockedSecurityEventTokenPayload.getEvents()).thenReturn(eventMap);
+                reset(mockedConfigurationManager);
+                when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
+                when(mockedEventConfigManager.getEventUri(anyString())).thenReturn(expectedEventKey);
+                when(mockedEventConfigManager.getEventPublisherConfigForTenant(anyString(), anyString())).thenReturn(
+                        eventPublisherConfig);
+                when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString()))
+                        .thenReturn(eventPublisherConfig);
 
-            userOperationEventHookHandler.handleEvent(event);
+                userOperationEventHookHandler.handleEvent(event);
 
-            verifyEventPublishedWithExpectedKey(expectedEventKey);
+                verifyEventPublishedWithExpectedKey(expectedEventKey);
+            }
         }
     }
 
@@ -190,16 +208,24 @@ public class UserOperationEventHookHandlerTest {
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
             mocked.when(() -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder(any(EventSchema.class)))
                     .thenReturn(mockedUserOperationEventPayloadBuilder);
-            reset(mockedConfigurationManager);
-            when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
-            when(mockedEventConfigManager.getEventPublisherConfigForTenant(anyString(), anyString())).thenReturn(
-                    eventPublisherConfig);
-            when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString()))
-                    .thenReturn(eventPublisherConfig);
+            try (MockedStatic<SecurityEventTokenBuilderFactory> mockedSecurityEventTokenBuilderFactory =
+                         mockStatic(SecurityEventTokenBuilderFactory.class)) {
+                mockedSecurityEventTokenBuilderFactory.when(() ->
+                                SecurityEventTokenBuilderFactory.getSecurityEventTokenBuilder(any(EventSchema.class)))
+                        .thenReturn(mockedSecurityEventTokenBuilder);
+                Map<String, EventPayload> eventMap = new HashMap<>();
+                when(mockedSecurityEventTokenPayload.getEvents()).thenReturn(eventMap);
+                reset(mockedConfigurationManager);
+                when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
+                when(mockedEventConfigManager.getEventPublisherConfigForTenant(anyString(), anyString())).thenReturn(
+                        eventPublisherConfig);
+                when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString()))
+                        .thenReturn(eventPublisherConfig);
 
-            userOperationEventHookHandler.handleEvent(event);
+                userOperationEventHookHandler.handleEvent(event);
 
-            verify(mockedEventPublisherService, times(0)).publish(any(), any());
+                verify(mockedEventPublisherService, times(0)).publish(any(), any());
+            }
         }
     }
 
@@ -216,14 +242,22 @@ public class UserOperationEventHookHandlerTest {
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
             mocked.when(() -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder(any(EventSchema.class)))
                     .thenReturn(mockedUserOperationEventPayloadBuilder);
-            reset(mockedConfigurationManager);
-            when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
-            when(mockedEventConfigManager.getEventPublisherConfigForTenant(anyString(), anyString())).thenReturn(
-                    eventPublisherConfig);
-            when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString()))
-                    .thenReturn(eventPublisherConfig);
+            try (MockedStatic<SecurityEventTokenBuilderFactory> mockedSecurityEventTokenBuilderFactory =
+                         mockStatic(SecurityEventTokenBuilderFactory.class)) {
+                mockedSecurityEventTokenBuilderFactory.when(() ->
+                                SecurityEventTokenBuilderFactory.getSecurityEventTokenBuilder(EventSchema.WSO2))
+                        .thenReturn(mockedSecurityEventTokenBuilder);
+                Map<String, EventPayload> eventMap = new HashMap<>();
+                when(mockedSecurityEventTokenPayload.getEvents()).thenReturn(eventMap);
+                reset(mockedConfigurationManager);
+                when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
+                when(mockedEventConfigManager.getEventPublisherConfigForTenant(anyString(), anyString())).thenReturn(
+                        eventPublisherConfig);
+                when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString()))
+                        .thenReturn(eventPublisherConfig);
 
-            userOperationEventHookHandler.handleEvent(event);
+                userOperationEventHookHandler.handleEvent(event);
+            }
         }
     }
 
@@ -240,10 +274,20 @@ public class UserOperationEventHookHandlerTest {
         EventHookHandlerDataHolder.getInstance().setEventPublisherService(mockedEventPublisherService);
     }
 
+    private void setupSecurityTokenBuilderMocks() throws IdentityEventException {
+
+        when(mockedSecurityEventTokenBuilder.getEventSchema()).thenReturn(EventSchema.WSO2);
+        when(mockedSecurityEventTokenBuilder.buildSecurityEventTokenPayload(any(EventPayload.class),
+                anyString(), any(EventData.class)))
+                .thenReturn(mockedSecurityEventTokenPayload);
+    }
+
     private void setupPayloadBuilderMocks() throws IdentityEventException {
 
         when(mockedUserOperationEventPayloadBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
         when(mockedUserOperationEventPayloadBuilder.buildUserGroupUpdateEvent(any(EventData.class)))
+                .thenReturn(mockedEventPayload);
+        when(mockedUserOperationEventPayloadBuilder.buildUserDeleteEvent(any(EventData.class)))
                 .thenReturn(mockedEventPayload);
     }
 

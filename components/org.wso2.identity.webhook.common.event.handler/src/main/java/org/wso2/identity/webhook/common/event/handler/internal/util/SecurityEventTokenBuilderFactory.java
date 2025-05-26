@@ -13,7 +13,7 @@ public class SecurityEventTokenBuilderFactory {
        List<SecurityEventTokenBuilder> securityEventTokenBuilders =
                 EventHookHandlerDataHolder.getInstance().getSecurityEventTokenBuilders();
         for (SecurityEventTokenBuilder securityEventTokenBuilder : securityEventTokenBuilders) {
-            if (securityEventTokenBuilder.getEvenSchema().equals(eventSchema)) {
+            if (securityEventTokenBuilder.getEventSchema().equals(eventSchema)) {
                 return securityEventTokenBuilder;
             }
         }

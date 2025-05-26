@@ -22,5 +22,10 @@ public interface SecurityEventTokenBuilder {
     SecurityEventTokenPayload buildSecurityEventTokenPayload(EventPayload eventPayload, String eventUri,
                                                              EventData eventData) throws IdentityEventException;
 
-    EventSchema getEvenSchema();
+    /**
+     * Get the event schema.
+     *
+     * @return Event schema.
+     */
+    EventSchema getEventSchema();
 }

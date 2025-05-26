@@ -39,6 +39,10 @@ public class CAEPSecurityEventTokenBuilder implements SecurityEventTokenBuilder 
             throw new IdentityEventException("Invalid event URI input: Event URI input cannot be null or empty.");
         }
 
+        if (eventData == null) {
+            throw new IdentityEventException("Invalid event data input: Event data input cannot be null.");
+        }
+
         Subject subject;
         if (eventData.getEventName().equals(IdentityEventConstants.EventName.VERIFICATION.name())) {
             subject = buildVerificationSubject(eventData);
@@ -62,7 +66,7 @@ public class CAEPSecurityEventTokenBuilder implements SecurityEventTokenBuilder 
     }
 
     @Override
-    public EventSchema getEvenSchema() {
+    public EventSchema getEventSchema() {
 
         return EventSchema.CAEP;
     }
@@ -101,7 +105,7 @@ public class CAEPSecurityEventTokenBuilder implements SecurityEventTokenBuilder 
     private static Subject buildVerificationSubject(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> params = eventData.getEventParams();
-        String streamId = params.get(Constants.EventDataProperties.STREAM_ID) != null ?
+        String streamId = params.containsKey(Constants.EventDataProperties.STREAM_ID) ?
                 params.get(Constants.EventDataProperties.STREAM_ID).toString() : null;
         if (streamId == null) {
             throw new IdentityEventException("Stream ID cannot be null");
