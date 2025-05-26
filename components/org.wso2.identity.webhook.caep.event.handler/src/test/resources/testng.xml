@@ -22,6 +22,7 @@
             <class name="org.wso2.identity.webhook.caep.event.handler.CAEPSessionEventPayloadBuilderTest"/>
             <class name="org.wso2.identity.webhook.caep.event.handler.CAEPEventPayloadModelTest"/>
             <class name="org.wso2.identity.webhook.caep.event.handler.CAEPVerificationEventPayloadBuilderTest"/>
+            <class name="org.wso2.identity.webhook.caep.event.handler.api.util.CAEPSecurityEventTokenBuilderTest"/>
         </classes>
     </test>
 </suite>

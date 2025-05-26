@@ -32,11 +32,13 @@ import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.util.SecurityEventTokenBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
+import org.wso2.identity.webhook.common.event.handler.internal.util.SecurityEventTokenBuilderFactory;
 
 /**
  * Login Event Hook Handler.
@@ -97,6 +99,14 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         if (payloadBuilder == null) {
             throw new IdentityEventException("Login event payload builder not found for schema: " + schema);
         }
+
+        SecurityEventTokenBuilder securityEventTokenBuilder = SecurityEventTokenBuilderFactory
+                .getSecurityEventTokenBuilder(schema);
+
+        if (securityEventTokenBuilder == null) {
+            throw new IdentityEventException("Security event token builder not found for schema: " + schema);
+        }
+
         EventPublisherConfig loginEventPublisherConfig;
         try {
             String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
@@ -120,8 +130,8 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                     default:
                         throw new IdentityRuntimeException("Unsupported event type: " + event.getEventName());
                 }
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
+                SecurityEventTokenPayload securityEventTokenPayload = securityEventTokenBuilder
+                        .buildSecurityEventTokenPayload(eventPayload, eventUri, eventData);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             }
 

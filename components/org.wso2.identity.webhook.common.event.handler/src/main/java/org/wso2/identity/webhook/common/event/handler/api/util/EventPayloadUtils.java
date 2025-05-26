@@ -18,12 +18,23 @@
 
 package org.wso2.identity.webhook.common.event.handler.api.util;
 
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.slf4j.MDC;
+import org.wso2.carbon.identity.core.ServiceURLBuilder;
+import org.wso2.carbon.identity.core.URLBuilderException;
+
+import java.util.UUID;
+
+import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils.CORRELATION_ID_MDC;
 
 /**
  * This class contains the utility methods needed to construct Endpoints needed for payloads.
  */
 public class EventPayloadUtils {
+
+    private static Log log = LogFactory.getLog(EventPayloadUtils.class);
 
     private EventPayloadUtils() {
 
@@ -40,7 +51,39 @@ public class EventPayloadUtils {
         if (endpoint == null) {
             throw new IllegalArgumentException("Endpoint cannot be null.");
         }
-        endpoint = EventHookHandlerUtils.constructBaseURL() + endpoint;
+        endpoint =  constructBaseURL() + endpoint;
         return endpoint;
+    }
+
+    /**
+     * Get correlation id from the MDC.
+     * If not then generate a random UUID, add it to MDC and return the UUID.
+     *
+     * @return Correlation id
+     */
+    public static String getCorrelationID() {
+
+        String correlationID = MDC.get(CORRELATION_ID_MDC);
+        if (StringUtils.isBlank(correlationID)) {
+            correlationID = UUID.randomUUID().toString();
+            MDC.put(CORRELATION_ID_MDC, correlationID);
+        }
+        return correlationID;
+    }
+
+    /**
+     * Get the tenant qualified URL.
+     *
+     * @return Tenant qualified URL.
+     */
+    public static String constructBaseURL() {
+
+        try {
+            ServiceURLBuilder builder = ServiceURLBuilder.create();
+            return builder.build().getAbsolutePublicURL();
+        } catch (URLBuilderException e) {
+            log.debug("Error occurred while building the tenant qualified URL.", e);
+        }
+        return null;
     }
 }

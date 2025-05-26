@@ -26,15 +26,16 @@ import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
-import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.util.SecurityEventTokenBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
+import org.wso2.identity.webhook.common.event.handler.internal.util.SecurityEventTokenBuilderFactory;
 
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_CREATE;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventName.SESSION_EXPIRE;
@@ -71,6 +72,14 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
             if (payloadBuilder == null) {
                 log.debug("Session event payload builder not found for schema: " + schema);
+                continue;
+            }
+
+            SecurityEventTokenBuilder securityEventTokenBuilder = SecurityEventTokenBuilderFactory
+                    .getSecurityEventTokenBuilder(schema);
+
+            if (securityEventTokenBuilder == null) {
+                log.debug("Security event token builder not found for schema: " + schema);
                 continue;
             }
 
@@ -114,14 +123,11 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                             break;
                     }
                     if (eventPayload != null) {
-                        Subject subject = null;
-                        if (schema.equals(EventSchema.CAEP)) {
-                            subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
-                        }
                         String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
 
-                        SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
-                                buildSecurityEventToken(eventPayload, eventUri, subject);
+                        SecurityEventTokenPayload securityEventTokenPayload =
+                                securityEventTokenBuilder.buildSecurityEventTokenPayload(eventPayload,
+                                        eventUri, eventData);
                         EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
                     }
                 }

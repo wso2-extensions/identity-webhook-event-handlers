@@ -33,11 +33,13 @@ import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.util.SecurityEventTokenBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
+import org.wso2.identity.webhook.common.event.handler.internal.util.SecurityEventTokenBuilderFactory;
 
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
 
@@ -91,8 +93,13 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
 
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
+        EventSchema schema = EventSchema.WSO2;
         UserOperationEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                .getUserOperationEventPayloadBuilder(EventSchema.WSO2);
+                .getUserOperationEventPayloadBuilder(schema);
+
+        SecurityEventTokenBuilder securityEventTokenBuilder = SecurityEventTokenBuilderFactory
+                .getSecurityEventTokenBuilder(schema);
+
         EventPublisherConfig userOperationEventPublisherConfig;
         try {
 
@@ -111,8 +118,8 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                 eventUri =
                         eventConfigManager.getEventUri(
                                 Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_LIST_OF_ROLE_EVENT);
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
+                SecurityEventTokenPayload securityEventTokenPayload = securityEventTokenBuilder
+                        .buildSecurityEventTokenPayload(eventPayload, eventUri, eventData);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             } else if (IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(event.getEventName()) &&
                     userOperationEventPublisherConfig.isPublishEnabled()) {
@@ -126,15 +133,15 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                     userOperationEventPublisherConfig.isPublishEnabled()) {
                 eventPayload = payloadBuilder.buildUserDeleteEvent(eventData);
                 eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.WSO2.POST_DELETE_USER_EVENT);
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
+                SecurityEventTokenPayload securityEventTokenPayload = securityEventTokenBuilder
+                        .buildSecurityEventTokenPayload(eventPayload, eventUri, eventData);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             } else if (IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(event.getEventName()) &&
                     userOperationEventPublisherConfig.isPublishEnabled()) {
                 eventPayload = payloadBuilder.buildUserUnlockAccountEvent(eventData);
                 eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.WSO2.POST_UNLOCK_ACCOUNT_EVENT);
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
+                SecurityEventTokenPayload securityEventTokenPayload = securityEventTokenBuilder
+                        .buildSecurityEventTokenPayload(eventPayload, eventUri, eventData);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             } else if ((IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(event.getEventName()) ||
                     IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(event.getEventName())) &&

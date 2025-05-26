@@ -23,7 +23,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -50,6 +49,7 @@ import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.util.SecurityEventTokenBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.config.ResourceConfig;
@@ -57,9 +57,11 @@ import org.wso2.identity.webhook.common.event.handler.internal.constant.Constant
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
+import org.wso2.identity.webhook.common.event.handler.internal.util.SecurityEventTokenBuilderFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -68,6 +70,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -96,6 +99,10 @@ public class VerificationEventHookHandlerTest {
     @Mock
     private EventPublisherService mockedEventPublisherService;
     @Mock
+    private SecurityEventTokenPayload mockedSecurityEventTokenPayload;
+    @Mock
+    private SecurityEventTokenBuilder mockedSecurityEventTokenBuilder;
+    @Mock
     private EventPayload mockedEventPayload;
     @InjectMocks
     private VerificationEventHookHandler verificationEventHookHandler;
@@ -110,19 +117,20 @@ public class VerificationEventHookHandlerTest {
     private EventHookHandlerUtils mockedEventHookHandlerUtils;
 
     @BeforeClass
-    public void setupClass() {
+    public void setupClass() throws IdentityEventException {
 
         MockitoAnnotations.openMocks(this);
         setupDataHolderMocks();
         setupPayloadBuilderMocks();
+        setupSecurityTokenBuilderMocks();
         setupUtilities();
     }
 
     @AfterMethod
     public void tearDown() {
 
-        Mockito.reset(mockedEventHookHandlerUtils);
-        Mockito.reset(mockedEventPublisherService);
+        reset(mockedEventHookHandlerUtils);
+        reset(mockedEventPublisherService);
     }
 
     @AfterClass
@@ -176,15 +184,32 @@ public class VerificationEventHookHandlerTest {
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
             mocked.when(() -> PayloadBuilderFactory.getVerificationEventPayloadBuilder(EventSchema.CAEP)).
                     thenReturn(mockedVerificationEventPayloadBuilder);
-            when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
-            when(mockedEventConfigManager.getEventUri(anyString())).thenReturn(expectedEventKey);
-            when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString())).
-                    thenReturn(eventPublisherConfig);
+            try (MockedStatic<SecurityEventTokenBuilderFactory> mockedSecurityEventTokenBuilderFactory =
+                         mockStatic(SecurityEventTokenBuilderFactory.class)) {
+                mockedSecurityEventTokenBuilderFactory.when(() ->
+                                SecurityEventTokenBuilderFactory.getSecurityEventTokenBuilder(EventSchema.CAEP))
+                        .thenReturn(mockedSecurityEventTokenBuilder);
+                Map<String, EventPayload> eventMap = new HashMap<>();
+                eventMap.put(expectedEventKey, mockedEventPayload);
+                when(mockedSecurityEventTokenPayload.getEvents()).thenReturn(eventMap);
+                when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
+                when(mockedEventConfigManager.getEventUri(anyString())).thenReturn(expectedEventKey);
+                when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString())).
+                        thenReturn(eventPublisherConfig);
 
-            verificationEventHookHandler.handleEvent(event);
+                verificationEventHookHandler.handleEvent(event);
 
-            verifyEventPublishedWithExpectedKey(expectedEventKey);
+                verifyEventPublishedWithExpectedKey(expectedEventKey);
+            }
         }
+    }
+
+    private void setupSecurityTokenBuilderMocks() throws IdentityEventException {
+
+        when(mockedSecurityEventTokenBuilder.getEventSchema()).thenReturn(EventSchema.CAEP);
+        when(mockedSecurityEventTokenBuilder.buildSecurityEventTokenPayload(any(EventPayload.class),
+                anyString(), any(EventData.class)))
+                .thenReturn(mockedSecurityEventTokenPayload);
     }
 
     @Test(expectedExceptions = IdentityEventException.class)
@@ -198,12 +223,21 @@ public class VerificationEventHookHandlerTest {
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
             mocked.when(() -> PayloadBuilderFactory.getVerificationEventPayloadBuilder(EventSchema.CAEP)).
                     thenReturn(mockedVerificationEventPayloadBuilder);
-            when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
-            when(mockedEventConfigManager.getEventUri(anyString())).thenReturn(SAMPLE_EVENT_KEY_VERIFICATION);
-            when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString())).
-                    thenReturn(eventPublisherConfig);
+            try (MockedStatic<SecurityEventTokenBuilderFactory> mockedSecurityEventTokenBuilderFactory =
+                         mockStatic(SecurityEventTokenBuilderFactory.class)) {
+                mockedSecurityEventTokenBuilderFactory.when(() ->
+                                SecurityEventTokenBuilderFactory.getSecurityEventTokenBuilder(EventSchema.CAEP))
+                        .thenReturn(mockedSecurityEventTokenBuilder);
+                Map<String, EventPayload> eventMap = new HashMap<>();
+                when(mockedSecurityEventTokenPayload.getEvents()).thenReturn(eventMap);
+                reset(mockedConfigurationManager);
+                when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
+                when(mockedEventConfigManager.getEventUri(anyString())).thenReturn(SAMPLE_EVENT_KEY_VERIFICATION);
+                when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString())).
+                        thenReturn(eventPublisherConfig);
 
-            verificationEventHookHandler.handleEvent(event);
+                verificationEventHookHandler.handleEvent(event);
+            }
         }
     }
 
