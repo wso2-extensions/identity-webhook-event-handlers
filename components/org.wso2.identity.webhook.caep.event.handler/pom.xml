@@ -90,6 +90,10 @@
             <artifactId>httpasyncclient</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wso2.identity.event.publishers</groupId>
+            <artifactId>org.wso2.identity.event.common.publisher</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.googlecode.json-simple.wso2</groupId>
             <artifactId>json-simple</artifactId>
         </dependency>
@@ -108,10 +112,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-inline</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.identity.event.publishers</groupId>
-            <artifactId>org.wso2.identity.event.common.publisher</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity.inbound.provisioning.scim2</groupId>
@@ -164,9 +164,7 @@
                             org.json.simple.parser; version="${com.googlecode.json-simple.wso2.version.range}",
                             org.wso2.identity.webhook.common.event.handler.*;
                             version="${org.wso2.identity.webhook.common.event.handler.version.range}",
-                            org.wso2.identity.event.common.publisher;
-                            version="${org.wso2.identity.event.publishers.version.range}",
-                            org.wso2.identity.event.common.publisher.model;
+                            org.wso2.identity.event.common.publisher.*;
                             version="${org.wso2.identity.event.publishers.version.range}",
                             org.wso2.identity.event.common.publisher.exception;
                             version="${org.wso2.identity.event.publishers.version.range}"

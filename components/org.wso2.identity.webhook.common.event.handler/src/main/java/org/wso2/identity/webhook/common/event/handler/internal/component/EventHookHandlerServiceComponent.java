@@ -40,6 +40,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayl
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.util.SecurityEventTokenBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.CredentialEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
@@ -122,6 +123,27 @@ public class EventHookHandlerServiceComponent {
     protected void deactivate(ComponentContext context) {
 
         log.debug("Event Handler is deactivated.");
+    }
+
+    @Reference(
+            name = "security.event.token.builder",
+            service = SecurityEventTokenBuilder.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeSecurityEventTokenBuilder"
+    )
+    protected void addSecurityEventTokenBuilder(SecurityEventTokenBuilder securityEventTokenBuilder) {
+
+        log.debug("Adding the Security Event Token Builder Service : " +
+                securityEventTokenBuilder.getEvenSchema().name());
+        EventHookHandlerDataHolder.getInstance().addSecurityEventTokenBuilder(securityEventTokenBuilder);
+    }
+
+    protected void removeSecurityEventTokenBuilder(SecurityEventTokenBuilder securityEventTokenBuilder) {
+
+        log.debug("Removing the Security Event Token Builder Service : " +
+                securityEventTokenBuilder.getEvenSchema().name());
+        EventHookHandlerDataHolder.getInstance().removeSecurityEventTokenBuilder(securityEventTokenBuilder);
     }
 
     @Reference(

@@ -31,9 +31,11 @@ import org.wso2.carbon.identity.organization.management.service.OrganizationMana
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.util.SecurityEventTokenBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2UserOperationEventPayloadBuilder;
+import org.wso2.identity.webhook.wso2.event.handler.api.util.WSO2SecurityEventTokenBuilder;
 
 /**
  * WSO2 Event Handler service component class.
@@ -57,6 +59,8 @@ public class WSO2EventHookHandlerServiceComponent {
                     new WSO2UserOperationEventPayloadBuilder(), null);
             context.getBundleContext().registerService(SessionEventPayloadBuilder.class.getName(),
                     new WSO2SessionEventPayloadBuilder(), null);
+            context.getBundleContext().registerService(SecurityEventTokenBuilder.class.getName(),
+                    new WSO2SecurityEventTokenBuilder(), null);
         } catch (Exception e) {
             log.error("Error while activating event handler.", e);
         }

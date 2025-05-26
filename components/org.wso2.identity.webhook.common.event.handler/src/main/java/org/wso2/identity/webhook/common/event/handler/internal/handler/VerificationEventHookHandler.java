@@ -29,15 +29,16 @@ import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
-import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.util.SecurityEventTokenBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
+import org.wso2.identity.webhook.common.event.handler.internal.util.SecurityEventTokenBuilderFactory;
 
 /**
  * This class is responsible for handling verification events.
@@ -93,6 +94,14 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
             throw new IdentityEventException("Login event payload builder not found for schema: " + schema);
         }
 
+        SecurityEventTokenBuilder securityEventTokenBuilder = SecurityEventTokenBuilderFactory
+                .getSecurityEventTokenBuilder(schema);
+
+        if (securityEventTokenBuilder == null) {
+            log.debug("Security event token builder not found for schema: " + schema);
+            return;
+        }
+
         EventPublisherConfig eventPublisherConfig;
         EventPayload eventPayload;
 
@@ -103,12 +112,11 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
 
             if (eventPublisherConfig.isPublishEnabled()) {
                 eventPayload = payloadBuilder.buildVerificationEventPayload(eventData);
-                Subject subject = EventHookHandlerUtils.buildVerificationSubject(eventData);
                 String eventUri = eventConfigManager.getEventUri(EventHookHandlerUtils.
                         resolveEventHandlerKey(schema, IdentityEventConstants.EventName.VERIFICATION));
 
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
-                        buildSecurityEventToken(eventPayload, eventUri, subject);
+                SecurityEventTokenPayload securityEventTokenPayload = securityEventTokenBuilder
+                        .buildSecurityEventTokenPayload(eventPayload, eventUri, eventData);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
 
             }

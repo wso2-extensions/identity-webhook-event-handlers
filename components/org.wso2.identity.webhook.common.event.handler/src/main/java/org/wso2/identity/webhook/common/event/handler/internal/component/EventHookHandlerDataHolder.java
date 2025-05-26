@@ -25,6 +25,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayl
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.util.SecurityEventTokenBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,7 @@ public class EventHookHandlerDataHolder {
     private final List<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
     private final List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
     private final List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders = new ArrayList<>();
+    private final List<SecurityEventTokenBuilder> securityEventTokenBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
 
@@ -50,6 +52,36 @@ public class EventHookHandlerDataHolder {
     public static EventHookHandlerDataHolder getInstance() {
 
         return instance;
+    }
+
+    /**
+     * Get the list of security event token builders available.
+     *
+     * @return List of security event token builders.
+     */
+    public List<SecurityEventTokenBuilder> getSecurityEventTokenBuilders() {
+
+        return securityEventTokenBuilders;
+    }
+
+    /**
+     * Add a security event token builder to the list.
+     *
+     * @param securityEventTokenBuilder A security event token builder.
+     */
+    public void addSecurityEventTokenBuilder(SecurityEventTokenBuilder securityEventTokenBuilder) {
+
+        securityEventTokenBuilders.add(securityEventTokenBuilder);
+    }
+
+    /**
+     * Remove a security event token builder from the list.
+     *
+     * @param securityEventTokenBuilder A security event token builder.
+     */
+    public void removeSecurityEventTokenBuilder(SecurityEventTokenBuilder securityEventTokenBuilder) {
+
+        securityEventTokenBuilders.remove(securityEventTokenBuilder);
     }
 
     /**
