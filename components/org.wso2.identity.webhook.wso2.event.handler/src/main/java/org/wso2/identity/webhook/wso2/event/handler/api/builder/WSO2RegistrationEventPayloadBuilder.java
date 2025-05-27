@@ -70,9 +70,11 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        String initiatorType = "";
+        String initiatorType = null;
+        String action = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
+            action = flow.getName().name();
         }
 
         List<String> credentialEnrolled = new ArrayList<>();
@@ -80,6 +82,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
         return new WSO2RegistrationSuccessEventPayload.Builder()
                 .initiatorType(initiatorType)
+                .action(action)
                 .user(newUser)
                 .tenant(organization)
                 .userStore(userStore)
