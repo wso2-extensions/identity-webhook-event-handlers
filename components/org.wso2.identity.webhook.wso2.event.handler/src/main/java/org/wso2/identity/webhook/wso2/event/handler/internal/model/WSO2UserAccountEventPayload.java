@@ -30,6 +30,7 @@ public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
         this.organization = builder.organization;
         this.user = builder.user;
         this.userStore = builder.userStore;
+        this.tenant = builder.tenant;
     }
 
     /**
@@ -41,6 +42,7 @@ public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
         private User user;
         private Organization organization;
         private UserStore userStore;
+        private Organization tenant;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -63,6 +65,12 @@ public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
         public Builder user(User user) {
 
             this.user = user;
+            return this;
+        }
+
+        public Builder tenant(Organization tenant) {
+
+            this.tenant = tenant;
             return this;
         }
 

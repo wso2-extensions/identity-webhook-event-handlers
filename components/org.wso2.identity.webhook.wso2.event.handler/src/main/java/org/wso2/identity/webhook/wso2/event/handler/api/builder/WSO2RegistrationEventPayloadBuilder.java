@@ -1,6 +1,23 @@
+/*
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
@@ -8,11 +25,6 @@ import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.recovery.IdentityRecoveryConstants;
-import org.wso2.carbon.identity.recovery.util.Utils;
-import org.wso2.carbon.user.api.Claim;
-import org.wso2.carbon.user.api.UserStoreException;
-import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
@@ -27,7 +39,6 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserCl
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -53,22 +64,9 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
         UserStore userStore = new UserStore(userStoreDomainName);
 
-        String userName =
-                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
-
-        String[] internalRoles;
-
         User newUser = new User();
-        enrichUser(userStoreManager, userName, properties, newUser);
+        enrichUser(properties, newUser);
         addRoles(properties, newUser);
-
-        try {
-            internalRoles = userStoreManager.getRoleListOfUser(userName);
-        } catch (UserStoreException e) {
-            throw new IdentityEventException("Error while retrieving roles for user: " + newUser.getId(), e);
-        }
-
-        List<String> registrationMethods = getRegistrationMethods(internalRoles);
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
@@ -83,16 +81,13 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         return new WSO2RegistrationSuccessEventPayload.Builder()
                 .initiatorType(initiatorType)
                 .user(newUser)
-                .organization(organization)
+                .tenant(organization)
                 .userStore(userStore)
-                .registrationMethods(registrationMethods)
                 .credentialsEnrolled(credentialEnrolled)
                 .build();
     }
 
-    private void enrichUser(UserStoreManager userStoreManager, String userName, Map<String, Object> properties,
-                            User user)
-            throws IdentityEventException {
+    private void enrichUser(Map<String, Object> properties, User user) {
 
         if (properties.containsKey(IdentityEventConstants.EventProperty.USER_CLAIMS)) {
             Map<String, String> claims = (Map<String, String>) properties.get(IdentityEventConstants.EventProperty
@@ -108,31 +103,6 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
             String givenName = claims.get(FIRST_NAME_CLAIM_URI);
             String lastName = claims.get(LAST_NAME_CLAIM_URI);
 
-            try {
-                if (StringUtils.isEmpty(emailAddress)) {
-
-                    emailAddress =
-                            userStoreManager.getUserClaimValue(userName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
-                                    UserCoreConstants.DEFAULT_PROFILE);
-
-                }
-                if (StringUtils.isEmpty(givenName)) {
-
-                    givenName = userStoreManager.getUserClaimValue(userName, FIRST_NAME_CLAIM_URI,
-                            UserCoreConstants.DEFAULT_PROFILE);
-                }
-
-                if (StringUtils.isEmpty(lastName)) {
-
-                    lastName = userStoreManager.getUserClaimValue(userName, LAST_NAME_CLAIM_URI,
-                            UserCoreConstants.DEFAULT_PROFILE);
-
-                }
-            } catch (UserStoreException e) {
-                throw new IdentityEventException(
-                        "Error while extracting user claims for the user : " + user.getId(), e);
-            }
-
             UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
             UserClaim givenNameUserClaim = new UserClaim(FIRST_NAME_CLAIM_URI, givenName);
             UserClaim lastNameUserClaim = new UserClaim(LAST_NAME_CLAIM_URI, lastName);
@@ -141,31 +111,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
             userClaims.add(givenNameUserClaim);
             userClaims.add(lastNameUserClaim);
             user.setClaims(userClaims);
-        } else {
-            enrichUser(userStoreManager, userName, user);
         }
-    }
-
-    private List<String> getRegistrationMethods(String[] internalRoles) {
-
-        if (internalRoles == null || internalRoles.length == 0) {
-            return null;
-        }
-        List<String> roles = Arrays.asList(internalRoles);
-
-        List<String> registrationMethods = new ArrayList<>();
-        Claim emailVerifyTemporaryClaim = Utils.getEmailVerifyTemporaryClaim();
-
-        if (roles.contains(IdentityRecoveryConstants.SELF_SIGNUP_ROLE)) {
-            registrationMethods.add(UserOnboardedMethod.SELF_SIGNUP.name());
-        } else if (emailVerifyTemporaryClaim != null &&
-                IdentityRecoveryConstants.ASK_PASSWORD_CLAIM.equals(emailVerifyTemporaryClaim.getClaimUri())) {
-            registrationMethods.add(UserOnboardedMethod.USER_INVITE.name());
-        } else {
-            registrationMethods.add(UserOnboardedMethod.ADMIN_INITIATED.name());
-        }
-
-        return registrationMethods;
     }
 
     private void addRoles(Map<String, Object> properties, User user) {
@@ -180,57 +126,10 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         }
     }
 
-    private static void enrichUser(UserStoreManager userStoreManager, String domainQualifiedUserName, User user)
-            throws IdentityEventException {
-
-        String userId;
-        try {
-            userId = userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.USER_ID_CLAIM,
-                    UserCoreConstants.DEFAULT_PROFILE);
-            user.setId(userId);
-
-            user.setRef(
-                    EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + user.getId());
-
-            List<UserClaim> userClaims = new ArrayList<>();
-
-            String emailAddress =
-                    userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
-                            UserCoreConstants.DEFAULT_PROFILE);
-            String givenName = userStoreManager.getUserClaimValue(domainQualifiedUserName, FIRST_NAME_CLAIM_URI,
-                    UserCoreConstants.DEFAULT_PROFILE);
-            String lastName = userStoreManager.getUserClaimValue(domainQualifiedUserName, LAST_NAME_CLAIM_URI,
-                    UserCoreConstants.DEFAULT_PROFILE);
-
-            UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
-            UserClaim givenNameUserClaim = new UserClaim(FIRST_NAME_CLAIM_URI, givenName);
-            UserClaim lastNameUserClaim = new UserClaim(LAST_NAME_CLAIM_URI, lastName);
-
-            userClaims.add(emailAddressUserClaim);
-            userClaims.add(givenNameUserClaim);
-            userClaims.add(lastNameUserClaim);
-
-            user.setClaims(userClaims);
-
-        } catch (UserStoreException e) {
-            throw new IdentityEventException(
-                    "Error while extracting user claims for the user : " + domainQualifiedUserName, e);
-        }
-    }
-
     @Override
     public EventSchema getEventSchemaType() {
 
         return EventSchema.WSO2;
     }
 
-    /**
-     * Enum which contains the different user onboarded flows.
-     */
-    public enum UserOnboardedMethod {
-
-        ADMIN_INITIATED,
-        USER_INVITE,
-        SELF_SIGNUP
-    }
 }

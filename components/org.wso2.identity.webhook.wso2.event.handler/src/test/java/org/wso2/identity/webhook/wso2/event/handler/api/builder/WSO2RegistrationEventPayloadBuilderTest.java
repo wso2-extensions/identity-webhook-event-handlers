@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
 import org.mockito.InjectMocks;
@@ -27,18 +45,19 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationSuccessEventPayload;
-import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.CommonTestUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.FIRST_NAME_CLAIM_URI;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LAST_NAME_CLAIM_URI;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_ENDPOINT;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedServiceURLBuilder;
@@ -51,7 +70,8 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     private static final String TENANT_DOMAIN = "example.com";
     private static final String TEST_USER_ID = "22e46698-7fa7-4497-90fc-e12864e30b77";
     private static final String TEST_USER_EMAIL = "tom@gmail.com";
-    private static final String USER_NAME = "tom";
+    private static final String FIRST_NAME = "Tom";
+    private static final String LAST_NAME = "Hanks";
     private static final String DOMAIN_QUALIFIED_TEST_USER_NAME = "DEFAULT/tom";
     private static final Logger log = LoggerFactory.getLogger(WSO2RegistrationEventPayloadBuilderTest.class);
     @Mock
@@ -112,11 +132,15 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         params.put(USER_STORE_MANAGER, userStoreManager);
         params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
+        Map<String, String> claims = new HashMap<>();
+        claims.put(FrameworkConstants.EMAIL_ADDRESS_CLAIM, TEST_USER_EMAIL);
+        claims.put(FrameworkConstants.USER_ID_CLAIM, TEST_USER_ID);
+        claims.put(FIRST_NAME_CLAIM_URI, FIRST_NAME);
+        claims.put(LAST_NAME_CLAIM_URI, LAST_NAME);
+
+        params.put(IdentityEventConstants.EventProperty.USER_CLAIMS,claims);
+
         when(mockEventData.getEventParams()).thenReturn(params);
-        when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
-                eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
-        when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
-                eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(TEST_USER_ID);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
                 .name(Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD)
@@ -135,9 +159,19 @@ public class WSO2RegistrationEventPayloadBuilderTest {
                 EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 3);
-        assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
-                FrameworkConstants.EMAIL_ADDRESS_CLAIM);
-        assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getValue(), TEST_USER_EMAIL);
+
+        List<UserClaim> userClaims = userAccountEventPayload.getUser().getClaims();
+        Map<String, String> userClaimsMap = userClaims.stream()
+                .collect(java.util.stream.Collectors.toMap(UserClaim::getUri, UserClaim::getValue));
+
+        assertNotNull(userClaimsMap.get(FrameworkConstants.EMAIL_ADDRESS_CLAIM));
+        assertEquals(userClaimsMap.get(FrameworkConstants.EMAIL_ADDRESS_CLAIM), TEST_USER_EMAIL);
+
+        assertNotNull(userClaimsMap.get(FIRST_NAME_CLAIM_URI));
+        assertEquals(userClaimsMap.get(FIRST_NAME_CLAIM_URI), FIRST_NAME);
+
+        assertNotNull(userClaimsMap.get(LAST_NAME_CLAIM_URI));
+        assertEquals(userClaimsMap.get(LAST_NAME_CLAIM_URI), LAST_NAME);
 
         IdentityContext.destroyCurrentContext();
     }
@@ -149,8 +183,8 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertNotNull(wso2BaseEventPayload.getInitiatorType());
         assertEquals(wso2BaseEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
-        assertNotNull(wso2BaseEventPayload.getOrganization());
-        assertEquals(wso2BaseEventPayload.getOrganization().getName(), TENANT_DOMAIN);
+        assertNotNull(wso2BaseEventPayload.getTenant());
+        assertEquals(wso2BaseEventPayload.getTenant().getName(), TENANT_DOMAIN);
 
         assertNotNull(wso2BaseEventPayload.getUserStore());
         assertEquals(wso2BaseEventPayload.getUserStore().getId(), "REVGQVVMVA==");
