@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.common.event.handler.api.builder;
 
+import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
@@ -28,12 +29,12 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 public interface CredentialEventPayloadBuilder {
 
     /**
-     * Build the credential change event.
+     * Build the credential update event.
      *
      * @param eventData Event data.
      * @return Event payload.
      */
-    EventPayload buildCredentialChange(EventData eventData);
+    EventPayload buildCredentialUpdateEvent(EventData eventData) throws IdentityEventException;
 
     /**
      * Returns the EventSchema type of the event payload.

@@ -67,7 +67,7 @@ public class WSO2LoginEventPayloadBuilderTest {
     private static final String SAMPLE_AUTHENTICATOR = "sms-otp-authenticator";
     private static final String SAMPLE_SP_ID = "f27178f9-984b-41df-aee5-372de8ef327f";
     private static final String SAMPLE_TENANT_ID = "100";
-    private static final String SAMPLE_USER_REF = "https://localhost:9443/t/myorg/scim2/" + SAMPLE_USER_ID;
+    private static final String SAMPLE_USER_REF = "https://localhost:9443/t/myorg/scim2/Users/" + SAMPLE_USER_ID;
     private static final String SAMPLE_ERROR_CODE = "SMS-65020";
 
     @Mock

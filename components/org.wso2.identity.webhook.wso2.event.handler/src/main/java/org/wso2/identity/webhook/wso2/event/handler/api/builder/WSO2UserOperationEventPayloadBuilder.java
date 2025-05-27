@@ -22,7 +22,6 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
-import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -36,23 +35,20 @@ import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
-import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCredentialUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserGroupUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Group;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
-import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
-import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_ENDPOINT;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 
 /**
  * WSO2 UserOperation Event Payload Builder.
@@ -120,7 +116,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
             User deletedUser = new User();
             deletedUser.setId(userId);
-            deletedUser.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + userId);
+            deletedUser.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + userId);
             deletedUser.setClaims(userClaims);
 
             Organization organization = new Organization(tenantId, tenantDomain);
@@ -161,7 +157,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         User user = new User();
         enrichUser(userStoreManager, userName, user);
         user.setRef(
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + user.getId());
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
@@ -176,53 +172,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .tenant(organization)
                 .userStore(userStore)
                 .build();
-    }
-
-    @Override
-    public EventPayload buildCredentialUpdateEvent(EventData eventData) throws IdentityEventException {
-
-        Map<String, Object> properties = eventData.getEventParams();
-        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
-        String tenantId = String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain));
-        String userName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_NAME));
-        String userStoreDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
-
-        UserStoreManager userStoreManager = WSO2PayloadUtils.getUserStoreManagerByTenantDomain(tenantDomain);
-        User user = buildUser(userStoreManager, userStoreDomain, userName);
-
-        Organization organization = new Organization(tenantId, tenantDomain);
-        UserStore userStore = new UserStore(userStoreDomain);
-
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        String action = "";
-        String initiatorType = "";
-
-        if (flow != null) {
-            action = Optional.ofNullable(getAction(flow.getName()))
-                    .map(Enum::name)
-                    .orElse(null);
-            initiatorType = flow.getInitiatingPersona().name();
-        }
-        return new WSO2UserCredentialUpdateEventPayload.Builder()
-                .initiatorType(initiatorType)
-                .action(action)
-                .credentialType("PASSWORD")
-                .user(user)
-                .tenant(organization)
-                .userStore(userStore)
-                .build();
-    }
-
-    private User buildUser(UserStoreManager userStoreManager, String userStoreDomain, String userName)
-            throws IdentityEventException {
-
-        User user = new User();
-        if (userStoreManager != null) {
-            String domainQualifiedUserName = userStoreDomain + "/" + userName;
-            enrichUser(userStoreManager, domainQualifiedUserName, user);
-            user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + user.getId());
-        }
-        return user;
     }
 
     @Override
@@ -305,27 +254,4 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return group;
     }
 
-    public enum PasswordUpdateAction {
-        UPDATE, RESET, INVITE
-    }
-
-    private PasswordUpdateAction getAction(Flow.Name name) {
-
-        if (name == null) {
-            return null;
-        }
-
-        switch (name) {
-            case PROFILE_UPDATE:
-                return PasswordUpdateAction.UPDATE;
-            case PASSWORD_RESET:
-                return PasswordUpdateAction.RESET;
-            case USER_REGISTRATION_INVITE_WITH_PASSWORD:
-                return PasswordUpdateAction.INVITE;
-            default: {
-                log.warn(name + " is not a valid password update action.");
-                return null;
-            }
-        }
-    }
 }

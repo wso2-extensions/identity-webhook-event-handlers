@@ -29,10 +29,12 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
+import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2SessionEventPayloadBuilder;
@@ -60,6 +62,8 @@ public class WSO2EventHookHandlerServiceComponent {
                     new WSO2UserOperationEventPayloadBuilder(), null);
             context.getBundleContext().registerService(SessionEventPayloadBuilder.class.getName(),
                     new WSO2SessionEventPayloadBuilder(), null);
+            context.getBundleContext().registerService(CredentialEventPayloadBuilder.class.getName(),
+                    new WSO2CredentialEventPayloadBuilder(), null);
             context.getBundleContext().registerService(RegistrationEventPayloadBuilder.class.getName(),
                     new WSO2RegistrationEventPayloadBuilder(), null);
         } catch (Exception e) {

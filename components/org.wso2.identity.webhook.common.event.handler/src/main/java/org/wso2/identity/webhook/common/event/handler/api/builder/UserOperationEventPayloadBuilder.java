@@ -34,8 +34,6 @@ public interface UserOperationEventPayloadBuilder {
 
     EventPayload buildUserUnlockAccountEvent(EventData eventData) throws IdentityEventException;
 
-    EventPayload buildCredentialUpdateEvent(EventData eventData) throws IdentityEventException;
-
     EventPayload buildUserLockAccountEvent(EventData eventData) throws IdentityEventException;
 
     /**
