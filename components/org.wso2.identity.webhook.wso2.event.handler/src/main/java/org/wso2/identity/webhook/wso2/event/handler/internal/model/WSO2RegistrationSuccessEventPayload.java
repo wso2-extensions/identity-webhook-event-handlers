@@ -29,6 +29,7 @@ public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
 
     private List<String> registrationMethods;
     private List<String> credentialsEnrolled;
+    private String action;
 
     public List<String> getRegistrationMethods() {
 
@@ -40,6 +41,11 @@ public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
         return credentialsEnrolled;
     }
 
+    public String getAction() {
+
+        return action;
+    }
+
     private WSO2RegistrationSuccessEventPayload(Builder builder) {
 
         this.initiatorType = builder.initiatorType;
@@ -49,6 +55,7 @@ public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
         this.user = builder.user;
         this.registrationMethods = builder.registrationMethods;
         this.credentialsEnrolled = builder.credentialsEnrolled;
+        this.action = builder.action;
     }
 
     public static class Builder {
@@ -60,10 +67,17 @@ public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
         private User user;
         private List<String> registrationMethods;
         private List<String> credentialsEnrolled;
+        private String action;
 
         public Builder initiatorType(String initiatorType) {
 
             this.initiatorType = initiatorType;
+            return this;
+        }
+
+        public Builder action(String action) {
+
+            this.action = action;
             return this;
         }
 

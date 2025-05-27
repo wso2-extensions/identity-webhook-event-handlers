@@ -21,8 +21,6 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -32,13 +30,10 @@ import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.user.api.UserRealm;
-import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.config.RealmConfiguration;
-import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
@@ -73,18 +68,8 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     private static final String FIRST_NAME = "Tom";
     private static final String LAST_NAME = "Hanks";
     private static final String DOMAIN_QUALIFIED_TEST_USER_NAME = "DEFAULT/tom";
-    private static final Logger log = LoggerFactory.getLogger(WSO2RegistrationEventPayloadBuilderTest.class);
     @Mock
     private EventData mockEventData;
-
-    @Mock
-    private RealmService realmService;
-
-    @Mock
-    UserStoreManager userStoreManagerMock;
-
-    @Mock
-    private UserRealm userRealm;
 
     @Mock
     private RealmConfiguration realmConfiguration;
@@ -124,7 +109,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     }
 
     @Test
-    public void testBuildRegistrationSuccessEvent() throws UserStoreException, IdentityEventException {
+    public void testBuildRegistrationSuccessEvent() throws IdentityEventException {
 
         Map<String, Object> params = new HashMap<>();
         params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
@@ -138,7 +123,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         claims.put(FIRST_NAME_CLAIM_URI, FIRST_NAME);
         claims.put(LAST_NAME_CLAIM_URI, LAST_NAME);
 
-        params.put(IdentityEventConstants.EventProperty.USER_CLAIMS,claims);
+        params.put(IdentityEventConstants.EventProperty.USER_CLAIMS, claims);
 
         when(mockEventData.getEventParams()).thenReturn(params);
 
@@ -157,6 +142,8 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userAccountEventPayload.getUser().getRef(),
                 EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + TEST_USER_ID);
+        assertNotNull(userAccountEventPayload.getAction());
+        assertEquals(userAccountEventPayload.getAction(), Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.name());
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 3);
 

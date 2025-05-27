@@ -260,11 +260,9 @@ public class EventHookHandlerUtils {
         // TODO : Add the audience and txn to the event payload.
         return SecurityEventTokenPayload.builder()
                 .iss(constructBaseURL())
-                .aud("aud")
                 .iat(System.currentTimeMillis())
                 .jti(UUID.randomUUID().toString())
                 .rci(getCorrelationID())
-                .txn("txn")
                 .subId(subId)
                 .events(eventMap)
                 .build();
