@@ -37,12 +37,14 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.CredentialEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.RegistrationEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.SessionEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.UserOperationEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.VerificationEventHookHandler;
@@ -68,6 +70,9 @@ public class EventHookHandlerServiceComponent {
             String isUserOperationEventHandlerEnabled =
                     getIdentityEventProperty(Constants.USER_OPERATION_EVENT_HOOK_NAME,
                             Constants.USER_OPERATION_EVENT_HOOK_ENABLED);
+            String isRegistrationEventHandlerEnabled =
+                    getIdentityEventProperty(Constants.REGISTRATION_EVENT_HOOK_NAME,
+                            Constants.REGISTRATION_EVENT_HOOK_ENABLED);
             BundleContext bundleContext = context.getBundleContext();
 
             if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled
@@ -79,6 +84,11 @@ public class EventHookHandlerServiceComponent {
                     .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
                         new UserOperationEventHookHandler(EventConfigManager.getInstance()), null);
+            }
+            if (isRegistrationEventHandlerEnabled != null && isRegistrationEventHandlerEnabled
+                    .equalsIgnoreCase(Boolean.TRUE.toString())) {
+                bundleContext.registerService(AbstractEventHandler.class.getName(),
+                        new RegistrationEventHookHandler(EventConfigManager.getInstance()), null);
             }
 
             String isSessionEventHandlerEnabled = getIdentityEventProperty(Constants.SESSION_EVENT_HOOK_NAME,
@@ -166,6 +176,28 @@ public class EventHookHandlerServiceComponent {
         log.debug("Remove credential event payload builder service " +
                 credentialEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().removeCredentialEventPayloadBuilder(credentialEventPayloadBuilder);
+    }
+
+    @Reference(
+            name = "registration.event.payload.builder",
+            service = RegistrationEventPayloadBuilder.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeRegistrationEventPayloadBuilder"
+    )
+    protected void addRegistrationEventPayloadBuilder(RegistrationEventPayloadBuilder registrationEventPayloadBuilder) {
+
+        log.debug("Add Registration Event Payload Builder service " +
+                registrationEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().addRegistrationEventPayloadBuilder(registrationEventPayloadBuilder);
+    }
+
+    protected void removeRegistrationEventPayloadBuilder(
+            RegistrationEventPayloadBuilder registrationEventPayloadBuilder) {
+
+        log.debug("Remove Registration Event Payload Builder service " +
+                registrationEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().removeRegistrationEventPayloadBuilder(registrationEventPayloadBuilder);
     }
 
     @Reference(

@@ -33,6 +33,8 @@ public class Constants {
     public static final String DATA_MAP = "dataMap";
     public static final String WSO2_EVENT_SCHEMA = "WSO2";
     public static final String ORGANIZATION_AUTHENTICATOR = "OrganizationAuthenticator";
+    public static final String FIRST_NAME_CLAIM_URI = "http://wso2.org/claims/givenname";
+    public static final String LAST_NAME_CLAIM_URI = "http://wso2.org/claims/lastname";
 
     public static final String SESSION_ID = "sessionId";
 }

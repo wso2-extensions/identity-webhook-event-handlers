@@ -81,7 +81,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return new WSO2UserGroupUpdateEventPayload.Builder()
                 .initiatorType(initiatorType)
                 .group(group)
-                .organization(organization)
+                .tenant(organization)
                 .userStore(userStore)
                 .build();
     }
@@ -129,7 +129,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             return new WSO2UserAccountEventPayload.Builder()
                     .initiatorType(initiatorType)
                     .user(deletedUser)
-                    .organization(organization)
+                    .tenant(organization)
                     .userStore(userStore)
                     .build();
         } finally {
@@ -173,7 +173,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return new WSO2UserAccountEventPayload.Builder()
                 .initiatorType(initiatorType)
                 .user(user)
-                .organization(organization)
+                .tenant(organization)
                 .userStore(userStore)
                 .build();
     }
@@ -208,7 +208,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .action(action)
                 .credentialType("PASSWORD")
                 .user(user)
-                .organization(organization)
+                .tenant(organization)
                 .userStore(userStore)
                 .build();
     }

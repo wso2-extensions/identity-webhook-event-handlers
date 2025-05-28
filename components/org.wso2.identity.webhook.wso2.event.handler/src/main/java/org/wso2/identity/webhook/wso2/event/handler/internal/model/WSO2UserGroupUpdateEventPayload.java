@@ -35,6 +35,7 @@ public class WSO2UserGroupUpdateEventPayload extends WSO2BaseEventPayload {
         this.group = builder.group;
         this.organization = builder.organization;
         this.userStore = builder.userStore;
+        this.tenant = builder.tenant;
     }
 
     public Group getGroup() {
@@ -51,6 +52,7 @@ public class WSO2UserGroupUpdateEventPayload extends WSO2BaseEventPayload {
         private Group group;
         private Organization organization;
         private UserStore userStore;
+        private Organization tenant;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -73,6 +75,12 @@ public class WSO2UserGroupUpdateEventPayload extends WSO2BaseEventPayload {
         public Builder group(Group group) {
 
             this.group = group;
+            return this;
+        }
+
+        public Builder tenant(Organization tenant) {
+
+            this.tenant = tenant;
             return this;
         }
 
