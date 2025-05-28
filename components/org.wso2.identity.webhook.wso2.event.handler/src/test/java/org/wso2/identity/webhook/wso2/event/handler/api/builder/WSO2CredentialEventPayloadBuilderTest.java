@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
@@ -55,6 +56,9 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.*;
+import static org.wso2.carbon.identity.core.context.model.Flow.Name.GROUP_UPDATE;
+import static org.wso2.carbon.identity.core.context.model.Flow.Name.PASSWORD_RESET;
+import static org.wso2.carbon.identity.core.context.model.Flow.Name.PROFILE_UPDATE;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedIdentityTenantUtil;
@@ -70,7 +74,7 @@ public class WSO2CredentialEventPayloadBuilderTest {
     private static final String TEST_USER_EMAIL = "tom@gmail.com";
     private static final String USER_NAME = "tom";
     private static final String DOMAIN_QUALIFIED_TEST_USER_NAME = "DEFAULT/tom";
-    private static final Logger log = LoggerFactory.getLogger(WSO2UserOperationEventPayloadBuilderTest.class);
+    private static final Logger log = LoggerFactory.getLogger(WSO2CredentialEventPayloadBuilderTest.class);
     @Mock
     private EventData mockEventData;
 
@@ -124,8 +128,19 @@ public class WSO2CredentialEventPayloadBuilderTest {
         assertEquals(payloadBuilder.getEventSchemaType(), EventSchema.WSO2);
     }
 
-    @Test
-    public void testBuildCredentialUpdateEvent() throws IdentityEventException {
+    @DataProvider(name = "actionDataProvider")
+    public Object[][] actionDataProvider() {
+
+        return new Object[][]{
+                {PROFILE_UPDATE},
+                {PASSWORD_RESET},
+                {GROUP_UPDATE},
+                {null}
+        };
+    }
+
+    @Test(dataProvider = "actionDataProvider")
+    public void testBuildCredentialUpdateEvent(Flow.Name flowName) throws IdentityEventException {
 
         Map<String, Object> params = new HashMap<>();
         params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
@@ -143,10 +158,12 @@ public class WSO2CredentialEventPayloadBuilderTest {
             log.error("Error while getting user claim value.", e);
         }
 
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.PASSWORD_RESET)
-                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
+        if (flowName != null) {
+            IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+                    .name(flowName)
+                    .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                    .build());
+        }
 
         EventPayload eventPayload = payloadBuilder.buildCredentialUpdateEvent(mockEventData);
 
@@ -167,10 +184,21 @@ public class WSO2CredentialEventPayloadBuilderTest {
 
         assertNotNull(userCredentialUpdateEventPayload.getCredentialType());
         assertEquals(userCredentialUpdateEventPayload.getCredentialType(), "PASSWORD");
-        assertNotNull(userCredentialUpdateEventPayload.getAction());
-        assertEquals(userCredentialUpdateEventPayload.getAction(),
-                WSO2CredentialEventPayloadBuilder.PasswordUpdateAction.RESET.name());
-        assertEquals(userCredentialUpdateEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
+
+        if (flowName == null) {
+            assertNull(userCredentialUpdateEventPayload.getAction());
+            assertNull(userCredentialUpdateEventPayload.getInitiatorType());
+        } else if (flowName.equals(PROFILE_UPDATE)) {
+            assertNotNull(userCredentialUpdateEventPayload.getAction());
+            assertEquals(userCredentialUpdateEventPayload.getAction(),
+                    WSO2CredentialEventPayloadBuilder.PasswordUpdateAction.UPDATE.name());
+            assertEquals(userCredentialUpdateEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
+        } else if (flowName.equals(PASSWORD_RESET)) {
+            assertNotNull(userCredentialUpdateEventPayload.getAction());
+            assertEquals(userCredentialUpdateEventPayload.getAction(),
+                    WSO2CredentialEventPayloadBuilder.PasswordUpdateAction.RESET.name());
+            assertEquals(userCredentialUpdateEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
+        }
 
         IdentityContext.destroyCurrentContext();
     }
@@ -190,9 +218,6 @@ public class WSO2CredentialEventPayloadBuilderTest {
     private static void assertCommonFields(WSO2BaseEventPayload wso2BaseEventPayload) {
 
         assertNotNull(wso2BaseEventPayload);
-
-        assertNotNull(wso2BaseEventPayload.getInitiatorType());
-        assertEquals(wso2BaseEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
         assertNotNull(wso2BaseEventPayload.getOrganization());
         assertEquals(wso2BaseEventPayload.getOrganization().getName(), TENANT_DOMAIN);

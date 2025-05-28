@@ -68,8 +68,8 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
         UserStore userStore = new UserStore(userStoreDomain);
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        String action = "";
-        String initiatorType = "";
+        String action = null;
+        String initiatorType = null;
 
         if (flow != null) {
             action = Optional.ofNullable(getAction(flow.getName()))
