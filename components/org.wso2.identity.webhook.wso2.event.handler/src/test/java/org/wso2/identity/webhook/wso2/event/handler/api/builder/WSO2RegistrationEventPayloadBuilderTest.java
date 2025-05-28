@@ -24,6 +24,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
@@ -99,7 +100,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         closeMockedServiceURLBuilder();
         closeMockedIdentityTenantUtil();
-        IdentityUtil.threadLocalProperties.remove();
+        PrivilegedCarbonContext.endTenantFlow();
     }
 
     @Test
