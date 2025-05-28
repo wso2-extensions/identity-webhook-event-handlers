@@ -45,7 +45,7 @@ import java.util.Map;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.FIRST_NAME_CLAIM_URI;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LAST_NAME_CLAIM_URI;
-import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_ENDPOINT;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 
 public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPayloadBuilder {
 
@@ -99,7 +99,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
             String userId = claims.get(FrameworkConstants.USER_ID_CLAIM);
             user.setId(userId);
             user.setRef(
-                    EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + user.getId());
+                    EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
             List<UserClaim> userClaims = new ArrayList<>();
             String emailAddress = claims.get(FrameworkConstants.EMAIL_ADDRESS_CLAIM);
