@@ -33,6 +33,9 @@ public class Constants {
     public static final String REGISTRATION_EVENT_HOOK_NAME = "RegistrationEventHook";
     public static final String REGISTRATION_EVENT_HOOK_ENABLED = "RegistrationEventHook.enable";
 
+    public static final String TOKENS_EVENT_HOOK_NAME = "TokensEventHook";
+    public static final String TOKENS_EVENT_HOOK_ENABLED = "TokensEventHook.enable";
+
     public static final String ENABLE = "enable";
     public static final String EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY = "publishEnabled";
 
@@ -97,6 +100,7 @@ public class Constants {
             public static final String SESSION_CREATED_EVENT = "sessions.sessionCreated";
             public static final String POST_LOCK_ACCOUNT_EVENT = "user-operations.lockUser";
             public static final String POST_REGISTRATION_SUCCESS_EVENT = "registrations.registrationSuccess";
+            public static final String POST_TOKEN_REVOKE_EVENT = "tokens.accessTokensRevoked";
 
             private WSO2() {
 
