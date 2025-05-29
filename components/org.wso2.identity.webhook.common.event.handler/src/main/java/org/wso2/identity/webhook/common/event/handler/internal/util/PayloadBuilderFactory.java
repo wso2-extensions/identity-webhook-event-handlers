@@ -22,6 +22,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEven
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.TokensEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
@@ -129,6 +130,18 @@ public class PayloadBuilderFactory {
         for (RegistrationEventPayloadBuilder registrationEventPayloadBuilder : registrationEventPayloadBuilders) {
             if (registrationEventPayloadBuilder.getEventSchemaType().equals(eventSchemaType)) {
                 return registrationEventPayloadBuilder;
+            }
+        }
+        return null;
+    }
+
+    public static TokensEventPayloadBuilder getTokensEventPayloadBuilder(EventSchema eventSchemaType) {
+
+        List<TokensEventPayloadBuilder> tokensEventPayloadBuilders =
+                EventHookHandlerDataHolder.getInstance().getTokensEventPayloadBuilders();
+        for (TokensEventPayloadBuilder tokensEventPayloadBuilder : tokensEventPayloadBuilders) {
+            if (tokensEventPayloadBuilder.getEventSchemaType().equals(eventSchemaType)) {
+                return tokensEventPayloadBuilder;
             }
         }
         return null;
