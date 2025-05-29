@@ -104,7 +104,7 @@ public class WSO2PayloadUtils {
 
         try {
             user.setId(authenticatedUser.getUserId());
-            user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(Constants.SCIM2_ENDPOINT) +
+            user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(Constants.SCIM2_USERS_ENDPOINT) +
                     "/" + authenticatedUser.getUserId());
         } catch (UserIdNotFoundException e) {
             //TODO: Need to verify when this exception is thrown and handle it accordingly

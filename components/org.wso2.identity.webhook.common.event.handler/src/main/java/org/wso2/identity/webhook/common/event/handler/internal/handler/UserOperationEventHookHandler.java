@@ -80,8 +80,6 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
         return IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(eventName) ||
                 IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(eventName) ||
                 IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName) ||
-                IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) ||
-                IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName) ||
                 IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName) ||
                 IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName);
     }
@@ -133,14 +131,6 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                     userOperationEventPublisherConfig.isPublishEnabled()) {
                 eventPayload = payloadBuilder.buildUserUnlockAccountEvent(eventData);
                 eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.WSO2.POST_UNLOCK_ACCOUNT_EVENT);
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
-                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-            } else if ((IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(event.getEventName()) ||
-                    IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(event.getEventName())) &&
-                    userOperationEventPublisherConfig.isPublishEnabled()) {
-                eventPayload = payloadBuilder.buildCredentialUpdateEvent(eventData);
-                eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_CREDENTIAL);
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                         .buildSecurityEventToken(eventPayload, eventUri);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);

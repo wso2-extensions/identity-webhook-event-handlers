@@ -23,7 +23,6 @@ package org.wso2.identity.webhook.wso2.event.handler.internal.constant;
  */
 public class Constants {
 
-    public static final String SCIM2_ENDPOINT = "/scim2";
     public static final String WSO2_CLAIM_GROUPS = "http://wso2.org/claims/groups";
     public static final String WSO2_CLAIM_ROLES = "http://wso2.org/claims/roles";
     public static final String MULTI_ATTRIBUTE_SEPARATOR = "MultiAttributeSeparator";
@@ -33,6 +32,8 @@ public class Constants {
     public static final String DATA_MAP = "dataMap";
     public static final String WSO2_EVENT_SCHEMA = "WSO2";
     public static final String ORGANIZATION_AUTHENTICATOR = "OrganizationAuthenticator";
+    public static final String SCIM2_USERS_ENDPOINT = "/scim2/Users";
+    public static final String DEFAULT_USER_STORE = "DEFAULT";
     public static final String FIRST_NAME_CLAIM_URI = "http://wso2.org/claims/givenname";
     public static final String LAST_NAME_CLAIM_URI = "http://wso2.org/claims/lastname";
 

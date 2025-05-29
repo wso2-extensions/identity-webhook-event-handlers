@@ -43,10 +43,8 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
-import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
-import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCredentialUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserGroupUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Group;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
@@ -56,7 +54,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -64,7 +61,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
-import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_ENDPOINT;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedServiceURLBuilder;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockIdentityTenantUtil;
@@ -247,7 +244,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userAccountEventPayload.getUser());
         assertEquals(userAccountEventPayload.getUser().getId(), DELETED_USER_ID);
         assertEquals(userAccountEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + DELETED_USER_ID);
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + DELETED_USER_ID);
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 1);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
@@ -285,7 +282,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userAccountEventPayload.getUser());
         assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userAccountEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + TEST_USER_ID);
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 1);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
@@ -324,7 +321,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userAccountEventPayload.getUser());
         assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userAccountEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + TEST_USER_ID);
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 1);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
@@ -347,68 +344,5 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(wso2BaseEventPayload.getUserStore());
         assertEquals(wso2BaseEventPayload.getUserStore().getId(), "REVGQVVMVA==");
         assertEquals(wso2BaseEventPayload.getUserStore().getName(), "DEFAULT");
-    }
-
-    @Test
-    public void testBuildCredentialUpdateEvent() throws IdentityEventException {
-
-        Map<String, Object> params = new HashMap<>();
-        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        params.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, "DEFAULT");
-        params.put(IdentityEventConstants.EventProperty.USER_NAME, USER_NAME);
-
-        when(mockEventData.getEventParams()).thenReturn(params);
-        mockUserStoreManager();
-        try {
-            when(userStoreManagerMock.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
-                    eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
-            when(userStoreManagerMock.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
-                    eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(TEST_USER_ID);
-        } catch (org.wso2.carbon.user.api.UserStoreException e) {
-            log.error("Error while getting user claim value.", e);
-        }
-
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.PASSWORD_RESET)
-                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
-
-        EventPayload eventPayload = payloadBuilder.buildCredentialUpdateEvent(mockEventData);
-
-        assertCommonFields((WSO2BaseEventPayload) eventPayload);
-
-        WSO2UserCredentialUpdateEventPayload userCredentialUpdateEventPayload =
-                (WSO2UserCredentialUpdateEventPayload) eventPayload;
-
-        assertNotNull(userCredentialUpdateEventPayload.getUser());
-        assertEquals(userCredentialUpdateEventPayload.getUser().getId(), TEST_USER_ID);
-        assertEquals(userCredentialUpdateEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_ENDPOINT) + "/" + DELETED_USER_ID);
-        assertNotNull(userCredentialUpdateEventPayload.getUser().getClaims());
-        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().size(), 1);
-        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getUri(),
-                FrameworkConstants.EMAIL_ADDRESS_CLAIM);
-        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getValue(), TEST_USER_EMAIL);
-
-        assertNotNull(userCredentialUpdateEventPayload.getCredentialType());
-        assertEquals(userCredentialUpdateEventPayload.getCredentialType(), "PASSWORD");
-        assertNotNull(userCredentialUpdateEventPayload.getAction());
-        assertEquals(userCredentialUpdateEventPayload.getAction(),
-                WSO2UserOperationEventPayloadBuilder.PasswordUpdateAction.RESET.name());
-        assertEquals(userCredentialUpdateEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
-
-        IdentityContext.destroyCurrentContext();
-    }
-
-    private void mockUserStoreManager() {
-
-        try {
-            when(realmService.getTenantUserRealm(anyInt())).thenReturn(userRealm);
-            when(userRealm.getUserStoreManager()).thenReturn(userStoreManagerMock);
-        } catch (org.wso2.carbon.user.api.UserStoreException e) {
-            log.error("Error while getting user store manager.", e);
-        }
-
-        WSO2EventHookHandlerDataHolder.getInstance().setRealmService(realmService);
     }
 }
