@@ -140,6 +140,12 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                } else if ("REGISTRATION_FAILURE".equals(event.getEventName()) &&
+                        isTopicExists) {
+                    eventPayload = payloadBuilder.buildRegistrationFailureEvent(eventData);
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                            .buildSecurityEventToken(eventPayload, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
                 }
             }
         } catch (Exception e) {
@@ -151,6 +157,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
         return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName);
+                IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) ||
+                "REGISTRATION_FAILURE".equals(eventName);
     }
 }

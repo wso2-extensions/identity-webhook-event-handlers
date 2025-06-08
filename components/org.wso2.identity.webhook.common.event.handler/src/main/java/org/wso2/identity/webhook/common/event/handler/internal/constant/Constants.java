@@ -67,42 +67,4 @@ public class Constants {
 
     public static final String PRE_DELETE_USER_ID = "PRE_DELETE_USER_ID";
 
-    /**
-     * Constants for event config names (keys).
-     * These names will be equal to the config attribute keys stored in the core config store.
-     */
-    public static class EventHandlerKey {
-
-        public static class WSO2 {
-
-            public static final String LOGIN_SUCCESS_EVENT = "Login Success Event";
-            public static final String LOGIN_FAILED_EVENT = "Login Failed Event";
-            public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "Post Update User List of Role Event";
-            public static final String POST_UPDATE_USER_CREDENTIAL = "Post Update User Credential Event";
-            public static final String SESSION_REVOKED_EVENT = "Session Revoked Event";
-            public static final String SESSION_CREATED_EVENT = "Session Created Event";
-            public static final String POST_REGISTRATION_SUCCESS_EVENT = "Post Registration Success Event";
-
-            private WSO2() {
-
-            }
-        }
-
-        public static class CAEP {
-
-            public static final String SESSION_REVOKED_EVENT = "caep.sessionRevoked";
-            public static final String SESSION_ESTABLISHED_EVENT = "caep.sessionEstablished";
-            public static final String SESSION_PRESENTED_EVENT = "caep.sessionPresented";
-
-            public static final String VERIFICATION_EVENT = "caep.verification";
-
-            private CAEP() {
-
-            }
-        }
-
-        private EventHandlerKey() {
-
-        }
-    }
 }
