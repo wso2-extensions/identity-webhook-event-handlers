@@ -211,6 +211,10 @@ public class EventConfigManager {
                         eventName.equals(IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD)))) {
             return true;
         }
+        if (Constants.EventHandlerKey.WSO2.POST_REGISTRATION_FAILURE_EVENT.equals(attribute.getKey()) &&
+                eventName.equals(IdentityEventConstants.Event.REGISTRATION_FAILURE)) {
+            return true;
+        }
         if (Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT.equals(attribute.getKey())) {
             return eventName.equals(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name());
         }

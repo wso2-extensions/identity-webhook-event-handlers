@@ -34,4 +34,5 @@ public interface RegistrationEventPayloadBuilder {
      */
     EventSchema getEventSchemaType();
 
+    EventPayload buildRegistrationFailureEvent(EventData eventData) throws IdentityEventException;
 }

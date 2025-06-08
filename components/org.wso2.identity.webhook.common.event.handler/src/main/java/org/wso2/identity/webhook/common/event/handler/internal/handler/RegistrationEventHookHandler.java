@@ -99,6 +99,15 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                         .buildSecurityEventToken(eventPayload, eventUri);
                 EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+            } else if (IdentityEventConstants.Event.REGISTRATION_FAILURE.equals(event.getEventName()) &&
+                    registrationEventPublisherConfig.isPublishEnabled()) {
+                eventPayload = payloadBuilder.buildRegistrationFailureEvent(eventData);
+                eventUri =
+                        eventConfigManager.getEventUri(
+                                Constants.EventHandlerKey.WSO2.POST_REGISTRATION_FAILURE_EVENT);
+                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                        .buildSecurityEventToken(eventPayload, eventUri);
+                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
             }
         } catch (IdentityEventException e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
@@ -109,7 +118,8 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
         return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName);
+                IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) ||
+                IdentityEventConstants.Event.REGISTRATION_FAILURE.equals(eventName);
     }
 
 }

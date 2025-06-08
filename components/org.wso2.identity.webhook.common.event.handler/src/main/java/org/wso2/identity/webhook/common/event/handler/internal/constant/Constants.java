@@ -97,6 +97,7 @@ public class Constants {
             public static final String SESSION_CREATED_EVENT = "sessions.sessionCreated";
             public static final String POST_LOCK_ACCOUNT_EVENT = "user-operations.lockUser";
             public static final String POST_REGISTRATION_SUCCESS_EVENT = "registrations.registrationSuccess";
+            public static final String POST_REGISTRATION_FAILURE_EVENT = "registrations.registrationFailure";
 
             private WSO2() {
 
