@@ -34,6 +34,8 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
+import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
@@ -48,7 +50,6 @@ import org.wso2.identity.webhook.common.event.handler.internal.handler.Registrat
 import org.wso2.identity.webhook.common.event.handler.internal.handler.SessionEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.UserOperationEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.VerificationEventHookHandler;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 
 /**
  * WSO2 Event Handler service component class.
@@ -78,17 +79,17 @@ public class EventHookHandlerServiceComponent {
             if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled
                     .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new LoginEventHookHandler(EventConfigManager.getInstance()), null);
+                        new LoginEventHookHandler(), null);
             }
             if (isUserOperationEventHandlerEnabled != null && isUserOperationEventHandlerEnabled
                     .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new UserOperationEventHookHandler(EventConfigManager.getInstance()), null);
+                        new UserOperationEventHookHandler(), null);
             }
             if (isRegistrationEventHandlerEnabled != null && isRegistrationEventHandlerEnabled
                     .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new RegistrationEventHookHandler(EventConfigManager.getInstance()), null);
+                        new RegistrationEventHookHandler(), null);
             }
 
             String isSessionEventHandlerEnabled = getIdentityEventProperty(Constants.SESSION_EVENT_HOOK_NAME,
@@ -97,7 +98,7 @@ public class EventHookHandlerServiceComponent {
                     isSessionEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
                 log.info("Session Event Handler is enabled.");
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new SessionEventHookHandler(EventConfigManager.getInstance()), null);
+                        new SessionEventHookHandler(), null);
             } else {
                 log.error("Session Event Handler is not enabled.");
             }
@@ -108,7 +109,7 @@ public class EventHookHandlerServiceComponent {
                     isCredentialEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
                 log.info("Credentials Event Handler is enabled.");
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new CredentialEventHookHandler(EventConfigManager.getInstance()), null);
+                        new CredentialEventHookHandler(), null);
             } else {
                 log.error("Credential Event Handler is not enabled.");
             }
@@ -119,7 +120,7 @@ public class EventHookHandlerServiceComponent {
                     isVerificationEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
                 log.info("Verification Event Handler is enabled.");
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new VerificationEventHookHandler(EventConfigManager.getInstance()), null);
+                        new VerificationEventHookHandler(), null);
             } else {
                 log.error("Verification Event Handler is not enabled.");
             }
@@ -298,6 +299,40 @@ public class EventHookHandlerServiceComponent {
     protected void unsetEventPublisherService(EventPublisherService eventPublisherService) {
 
         EventHookHandlerDataHolder.getInstance().setEventPublisherService(null);
+    }
+
+    @Reference(
+            name = "identity.webhook.metadata.component",
+            service = WebhookMetadataService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetWebhookMetadataService"
+    )
+    protected void setWebhookMetadataService(WebhookMetadataService webhookMetadataService) {
+
+        EventHookHandlerDataHolder.getInstance().setWebhookMetadataService(webhookMetadataService);
+    }
+
+    protected void unsetWebhookMetadataService(WebhookMetadataService webhookMetadataService) {
+
+        EventHookHandlerDataHolder.getInstance().setWebhookMetadataService(null);
+    }
+
+    @Reference(
+            name = "topic.management.service.component",
+            service = TopicManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetTopicManagementService"
+    )
+    protected void setTopicManagementService(TopicManagementService topicManagementService) {
+
+        EventHookHandlerDataHolder.getInstance().setTopicManagementService(topicManagementService);
+    }
+
+    protected void unsetTopicManagementService(TopicManagementService topicManagementService) {
+
+        EventHookHandlerDataHolder.getInstance().setTopicManagementService(null);
     }
 
     /**

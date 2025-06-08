@@ -47,10 +47,8 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationE
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.config.ResourceConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 

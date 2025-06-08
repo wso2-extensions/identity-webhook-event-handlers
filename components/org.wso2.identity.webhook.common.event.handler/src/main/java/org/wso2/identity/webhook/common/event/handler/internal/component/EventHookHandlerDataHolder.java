@@ -19,6 +19,8 @@
 package org.wso2.identity.webhook.common.event.handler.internal.component;
 
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
+import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
+import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
@@ -38,6 +40,8 @@ public class EventHookHandlerDataHolder {
     private static final EventHookHandlerDataHolder instance = new EventHookHandlerDataHolder();
     private ConfigurationManager configurationManager;
     private EventPublisherService eventPublisherService;
+    private WebhookMetadataService webhookMetadataService;
+    private TopicManagementService topicManagementService;
     private final List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
     private final List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
     private final List<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
@@ -253,5 +257,45 @@ public class EventHookHandlerDataHolder {
     public void removeRegistrationEventPayloadBuilder(RegistrationEventPayloadBuilder registrationEventPayloadBuilder) {
 
         registrationEventPayloadBuilders.remove(registrationEventPayloadBuilder);
+    }
+
+    /**
+     * Get the webhook metadata service.
+     *
+     * @return Webhook metadata service.
+     */
+    public WebhookMetadataService getWebhookMetadataService() {
+
+        return webhookMetadataService;
+    }
+
+    /**
+     * Set the webhook metadata service.
+     *
+     * @param webhookMetadataService Webhook metadata service.
+     */
+    public void setWebhookMetadataService(WebhookMetadataService webhookMetadataService) {
+
+        this.webhookMetadataService = webhookMetadataService;
+    }
+
+    /**
+     * Get the topic management service.
+     *
+     * @return Topic management service.
+     */
+    public TopicManagementService getTopicManagementService() {
+
+        return topicManagementService;
+    }
+
+    /**
+     * Set the topic management service.
+     *
+     * @param topicManagementService Topic management service.
+     */
+    public void setTopicManagementService(TopicManagementService topicManagementService) {
+
+        this.topicManagementService = topicManagementService;
     }
 }

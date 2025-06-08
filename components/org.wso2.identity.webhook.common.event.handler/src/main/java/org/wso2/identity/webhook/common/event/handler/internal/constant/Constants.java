@@ -24,7 +24,13 @@ package org.wso2.identity.webhook.common.event.handler.internal.constant;
 public class Constants {
 
     public static final String LOGIN_EVENT_HOOK_NAME = "LoginEventHook";
-    public static final String EVENT_SCHEMA_EVENTS_KEY = "events";
+    public static final String LOGIN_CHANNEL_NAME = "Login Channel";
+    public static final String CREDENTIAL_CHANGE_CHANNEL_NAME = "Credential Change Channel";
+    public static final String REGISTRATION_CHANNEL_NAME = "Registration Channel";
+    public static final String USER_OPERATION_CHANNEL_NAME = "User Operation Channel";
+    public static final String VERIFICATION_CHANNEL_NAME = "Verification Channel";
+    public static final String SESSION_CHANNEL_NAME = "Session Channel";
+    public static final String EVENT_PROFILE_VERSION = "v1";
     public static final String LOGIN_EVENT_HOOK_ENABLED = "LoginEventHook.enable";
 
     public static final String USER_OPERATION_EVENT_HOOK_NAME = "UserOperationEventHook";
@@ -33,19 +39,7 @@ public class Constants {
     public static final String REGISTRATION_EVENT_HOOK_NAME = "RegistrationEventHook";
     public static final String REGISTRATION_EVENT_HOOK_ENABLED = "RegistrationEventHook.enable";
 
-    public static final String ENABLE = "enable";
-    public static final String EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PUBLISH_ENABLED_KEY = "publishEnabled";
-
-    public static final String EVENT_CONFIG_SCHEMA_NAME_KEY = "eventSchema";
-    public static final String EVENT_PUBLISHER_EVENT_SCHEMA_RESOURCE_FILE_PATH =
-            "repository/resources/identity/websubhub/event-schemas.json";
-    public static final String EVENT_PUBLISHER_CONFIG_ATTRIBUTE_PROPERTIES_KEY = "properties";
     public static final String SP_TO_CARBON_CLAIM_MAPPING = "SP_TO_CARBON_CLAIM_MAPPING";
-
-    public static final String EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME = "web-sub-hub-event-publisher";
-    public static final String EVENT_PUBLISHER_CONFIG_RESOURCE_NAME = "web-sub-hub-event-publisher-configs";
-    public static final String RESOURCE_TYPE = "resourceTypeName";
-    public static final String RESOURCE_NAME = "resourceName";
 
     public static final String SESSION_EVENT_HOOK_NAME = "SessionEventHook";
     public static final String SESSION_EVENT_HOOK_ENABLED = "SessionEventHook.enable";
@@ -80,6 +74,19 @@ public class Constants {
     public static final String PRE_DELETE_USER_ID = "PRE_DELETE_USER_ID";
 
     /**
+     * Enum for flow types.
+     * Represents different flow types in the system.
+     */
+    public enum Flow {
+        REGISTRATION,
+        CREDENTIAL_UPDATE,
+        VERIFICATION,
+        LOGIN,
+        USER_OPERATION,
+        SESSION
+    }
+
+    /**
      * Constants for event config names (keys).
      * These names will be equal to the config attribute keys stored in the core config store.
      */
@@ -87,16 +94,13 @@ public class Constants {
 
         public static class WSO2 {
 
-            public static final String LOGIN_SUCCESS_EVENT = "logins.loginSuccess";
-            public static final String LOGIN_FAILED_EVENT = "logins.loginFailed";
-            public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "user-operations.updateUserGroup";
-            public static final String POST_DELETE_USER_EVENT = "user-operations.deleteUser";
-            public static final String POST_UNLOCK_ACCOUNT_EVENT = "user-operations.unlockUser";
-            public static final String POST_UPDATE_USER_CREDENTIAL = "credential.updateUserCredentials";
-            public static final String SESSION_REVOKED_EVENT = "sessions.sessionRevoked";
-            public static final String SESSION_CREATED_EVENT = "sessions.sessionCreated";
-            public static final String POST_LOCK_ACCOUNT_EVENT = "user-operations.lockUser";
-            public static final String POST_REGISTRATION_SUCCESS_EVENT = "registrations.registrationSuccess";
+            public static final String LOGIN_SUCCESS_EVENT = "Login Success Event";
+            public static final String LOGIN_FAILED_EVENT = "Login Failed Event";
+            public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "Post Update User List of Role Event";
+            public static final String POST_UPDATE_USER_CREDENTIAL = "Post Update User Credential Event";
+            public static final String SESSION_REVOKED_EVENT = "Session Revoked Event";
+            public static final String SESSION_CREATED_EVENT = "Session Created Event";
+            public static final String POST_REGISTRATION_SUCCESS_EVENT = "Post Registration Success Event";
 
             private WSO2() {
 
@@ -109,8 +113,6 @@ public class Constants {
             public static final String SESSION_ESTABLISHED_EVENT = "caep.sessionEstablished";
             public static final String SESSION_PRESENTED_EVENT = "caep.sessionPresented";
 
-            public static final String CREDENTIAL_CHANGE_EVENT = "caep.credentialChange";
-
             public static final String VERIFICATION_EVENT = "caep.verification";
 
             private CAEP() {
@@ -118,7 +120,7 @@ public class Constants {
             }
         }
 
-            private EventHandlerKey() {
+        private EventHandlerKey() {
 
         }
     }

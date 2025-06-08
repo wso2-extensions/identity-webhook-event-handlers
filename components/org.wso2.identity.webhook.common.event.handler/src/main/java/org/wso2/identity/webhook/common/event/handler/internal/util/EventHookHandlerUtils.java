@@ -30,12 +30,6 @@ import org.wso2.carbon.identity.application.authentication.framework.model.Authe
 import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
-import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
-import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
-import org.wso2.carbon.identity.configuration.mgt.core.search.ComplexCondition;
-import org.wso2.carbon.identity.configuration.mgt.core.search.Condition;
-import org.wso2.carbon.identity.configuration.mgt.core.search.PrimitiveCondition;
-import org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
 import org.wso2.carbon.identity.core.context.model.Flow;
@@ -52,19 +46,18 @@ import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils.CORRELATION_ID_MDC;
-import static org.wso2.carbon.identity.configuration.mgt.core.search.constant.ConditionType.PrimitiveOperator.EQUALS;
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.EVENT_PROFILE_VERSION;
 
 /**
  * Utility class for Event Handler Hooks.
@@ -343,6 +336,7 @@ public class EventHookHandlerUtils {
             EventContext eventContext = EventContext.builder()
                     .tenantDomain(tenantDomain)
                     .eventUri(eventUri)
+                    .eventProfileVersion(EVENT_PROFILE_VERSION)
                     .build();
             EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                     .publish(securityEventTokenPayload, eventContext);
@@ -353,77 +347,54 @@ public class EventHookHandlerUtils {
     }
 
     /**
-     * Returns Event Publisher Configs of the Tenant.
-     *
-     * @param tenantDomain       Tenant Domain
-     * @param eventName          Event Name
-     * @param eventConfigManager Event Configuration Manager
-     * @throws IdentityEventException if any error occurs
-     */
-    public static EventPublisherConfig getEventPublisherConfigForTenant
-    (String tenantDomain, String eventName, EventConfigManager eventConfigManager) throws IdentityEventException {
-
-        if (StringUtils.isEmpty(tenantDomain)) {
-            throw new IdentityEventException("Invalid tenant domain: " + tenantDomain);
-        }
-
-        try {
-            Condition condition = createPublisherConfigFilterCondition();
-            Resources publisherConfigResource = EventHookHandlerDataHolder.getInstance().getConfigurationManager()
-                    .getTenantResources(tenantDomain, condition);
-            return eventConfigManager.extractEventPublisherConfig(publisherConfigResource, eventName);
-        } catch (ConfigurationManagementException | IdentityEventException e) {
-            throw new IdentityEventException("Error while retrieving event publisher configuration for tenant.", e);
-        }
-    }
-
-    /**
-     * Helper function for getEventPublisherConfigForTenant.
-     */
-    private static ComplexCondition createPublisherConfigFilterCondition() {
-
-        List<Condition> conditionList = new ArrayList<>();
-        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_TYPE, EQUALS,
-                Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_TYPE_NAME));
-        conditionList.add(new PrimitiveCondition(Constants.RESOURCE_NAME, EQUALS,
-                Constants.EVENT_PUBLISHER_CONFIG_RESOURCE_NAME));
-        return new ComplexCondition(ConditionType.ComplexOperator.AND, conditionList);
-    }
-
-    /**
-     * Resolve the event URI based on the event schema and event name.
+     * Resolve the event URI based on the event schema, event name, and flow.
      *
      * @param eventSchema Event schema.
      * @param eventName   Event name.
+     * @param flow        Flow type.
      * @return Event URI.
      */
-    public static String resolveEventHandlerKey(EventSchema eventSchema, IdentityEventConstants.EventName eventName) {
+    public static String resolveEventHandlerKey(EventSchema eventSchema, IdentityEventConstants.EventName eventName,
+                                                Constants.Flow flow) {
 
-        switch (eventSchema) {
-            case WSO2:
-                switch (eventName) {
-                    case AUTHENTICATION_SUCCESS:
-                        return Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT;
-                    case AUTHENTICATION_STEP_FAILURE:
-                        return Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT;
-                    case USER_SESSION_TERMINATE:
-                        return Constants.EventHandlerKey.WSO2.SESSION_REVOKED_EVENT;
-                    case SESSION_CREATE:
-                        return Constants.EventHandlerKey.WSO2.SESSION_CREATED_EVENT;
-                }
-                break;
-            case CAEP:
-                switch (eventName) {
-                    case USER_SESSION_TERMINATE:
-                        return Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT;
-                    case SESSION_CREATE:
-                        return Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT;
-                    case SESSION_EXTEND:
-                    case SESSION_UPDATE:
-                        return Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT;
-                    case VERIFICATION:
-                        return Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT;
-                }
+        if (Objects.requireNonNull(eventSchema) == EventSchema.WSO2) {
+            if (flow == Constants.Flow.LOGIN && Objects.requireNonNull(eventName) ==
+                    IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS) {
+                return Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT;
+            } else if (flow == Constants.Flow.LOGIN && eventName ==
+                    IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE) {
+                return Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT;
+            } else if (flow == Constants.Flow.SESSION && eventName ==
+                    IdentityEventConstants.EventName.USER_SESSION_TERMINATE) {
+                return Constants.EventHandlerKey.WSO2.SESSION_REVOKED_EVENT;
+            } else if (flow == Constants.Flow.SESSION && eventName ==
+                    IdentityEventConstants.EventName.SESSION_CREATE) {
+                return Constants.EventHandlerKey.WSO2.SESSION_CREATED_EVENT;
+            } else if (flow == Constants.Flow.CREDENTIAL_UPDATE && (eventName ==
+                    IdentityEventConstants.EventName.POST_ADD_NEW_PASSWORD ||
+                    eventName == IdentityEventConstants.EventName.POST_UPDATE_CREDENTIAL_BY_SCIM)) {
+                return Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_CREDENTIAL;
+            } else if (flow == Constants.Flow.REGISTRATION && (eventName ==
+                    IdentityEventConstants.EventName.POST_ADD_USER ||
+                    eventName == IdentityEventConstants.EventName.POST_SELF_SIGNUP_CONFIRM ||
+                    eventName == IdentityEventConstants.EventName.POST_ADD_NEW_PASSWORD)) {
+                return Constants.EventHandlerKey.WSO2.POST_REGISTRATION_SUCCESS_EVENT;
+            }
+        } else if (eventSchema == EventSchema.CAEP) {
+            if (flow == Constants.Flow.SESSION && Objects.requireNonNull(eventName) ==
+                    IdentityEventConstants.EventName.USER_SESSION_TERMINATE) {
+                return Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT;
+            } else if (flow == Constants.Flow.SESSION && eventName ==
+                    IdentityEventConstants.EventName.SESSION_CREATE) {
+                return Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT;
+            } else if (flow == Constants.Flow.SESSION && (eventName ==
+                    IdentityEventConstants.EventName.SESSION_EXTEND ||
+                    eventName == IdentityEventConstants.EventName.SESSION_UPDATE)) {
+                return Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT;
+            } else if (flow == Constants.Flow.VERIFICATION && eventName ==
+                    IdentityEventConstants.EventName.VERIFICATION) {
+                return Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT;
+            }
         }
         return null;
     }
