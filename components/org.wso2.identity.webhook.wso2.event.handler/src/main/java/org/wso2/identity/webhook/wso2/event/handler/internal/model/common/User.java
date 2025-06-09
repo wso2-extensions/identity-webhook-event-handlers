@@ -31,6 +31,7 @@ public class User {
     private String ref;
     private List<String> groups = new ArrayList<>();
     private List<String> roles = new ArrayList<>();
+    private List<UserClaim> identifiers = new ArrayList<>();
 
     public List<String> getGroups() {
 
@@ -91,4 +92,15 @@ public class User {
 
         this.ref = ref;
     }
+
+    public List<UserClaim> getIdentifiers() {
+
+        return identifiers;
+    }
+
+    public void setIdentifiers(List<UserClaim> identifiers) {
+
+        this.identifiers = identifiers;
+    }
+
 }
