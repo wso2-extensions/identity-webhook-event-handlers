@@ -34,6 +34,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEv
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
+import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationFailureEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationSuccessEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Context;
@@ -56,7 +57,6 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
 public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPayloadBuilder {
 
     private static final Log log = LogFactory.getLog(WSO2RegistrationEventPayloadBuilder.class);
-    private static final String LOCATION_CLAIM = "http://wso2.org/claims/location";
 
     @Override
     public EventPayload buildRegistrationSuccessEvent(EventData eventData) throws IdentityEventException {
@@ -106,8 +106,8 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
             String userId = claims.get(FrameworkConstants.USER_ID_CLAIM);
             user.setId(userId);
 
-            if (claims.containsKey(LOCATION_CLAIM)) {
-                user.setRef(claims.get(LOCATION_CLAIM));
+            if (claims.containsKey(Constants.LOCATION_CLAIM_URI)) {
+                user.setRef(claims.get(Constants.LOCATION_CLAIM_URI));
                 // If the user ID is not set, try to extract it from the ref.
                 if (StringUtils.isBlank(user.getId()) && StringUtils.isNotBlank(user.getRef())) {
                     String[] refParts = user.getRef().split("/");

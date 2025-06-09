@@ -38,4 +38,5 @@ public class Constants {
     public static final String LAST_NAME_CLAIM_URI = "http://wso2.org/claims/lastname";
 
     public static final String SESSION_ID = "sessionId";
+    public static final String LOCATION_CLAIM_URI = "http://wso2.org/claims/location";
 }
