@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
@@ -39,17 +40,20 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserCl
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
-import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.FIRST_NAME_CLAIM_URI;
-import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LAST_NAME_CLAIM_URI;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 
 public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPayloadBuilder {
 
     private static final Log log = LogFactory.getLog(WSO2RegistrationEventPayloadBuilder.class);
+    private static final String WSO2_CLAIM_CREATED = "http://wso2.org/claims/created";
+    private static final String WSO2_CLAIM_MODIFIED = "http://wso2.org/claims/modified";
+    private static final String WSO2_CLAIM_RESOURCE_TYPE = "http://wso2.org/claims/resourceType";
+    private static final String WSO2_CLAIM_LOCATION = "http://wso2.org/claims/location";
 
     @Override
     public EventPayload buildRegistrationSuccessEvent(EventData eventData) throws IdentityEventException {
@@ -98,22 +102,23 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
             String userId = claims.get(FrameworkConstants.USER_ID_CLAIM);
             user.setId(userId);
-            user.setRef(
-                    EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
-            List<UserClaim> userClaims = new ArrayList<>();
-            String emailAddress = claims.get(FrameworkConstants.EMAIL_ADDRESS_CLAIM);
-            String givenName = claims.get(FIRST_NAME_CLAIM_URI);
-            String lastName = claims.get(LAST_NAME_CLAIM_URI);
+            if (claims.containsKey(WSO2_CLAIM_LOCATION)) {
+                user.setRef(claims.get(WSO2_CLAIM_LOCATION));
+                // If the user ID is not set, try to extract it from the ref.
+                if (StringUtils.isBlank(user.getId()) && StringUtils.isNotBlank(user.getRef())) {
+                    String[] refParts = user.getRef().split("/");
+                    if (refParts.length > 0) {
+                        user.setId(refParts[refParts.length - 1]);
+                    }
+                }
+            } else {
+                user.setRef(
+                        EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+            }
 
-            UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
-            UserClaim givenNameUserClaim = new UserClaim(FIRST_NAME_CLAIM_URI, givenName);
-            UserClaim lastNameUserClaim = new UserClaim(LAST_NAME_CLAIM_URI, lastName);
-
-            userClaims.add(emailAddressUserClaim);
-            userClaims.add(givenNameUserClaim);
-            userClaims.add(lastNameUserClaim);
-            user.setClaims(userClaims);
+            List<UserClaim> filteredUserClaims = filterUserClaimsForUserAdd(claims);
+            user.setClaims(filteredUserClaims);
         }
     }
 
@@ -133,6 +138,24 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
     public EventSchema getEventSchemaType() {
 
         return EventSchema.WSO2;
+    }
+
+    private List<UserClaim> filterUserClaimsForUserAdd(Map<String, String> userClaims) {
+
+        List<UserClaim> userClaimList = new ArrayList<>();
+        List<String> excludedClaims = Arrays.asList(
+                WSO2_CLAIM_CREATED,
+                WSO2_CLAIM_MODIFIED,
+                WSO2_CLAIM_RESOURCE_TYPE,
+                WSO2_CLAIM_LOCATION,
+                FrameworkConstants.USER_ID_CLAIM);
+
+        for (String userClaimUri : userClaims.keySet()) {
+            if (!excludedClaims.contains(userClaimUri)) {
+                userClaimList.add(new UserClaim(userClaimUri, userClaims.get(userClaimUri)));
+            }
+        }
+        return userClaimList;
     }
 
 }
