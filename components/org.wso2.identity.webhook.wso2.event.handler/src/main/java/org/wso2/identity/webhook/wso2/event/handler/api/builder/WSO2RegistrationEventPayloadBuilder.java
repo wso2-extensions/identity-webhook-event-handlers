@@ -18,7 +18,6 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
@@ -102,20 +101,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
             String userId = claims.get(FrameworkConstants.USER_ID_CLAIM);
             user.setId(userId);
-
-            if (claims.containsKey(WSO2_CLAIM_LOCATION)) {
-                user.setRef(claims.get(WSO2_CLAIM_LOCATION));
-                // If the user ID is not set, try to extract it from the ref.
-                if (StringUtils.isBlank(user.getId()) && StringUtils.isNotBlank(user.getRef())) {
-                    String[] refParts = user.getRef().split("/");
-                    if (refParts.length > 0) {
-                        user.setId(refParts[refParts.length - 1]);
-                    }
-                }
-            } else {
-                user.setRef(
-                        EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
-            }
+            user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
             List<UserClaim> filteredUserClaims = filterUserClaimsForUserAdd(claims);
             user.setClaims(filteredUserClaims);
