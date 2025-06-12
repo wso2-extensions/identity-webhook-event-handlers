@@ -1,21 +1,3 @@
-/*
- * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
- *
- * WSO2 LLC. licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
 package org.wso2.identity.webhook.common.event.handler.internal.handler;
 
 import org.json.simple.JSONObject;
@@ -42,7 +24,7 @@ import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
-import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.TokensEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
@@ -65,15 +47,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedServiceURLBuilder;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockIdentityTenantUtil;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockServiceURLBuilder;
 
-public class RegistrationEventHookHandlerTest {
+public class TokensEventHookHandlerTest {
 
     @Mock
     private ConfigurationManager mockedConfigurationManager;
@@ -82,16 +62,16 @@ public class RegistrationEventHookHandlerTest {
     @Mock
     private EventPayload mockedEventPayload;
     @Mock
-    private RegistrationEventHookHandler registrationEventHookHandler;
+    private TokensEventHookHandler tokensEventHookHandler;
     @Mock
     private EventHookHandlerUtils mockedEventHookHandlerUtils;
     @Mock
-    private RegistrationEventPayloadBuilder mockedRegistrationEventPayloadBuilder;
+    private TokensEventPayloadBuilder mockedTokensEventPayloadBuilder;
     @Mock
     private EventConfigManager mockedEventConfigManager;
 
     private static final String SAMPLE_EVENT_KEY =
-            "schemas.identity.wso2.org/events/registration/event-type/registrationSuccess";
+            "schemas.identity.wso2.org/events/token/event-type/accessTokensRevoked";
     private static final String SAMPLE_ATTRIBUTE_JSON = "{\"sendCredentials\":false,\"publishEnabled\":true}";
     private static final String DOMAIN_QUALIFIED_ADDED_USER_NAME = "PRIMARY/john";
     private static final String CARBON_SUPER = "carbon.super";
@@ -122,17 +102,17 @@ public class RegistrationEventHookHandlerTest {
     @Test
     public void testTestGetName() {
 
-        String name = registrationEventHookHandler.getName();
-        assertEquals(name, Constants.REGISTRATION_EVENT_HOOK_NAME);
+        String name = tokensEventHookHandler.getName();
+        assertEquals(name, Constants.TOKENS_EVENT_HOOK_NAME);
     }
 
     @Test
     public void testCanHandle() {
 
-        Event event = new Event(IdentityEventConstants.Event.POST_ADD_USER);
+        Event event = new Event(IdentityEventConstants.EventName.SESSION_TERMINATE.name());
         IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);
-        boolean canHandle = registrationEventHookHandler.canHandle(messageContext);
-        assertTrue(canHandle, "The event handler should be able to handle the event POST_ADD_USER.");
+        boolean canHandle = tokensEventHookHandler.canHandle(messageContext);
+        assertTrue(canHandle, "The event handler should be able to handle the event SESSION_TERMINATE.");
     }
 
     @Test
@@ -140,7 +120,7 @@ public class RegistrationEventHookHandlerTest {
 
         Event event = new Event(IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT);
         IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);
-        boolean canHandle = registrationEventHookHandler.canHandle(messageContext);
+        boolean canHandle = tokensEventHookHandler.canHandle(messageContext);
         assertFalse(canHandle, "The event handler should not be able to handle the event POST_UNLOCK_ACCOUNT.");
     }
 
@@ -148,12 +128,8 @@ public class RegistrationEventHookHandlerTest {
     public Object[][] eventDataProvider() {
 
         return new Object[][]{
-                {IdentityEventConstants.Event.POST_ADD_USER,
-                        Constants.EventHandlerKey.WSO2.POST_REGISTRATION_SUCCESS_EVENT, SAMPLE_EVENT_KEY},
-                {IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM,
-                        Constants.EventHandlerKey.WSO2.POST_REGISTRATION_SUCCESS_EVENT, SAMPLE_EVENT_KEY},
-                {IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD,
-                        Constants.EventHandlerKey.WSO2.POST_REGISTRATION_SUCCESS_EVENT, SAMPLE_EVENT_KEY}
+                {IdentityEventConstants.EventName.SESSION_TERMINATE.name(),
+                        Constants.EventHandlerKey.WSO2.POST_TOKEN_REVOKE_EVENT, SAMPLE_EVENT_KEY}
         };
     }
 
@@ -167,8 +143,8 @@ public class RegistrationEventHookHandlerTest {
                 new ResourceConfig(new JSONObject()));
 
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
-            mocked.when(() -> PayloadBuilderFactory.getRegistrationEventPayloadBuilder(any(EventSchema.class)))
-                    .thenReturn(mockedRegistrationEventPayloadBuilder);
+            mocked.when(() -> PayloadBuilderFactory.getTokensEventPayloadBuilder(any(EventSchema.class)))
+                    .thenReturn(mockedTokensEventPayloadBuilder);
             when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
             when(mockedEventConfigManager.getEventUri(anyString())).thenReturn(expectedEventKey);
             when(mockedEventConfigManager.getEventPublisherConfigForTenant(anyString(), anyString())).thenReturn(
@@ -176,7 +152,7 @@ public class RegistrationEventHookHandlerTest {
             when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString()))
                     .thenReturn(eventPublisherConfig);
 
-            registrationEventHookHandler.handleEvent(event);
+            tokensEventHookHandler.handleEvent(event);
 
             verifyEventPublishedWithExpectedKey(expectedEventKey);
         }
@@ -189,7 +165,6 @@ public class RegistrationEventHookHandlerTest {
         String[] addedUsers = new String[]{DOMAIN_QUALIFIED_ADDED_USER_NAME};
         properties.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, CARBON_SUPER);
-
         return new Event(eventName, properties);
     }
 
@@ -227,8 +202,8 @@ public class RegistrationEventHookHandlerTest {
 
     private void setupPayloadBuilderMocks() throws IdentityEventException {
 
-        when(mockedRegistrationEventPayloadBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
-        when(mockedRegistrationEventPayloadBuilder.buildRegistrationSuccessEvent(any(EventData.class)))
+        when(mockedTokensEventPayloadBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
+        when(mockedTokensEventPayloadBuilder.buildAccessTokenRevokeEvent(any(EventData.class)))
                 .thenReturn(mockedEventPayload);
     }
 
@@ -238,6 +213,7 @@ public class RegistrationEventHookHandlerTest {
         mockIdentityTenantUtil();
         mockedEventHookHandlerUtils = mock(EventHookHandlerUtils.class, withSettings()
                 .defaultAnswer(CALLS_REAL_METHODS));
-        registrationEventHookHandler = new RegistrationEventHookHandler(mockedEventConfigManager);
+        tokensEventHookHandler = new TokensEventHookHandler(mockedEventConfigManager);
     }
+
 }

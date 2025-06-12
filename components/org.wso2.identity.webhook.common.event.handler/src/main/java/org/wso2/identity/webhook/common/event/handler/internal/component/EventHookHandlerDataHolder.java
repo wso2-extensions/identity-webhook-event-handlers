@@ -24,6 +24,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEven
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.TokensEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 
@@ -44,6 +45,7 @@ public class EventHookHandlerDataHolder {
     private final List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
     private final List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders = new ArrayList<>();
     private final List<RegistrationEventPayloadBuilder> registrationEventPayloadBuilders = new ArrayList<>();
+    private final List<TokensEventPayloadBuilder> tokensEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
 
@@ -253,5 +255,20 @@ public class EventHookHandlerDataHolder {
     public void removeRegistrationEventPayloadBuilder(RegistrationEventPayloadBuilder registrationEventPayloadBuilder) {
 
         registrationEventPayloadBuilders.remove(registrationEventPayloadBuilder);
+    }
+
+    public List<TokensEventPayloadBuilder> getTokensEventPayloadBuilders() {
+
+        return tokensEventPayloadBuilders;
+    }
+
+    public void addTokensEventPayloadBuilder(TokensEventPayloadBuilder tokensEventPayloadBuilder) {
+
+        tokensEventPayloadBuilders.add(tokensEventPayloadBuilder);
+    }
+
+    public void removeTokensEventPayloadBuilder(TokensEventPayloadBuilder tokensEventPayloadBuilder) {
+
+        tokensEventPayloadBuilders.remove(tokensEventPayloadBuilder);
     }
 }
