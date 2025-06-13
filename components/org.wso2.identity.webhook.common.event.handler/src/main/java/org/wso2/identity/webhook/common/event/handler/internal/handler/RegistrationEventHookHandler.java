@@ -113,8 +113,10 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
                 List<Channel> channels = eventProfile.getChannels();
                 // Get the channel URI for the channel with name "Registration Channel"
-                Channel registrationChannel =
-                        EventHookHandlerUtils.findChannelByName(channels, eventMetadata.getChannel());
+                Channel registrationChannel = channels.stream()
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
+                        .findFirst()
+                        .orElse(null);
                 if (registrationChannel == null) {
                     log.debug("No channel found for registration event profile: " + eventProfile.getProfile());
                     continue;

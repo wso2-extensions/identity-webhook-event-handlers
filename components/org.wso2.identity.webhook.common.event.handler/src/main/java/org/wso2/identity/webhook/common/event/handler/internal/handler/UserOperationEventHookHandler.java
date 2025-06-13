@@ -126,8 +126,10 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
 
                 List<Channel> channels = eventProfile.getChannels();
                 // Get the channel URI for the channel with name "User Operation Channel"
-                Channel userOperationChannel =
-                        EventHookHandlerUtils.findChannelByName(channels, eventMetadata.getChannel());
+                Channel userOperationChannel = channels.stream()
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
+                        .findFirst()
+                        .orElse(null);
                 if (userOperationChannel == null) {
                     log.debug("No channel found for user operation event profile: " + eventProfile.getProfile());
                     continue;

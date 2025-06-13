@@ -37,7 +37,6 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
-import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
@@ -363,16 +362,5 @@ public class EventHookHandlerUtils {
             }
         }
         return null;
-    }
-
-    public static Channel findChannelByName(List<Channel> channels, String channelName) {
-
-        if (channels == null || channelName == null) {
-            return null;
-        }
-        return channels.stream()
-                .filter(channel -> channelName.equals(channel.getName()))
-                .findFirst()
-                .orElse(null);
     }
 }

@@ -124,7 +124,10 @@ public class LoginEventHookHandler extends AbstractEventHandler {
 
                 List<Channel> channels = eventProfile.getChannels();
                 // Get the channel URI for the channel with name "Login Channel"
-                Channel loginChannel = EventHookHandlerUtils.findChannelByName(channels, eventMetadata.getChannel());
+                Channel loginChannel = channels.stream()
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
+                        .findFirst()
+                        .orElse(null);
                 if (loginChannel == null) {
                     log.debug("No channel found for login event profile: " + eventProfile.getProfile());
                     continue;
