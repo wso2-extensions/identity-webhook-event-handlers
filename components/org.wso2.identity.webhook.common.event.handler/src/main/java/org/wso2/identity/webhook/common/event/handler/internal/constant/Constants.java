@@ -24,12 +24,6 @@ package org.wso2.identity.webhook.common.event.handler.internal.constant;
 public class Constants {
 
     public static final String LOGIN_EVENT_HOOK_NAME = "LoginEventHook";
-    public static final String LOGIN_CHANNEL_NAME = "Login Channel";
-    public static final String CREDENTIAL_CHANGE_CHANNEL_NAME = "Credential Change Channel";
-    public static final String REGISTRATION_CHANNEL_NAME = "Registration Channel";
-    public static final String USER_OPERATION_CHANNEL_NAME = "User Operation Channel";
-    public static final String VERIFICATION_CHANNEL_NAME = "Verification Channel";
-    public static final String SESSION_CHANNEL_NAME = "Session Channel";
     public static final String EVENT_PROFILE_VERSION = "v1";
     public static final String LOGIN_EVENT_HOOK_ENABLED = "LoginEventHook.enable";
 
@@ -72,19 +66,6 @@ public class Constants {
     }
 
     public static final String PRE_DELETE_USER_ID = "PRE_DELETE_USER_ID";
-
-    /**
-     * Enum for flow types.
-     * Represents different flow types in the system.
-     */
-    public enum Flow {
-        REGISTRATION,
-        CREDENTIAL_UPDATE,
-        VERIFICATION,
-        LOGIN,
-        USER_OPERATION,
-        SESSION
-    }
 
     /**
      * Constants for event config names (keys).

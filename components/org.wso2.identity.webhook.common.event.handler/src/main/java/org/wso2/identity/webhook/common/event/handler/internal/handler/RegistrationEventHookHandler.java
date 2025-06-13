@@ -32,8 +32,8 @@ import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
@@ -82,13 +82,28 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
             for (EventProfile eventProfile : eventProfileList) {
 
                 //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
-                EventSchema schema = EventSchema.valueOf(eventProfile.getProfile());
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
+                        schema =
+                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                                eventProfile.getProfile());
 
                 EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
                 RegistrationEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
                         .getRegistrationEventPayloadBuilder(schema);
-
+                if (payloadBuilder == null) {
+                    log.debug("Skipping registration event handling for event " +
+                            eventProfile.getProfile());
+                    continue;
+                }
+                EventMetadata eventMetadata =
+                        EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
+                                event.getEventName());
+                if (eventMetadata == null) {
+                    log.debug("No event metadata found for event: " + event.getEventName() +
+                            " in profile: " + eventProfile.getProfile());
+                    continue;
+                }
                 String tenantDomain =
                         String.valueOf(
                                 eventData.getEventParams().get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
@@ -99,7 +114,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 List<Channel> channels = eventProfile.getChannels();
                 // Get the channel URI for the channel with name "Registration Channel"
                 Channel registrationChannel = channels.stream()
-                        .filter(channel -> Constants.REGISTRATION_CHANNEL_NAME.equals(channel.getName()))
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
                         .findFirst()
                         .orElse(null);
                 if (registrationChannel == null) {
@@ -108,9 +123,8 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 }
 
                 eventUri = registrationChannel.getEvents().stream()
-                        .filter(channelEvent -> Objects.equals(EventHookHandlerUtils.resolveEventHandlerKey(schema,
-                                IdentityEventConstants.EventName.valueOf(event.getEventName()),
-                                Constants.Flow.REGISTRATION), channelEvent.getEventName()))
+                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
+                                channelEvent.getEventName()))
                         .findFirst()
                         .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                         .orElse(null);
@@ -122,11 +136,6 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                         IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(event.getEventName()) ||
                         IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(event.getEventName())) &&
                         isTopicExists) {
-                    if (payloadBuilder == null) {
-                        log.debug("Skipping registration event handling for event " +
-                                eventProfile.getProfile());
-                        continue;
-                    }
                     eventPayload = payloadBuilder.buildRegistrationSuccessEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);

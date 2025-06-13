@@ -29,7 +29,6 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionCreatedEventPayload;
@@ -218,8 +217,8 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     }
 
     @Override
-    public EventSchema getEventSchemaType() {
+    public org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema getEventSchemaType() {
 
-        return EventSchema.WSO2;
+        return org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
     }
 }

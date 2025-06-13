@@ -38,7 +38,7 @@ import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPSessionEvent
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionPresentedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
 import java.util.HashMap;
@@ -101,10 +101,10 @@ public class CAEPSessionEventPayloadBuilderTest {
     @Test
     public void testGetEventSchemaType() {
 
-        EventSchema eventSchema = caepSessionEventPayloadBuilder.getEventSchemaType();
+        Constants.EventSchema eventSchema = caepSessionEventPayloadBuilder.getEventSchemaType();
 
         assertNotNull(eventSchema, "Event schema should not be null");
-        assertEquals(eventSchema, EventSchema.CAEP, "Event schema should be CAEP");
+        assertEquals(eventSchema, Constants.EventSchema.CAEP, "Event schema should be CAEP");
     }
 
     @DataProvider(name = "sessionTerminationDataProvider")

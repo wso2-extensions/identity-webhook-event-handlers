@@ -27,7 +27,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEv
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 
 import java.util.List;
@@ -59,12 +59,12 @@ public class PayloadBuilderFactoryTest {
         mockCAEPSessionBuilder = Mockito.mock(SessionEventPayloadBuilder.class);
         mockCAEPCredentialBuilder = Mockito.mock(CredentialEventPayloadBuilder.class);
         mockCAEPVerificationBuilder = Mockito.mock(VerificationEventPayloadBuilder.class);
-        Mockito.when(mockWSO2LoginBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
-        Mockito.when(mockUserOperationEventPayloadBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
-        Mockito.when(mockRegistrationEventPayloadBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
-        Mockito.when(mockCAEPSessionBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
-        Mockito.when(mockCAEPCredentialBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
-        Mockito.when(mockCAEPVerificationBuilder.getEventSchemaType()).thenReturn(EventSchema.CAEP);
+        Mockito.when(mockWSO2LoginBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
+        Mockito.when(mockUserOperationEventPayloadBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
+        Mockito.when(mockRegistrationEventPayloadBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
+        Mockito.when(mockCAEPSessionBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.CAEP);
+        Mockito.when(mockCAEPCredentialBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.CAEP);
+        Mockito.when(mockCAEPVerificationBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.CAEP);
 
         EventHookHandlerDataHolder.getInstance().addLoginEventPayloadBuilder(mockWSO2LoginBuilder);
         EventHookHandlerDataHolder.getInstance().addSessionEventPayloadBuilder(mockCAEPSessionBuilder);
@@ -102,10 +102,10 @@ public class PayloadBuilderFactoryTest {
     public void testGetUserOperationEventPayloadBuilderReturnsRegisteredBuilder() {
 
         UserOperationEventPayloadBuilder builder = PayloadBuilderFactory.
-                getUserOperationEventPayloadBuilder(EventSchema.WSO2);
+                getUserOperationEventPayloadBuilder(Constants.EventSchema.WSO2);
         assertNotNull(builder, "The builder should not be null.");
         assertEquals(builder.getEventSchemaType(),
-                EventSchema.WSO2, "The schema type should match 'WSO2'.");
+                Constants.EventSchema.WSO2, "The schema type should match 'WSO2'.");
     }
 
     @Test
@@ -123,26 +123,26 @@ public class PayloadBuilderFactoryTest {
     public void testGetRegistrationEventPayloadBuilderReturnsRegisteredBuilder() {
 
         RegistrationEventPayloadBuilder builder =
-                PayloadBuilderFactory.getRegistrationEventPayloadBuilder(EventSchema.WSO2);
+                PayloadBuilderFactory.getRegistrationEventPayloadBuilder(Constants.EventSchema.WSO2);
         assertNotNull(builder, "The builder should not be null.");
-        assertEquals(builder.getEventSchemaType(), EventSchema.WSO2, "The schema type should match 'WSO2'.");
+        assertEquals(builder.getEventSchemaType(), Constants.EventSchema.WSO2, "The schema type should match 'WSO2'.");
     }
 
     @Test
     public void testGetLoginEventPayloadBuilderReturnsRegisteredBuilder() {
 
         LoginEventPayloadBuilder builder =
-                PayloadBuilderFactory.getLoginEventPayloadBuilder(EventSchema.WSO2);
+                PayloadBuilderFactory.getLoginEventPayloadBuilder(Constants.EventSchema.WSO2);
         assertNotNull(builder, "The builder should not be null.");
         assertEquals(builder.getEventSchemaType(),
-                EventSchema.WSO2, "The schema type should match 'WSO2'.");
+                Constants.EventSchema.WSO2, "The schema type should match 'WSO2'.");
     }
 
     @Test
     public void testGetLoginEventPayloadBuilderUnknownSchema() {
 
         LoginEventPayloadBuilder payloadBuilder =
-                PayloadBuilderFactory.getLoginEventPayloadBuilder(EventSchema.RISC);
+                PayloadBuilderFactory.getLoginEventPayloadBuilder(Constants.EventSchema.RISC);
 
         assertNull(payloadBuilder, "The builder should be null.");
 
@@ -152,17 +152,17 @@ public class PayloadBuilderFactoryTest {
     public void testGetSessionEventPayloadBuilderReturnsRegisteredBuilder() {
 
         SessionEventPayloadBuilder builder =
-                PayloadBuilderFactory.getSessionEventPayloadBuilder(EventSchema.CAEP);
+                PayloadBuilderFactory.getSessionEventPayloadBuilder(Constants.EventSchema.CAEP);
         assertNotNull(builder, "The builder should not be null.");
         assertEquals(builder.getEventSchemaType(),
-                EventSchema.CAEP, "The schema type should match 'CAEP'.");
+                Constants.EventSchema.CAEP, "The schema type should match 'CAEP'.");
     }
 
     @Test
     public void testGetSessionEventPayloadBuilderUnknownSchema() {
 
         SessionEventPayloadBuilder payloadBuilder =
-                PayloadBuilderFactory.getSessionEventPayloadBuilder(EventSchema.RISC);
+                PayloadBuilderFactory.getSessionEventPayloadBuilder(Constants.EventSchema.RISC);
 
         assertNull(payloadBuilder, "The builder should be null.");
     }
@@ -171,17 +171,17 @@ public class PayloadBuilderFactoryTest {
     public void testGetCredentialEventPayloadBuilderReturnsRegisteredBuilder() {
 
         CredentialEventPayloadBuilder builder =
-                PayloadBuilderFactory.getCredentialEventPayloadBuilder(EventSchema.CAEP);
+                PayloadBuilderFactory.getCredentialEventPayloadBuilder(Constants.EventSchema.CAEP);
         assertNotNull(builder, "The builder should not be null.");
         assertEquals(builder.getEventSchemaType(),
-                EventSchema.CAEP, "The schema type should match 'CAEP'.");
+                Constants.EventSchema.CAEP, "The schema type should match 'CAEP'.");
     }
 
     @Test
     public void testGetCredentialEventPayloadBuilderUnknownSchema() {
 
         CredentialEventPayloadBuilder payloadBuilder =
-                PayloadBuilderFactory.getCredentialEventPayloadBuilder(EventSchema.RISC);
+                PayloadBuilderFactory.getCredentialEventPayloadBuilder(Constants.EventSchema.RISC);
 
         assertNull(payloadBuilder, "The builder should be null.");
     }
@@ -190,17 +190,17 @@ public class PayloadBuilderFactoryTest {
     public void testGetVerificationEventPayloadBuilderReturnsRegisteredBuilder() {
 
         VerificationEventPayloadBuilder builder =
-                PayloadBuilderFactory.getVerificationEventPayloadBuilder(EventSchema.CAEP);
+                PayloadBuilderFactory.getVerificationEventPayloadBuilder(Constants.EventSchema.CAEP);
         assertNotNull(builder, "The builder should not be null.");
         assertEquals(builder.getEventSchemaType(),
-                EventSchema.CAEP, "The schema type should match 'CAEP'.");
+                Constants.EventSchema.CAEP, "The schema type should match 'CAEP'.");
     }
 
     @Test
     public void testGetVerificationEventPayloadBuilderUnknownSchema() {
 
         VerificationEventPayloadBuilder payloadBuilder =
-                PayloadBuilderFactory.getVerificationEventPayloadBuilder(EventSchema.RISC);
+                PayloadBuilderFactory.getVerificationEventPayloadBuilder(Constants.EventSchema.RISC);
         assertNull(payloadBuilder, "The builder should be null.");
     }
 
@@ -208,7 +208,7 @@ public class PayloadBuilderFactoryTest {
     public void testGetUserOperationEventPayloadBuilderThrowsExceptionForUnknownSchema() {
 
         UserOperationEventPayloadBuilder payloadBuilder =
-                PayloadBuilderFactory.getUserOperationEventPayloadBuilder(EventSchema.RISC);
+                PayloadBuilderFactory.getUserOperationEventPayloadBuilder(Constants.EventSchema.RISC);
         assertNull(payloadBuilder, "The builder should be null.");
     }
 
@@ -216,7 +216,7 @@ public class PayloadBuilderFactoryTest {
     public void testGetRegistrationEventPayloadBuilderThrowsExceptionForUnknownSchema() {
 
         RegistrationEventPayloadBuilder payloadBuilder =
-                PayloadBuilderFactory.getRegistrationEventPayloadBuilder(EventSchema.RISC);
+                PayloadBuilderFactory.getRegistrationEventPayloadBuilder(Constants.EventSchema.RISC);
         assertNull(payloadBuilder, "The builder should be null.");
     }
 }

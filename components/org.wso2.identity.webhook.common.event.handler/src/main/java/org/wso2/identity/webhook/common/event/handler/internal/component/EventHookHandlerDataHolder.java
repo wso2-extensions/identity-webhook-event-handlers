@@ -22,6 +22,7 @@ import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
+import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
@@ -42,6 +43,7 @@ public class EventHookHandlerDataHolder {
     private EventPublisherService eventPublisherService;
     private WebhookMetadataService webhookMetadataService;
     private TopicManagementService topicManagementService;
+    private final List<EventProfileManager> eventProfileManagers = new ArrayList<>();
     private final List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
     private final List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
     private final List<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
@@ -56,6 +58,36 @@ public class EventHookHandlerDataHolder {
     public static EventHookHandlerDataHolder getInstance() {
 
         return instance;
+    }
+
+    /**
+     * Get the list of event profile managers available.
+     *
+     * @return List of event profile managers.
+     */
+    public List<EventProfileManager> getEventProfileManagers() {
+
+        return eventProfileManagers;
+    }
+
+    /**
+     * Add an event profile manager to the list.
+     *
+     * @param eventProfileManager An event profile manager.
+     */
+    public void addEventProfileManager(EventProfileManager eventProfileManager) {
+
+        eventProfileManagers.add(eventProfileManager);
+    }
+
+    /**
+     * Remove an event profile manager from the list.
+     *
+     * @param eventProfileManager An event profile manager.
+     */
+    public void removeEventProfileManager(EventProfileManager eventProfileManager) {
+
+        eventProfileManagers.remove(eventProfileManager);
     }
 
     /**

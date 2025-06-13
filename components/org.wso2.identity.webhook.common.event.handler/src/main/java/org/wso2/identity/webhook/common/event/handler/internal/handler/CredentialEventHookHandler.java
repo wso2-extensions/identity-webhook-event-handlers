@@ -32,8 +32,8 @@ import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
@@ -85,7 +85,10 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
             for (EventProfile eventProfile : eventProfileList) {
 
                 //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
-                EventSchema schema = EventSchema.valueOf(eventProfile.getProfile());
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
+                        schema =
+                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                                eventProfile.getProfile());
 
                 EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
@@ -94,13 +97,27 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
 
                 String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
 
+                if (payloadBuilder == null) {
+                    log.debug("Skipping credential change event handling for profile " +
+                            eventProfile.getProfile());
+                    continue;
+                }
+                EventMetadata eventMetadata =
+                        EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
+                                event.getEventName());
+                if (eventMetadata == null) {
+                    log.debug("No event metadata found for event: " + event.getEventName() +
+                            " in profile: " + eventProfile.getProfile());
+                    continue;
+                }
                 EventPayload eventPayload;
                 String eventUri;
 
                 List<Channel> channels = eventProfile.getChannels();
-                // Get the channel URI for the channel with name "Credential Change Channel"
+
                 Channel credentialChangeChannel = channels.stream()
-                        .filter(channel -> Constants.CREDENTIAL_CHANGE_CHANNEL_NAME.equals(channel.getName()))
+                        .filter(channel -> eventMetadata.getChannel()
+                                .equals(channel.getName()))
                         .findFirst()
                         .orElse(null);
                 if (credentialChangeChannel == null) {
@@ -110,9 +127,8 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
                 }
 
                 eventUri = credentialChangeChannel.getEvents().stream()
-                        .filter(channelEvent -> Objects.equals(EventHookHandlerUtils.resolveEventHandlerKey(schema,
-                                IdentityEventConstants.EventName.valueOf(event.getEventName()),
-                                Constants.Flow.CREDENTIAL_UPDATE), channelEvent.getEventName()))
+                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
+                                channelEvent.getEventName()))
                         .findFirst()
                         .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                         .orElse(null);
@@ -123,11 +139,6 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
                 if ((IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(event.getEventName()) ||
                         IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(event.getEventName())) &&
                         isTopicExists) {
-                    if (payloadBuilder == null) {
-                        log.debug("Skipping credential change event handling for profile " +
-                                eventProfile.getProfile());
-                        continue;
-                    }
                     eventPayload = payloadBuilder.buildCredentialUpdateEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);

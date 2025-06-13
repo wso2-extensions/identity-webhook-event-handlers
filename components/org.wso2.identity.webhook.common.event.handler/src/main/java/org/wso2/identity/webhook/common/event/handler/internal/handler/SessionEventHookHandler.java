@@ -30,8 +30,8 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
@@ -68,13 +68,24 @@ public class SessionEventHookHandler extends AbstractEventHandler {
             for (EventProfile eventProfile : eventProfileList) {
 
                 //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
-                EventSchema schema = EventSchema.valueOf(eventProfile.getProfile());
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
+                        schema =
+                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                                eventProfile.getProfile());
 
                 SessionEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getSessionEventPayloadBuilder(schema);
 
                 // TODO: Change this when the event schema type is added to the tenant configuration.
                 if (payloadBuilder == null) {
                     log.debug("Skipping session event handling for profile " + eventProfile.getProfile());
+                    continue;
+                }
+                EventMetadata eventMetadata =
+                        EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
+                                event.getEventName());
+                if (eventMetadata == null) {
+                    log.debug("No event metadata found for event: " + event.getEventName() +
+                            " in profile: " + eventProfile.getProfile());
                     continue;
                 }
                 // Check if the event is enabled for the tenant
@@ -84,7 +95,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                 List<Channel> channels = eventProfile.getChannels();
                 // Get the channel URI for the channel with name "Session Channel"
                 Channel sessionChannel = channels.stream()
-                        .filter(channel -> Constants.SESSION_CHANNEL_NAME.equals(channel.getName()))
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
                         .findFirst()
                         .orElse(null);
                 if (sessionChannel == null) {
@@ -93,9 +104,8 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                 }
 
                 eventUri = sessionChannel.getEvents().stream()
-                        .filter(channelEvent -> Objects.equals(EventHookHandlerUtils.resolveEventHandlerKey(schema,
-                                IdentityEventConstants.EventName.valueOf(event.getEventName()),
-                                Constants.Flow.SESSION), channelEvent.getEventName()))
+                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
+                                channelEvent.getEventName()))
                         .findFirst()
                         .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                         .orElse(null);
@@ -125,7 +135,8 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                     }
                     if (eventPayload != null) {
                         Subject subject = null;
-                        if (schema.equals(EventSchema.CAEP)) {
+                        if (schema.equals(
+                                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.CAEP)) {
                             subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
                         }
                         String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();

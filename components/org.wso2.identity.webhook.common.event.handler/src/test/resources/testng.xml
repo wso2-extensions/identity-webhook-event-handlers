@@ -19,7 +19,6 @@
 <suite name="org.wso2.identity.webhook.common.event.handler">
     <test name="login-event-hook-handler-tests" parallel="false">
         <classes>
-            <class name="org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManagerTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtilsTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtilsTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerServiceComponentTest"/>

@@ -37,6 +37,7 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
+import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
@@ -133,6 +134,25 @@ public class EventHookHandlerServiceComponent {
     protected void deactivate(ComponentContext context) {
 
         log.debug("Event Handler is deactivated.");
+    }
+
+    @Reference(
+            name = "event.profile.manager",
+            service = EventProfileManager.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeEventProfileManager"
+    )
+    protected void addEventProfileManager(EventProfileManager eventProfileManager) {
+
+        log.debug("Add Event Profile Manager service " + eventProfileManager.getClass().getName());
+        EventHookHandlerDataHolder.getInstance().addEventProfileManager(eventProfileManager);
+    }
+
+    protected void removeEventProfileManager(EventProfileManager eventProfileManager) {
+
+        log.debug("Remove Event Profile Manager service " + eventProfileManager.getClass().getName());
+        EventHookHandlerDataHolder.getInstance().removeEventProfileManager(eventProfileManager);
     }
 
     @Reference(

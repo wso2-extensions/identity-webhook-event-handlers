@@ -24,7 +24,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEv
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 
 import java.util.List;
@@ -40,7 +40,7 @@ public class PayloadBuilderFactory {
      * @param eventSchemaType Event schema type.
      * @return Login event payload builder.
      */
-    public static LoginEventPayloadBuilder getLoginEventPayloadBuilder(EventSchema eventSchemaType) {
+    public static LoginEventPayloadBuilder getLoginEventPayloadBuilder(Constants.EventSchema eventSchemaType) {
 
         List<LoginEventPayloadBuilder> loginEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getLoginEventPayloadBuilders();
@@ -58,7 +58,7 @@ public class PayloadBuilderFactory {
      * @param eventSchemaType Event schema type.
      * @return Session event payload builder.
      */
-    public static SessionEventPayloadBuilder getSessionEventPayloadBuilder(EventSchema eventSchemaType) {
+    public static SessionEventPayloadBuilder getSessionEventPayloadBuilder(Constants.EventSchema eventSchemaType) {
 
         List<SessionEventPayloadBuilder> sessionEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getSessionEventPayloadBuilders();
@@ -77,7 +77,7 @@ public class PayloadBuilderFactory {
      * @return Credential event payload builder.
      */
     public static CredentialEventPayloadBuilder getCredentialEventPayloadBuilder(
-            EventSchema eventSchemaType) {
+            Constants.EventSchema eventSchemaType) {
 
         List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getCredentialEventPayloadBuilders();
@@ -96,7 +96,7 @@ public class PayloadBuilderFactory {
      * @return Verification event payload builder.
      */
     public static VerificationEventPayloadBuilder getVerificationEventPayloadBuilder(
-            EventSchema eventSchemaType) {
+            Constants.EventSchema eventSchemaType) {
 
         List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getVerificationEventPayloadBuilders();
@@ -108,7 +108,8 @@ public class PayloadBuilderFactory {
         return null;
     }
 
-    public static UserOperationEventPayloadBuilder getUserOperationEventPayloadBuilder(EventSchema eventSchemaType) {
+    public static UserOperationEventPayloadBuilder getUserOperationEventPayloadBuilder(
+            Constants.EventSchema eventSchemaType) {
 
         List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getUserOperationEventPayloadBuilders();
@@ -120,7 +121,8 @@ public class PayloadBuilderFactory {
         return null;
     }
 
-    public static RegistrationEventPayloadBuilder getRegistrationEventPayloadBuilder(EventSchema eventSchemaType) {
+    public static RegistrationEventPayloadBuilder getRegistrationEventPayloadBuilder(
+            Constants.EventSchema eventSchemaType) {
 
         List<RegistrationEventPayloadBuilder> registrationEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getRegistrationEventPayloadBuilders();

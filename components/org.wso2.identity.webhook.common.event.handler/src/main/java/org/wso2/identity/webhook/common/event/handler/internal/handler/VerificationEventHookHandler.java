@@ -33,8 +33,8 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
@@ -92,7 +92,10 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
             for (EventProfile eventProfile : eventProfileList) {
 
                 //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
-                EventSchema schema = EventSchema.valueOf(eventProfile.getProfile());
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
+                        schema =
+                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                                eventProfile.getProfile());
                 VerificationEventPayloadBuilder payloadBuilder =
                         PayloadBuilderFactory.getVerificationEventPayloadBuilder(schema);
 
@@ -101,6 +104,15 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
                     log.debug("Skipping verification event handling for profile " + eventProfile.getProfile());
                     continue;
                 }
+                EventMetadata eventMetadata =
+                        EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
+                                event.getEventName());
+                if (eventMetadata == null) {
+                    log.debug("No event metadata found for event: " + event.getEventName() +
+                            " in profile: " + eventProfile.getProfile());
+                    continue;
+                }
+
                 EventPayload eventPayload;
                 String eventUri;
 
@@ -109,7 +121,7 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
                 List<Channel> channels = eventProfile.getChannels();
                 // Get the channel URI for the channel with name "Verification Channel"
                 Channel verificationChannel = channels.stream()
-                        .filter(channel -> Constants.VERIFICATION_CHANNEL_NAME.equals(channel.getName()))
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
                         .findFirst()
                         .orElse(null);
                 if (verificationChannel == null) {
@@ -118,9 +130,8 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
                 }
 
                 eventUri = verificationChannel.getEvents().stream()
-                        .filter(channelEvent -> Objects.equals(EventHookHandlerUtils.resolveEventHandlerKey(schema,
-                                IdentityEventConstants.EventName.valueOf(event.getEventName()),
-                                Constants.Flow.VERIFICATION), channelEvent.getEventName()))
+                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
+                                channelEvent.getEventName()))
                         .findFirst()
                         .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                         .orElse(null);

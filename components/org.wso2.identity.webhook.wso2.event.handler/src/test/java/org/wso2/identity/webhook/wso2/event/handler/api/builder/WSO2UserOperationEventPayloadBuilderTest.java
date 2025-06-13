@@ -21,8 +21,6 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -40,7 +38,7 @@ import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.config.RealmConfiguration;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
@@ -85,11 +83,10 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     private static final String ADDED_USER_EMAIL = "john@gmail.com";
     private static final String DELETED_USER_EMAIL = "pearl@gmail.com";
     private static final String TEST_USER_EMAIL = "tom@gmail.com";
-    private static final String USER_NAME = "tom";
     private static final String DOMAIN_QUALIFIED_ADDED_USER_NAME = "DEFAULT/john";
     private static final String DOMAIN_QUALIFIED_DELETED_USER_NAME = "DEFAULT/pearl";
     private static final String DOMAIN_QUALIFIED_TEST_USER_NAME = "DEFAULT/tom";
-    private static final Logger log = LoggerFactory.getLogger(WSO2UserOperationEventPayloadBuilderTest.class);
+
     @Mock
     private EventData mockEventData;
 

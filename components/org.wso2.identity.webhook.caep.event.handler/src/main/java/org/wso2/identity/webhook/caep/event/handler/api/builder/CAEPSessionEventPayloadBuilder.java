@@ -28,7 +28,7 @@ import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEs
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionPresentedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
 import java.util.HashMap;
@@ -245,8 +245,8 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
     }
 
     @Override
-    public EventSchema getEventSchemaType() {
+    public Constants.EventSchema getEventSchemaType() {
 
-        return EventSchema.CAEP;
+        return Constants.EventSchema.CAEP;
     }
 }

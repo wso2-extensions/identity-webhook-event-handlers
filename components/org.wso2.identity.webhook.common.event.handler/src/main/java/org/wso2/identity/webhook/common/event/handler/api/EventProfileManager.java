@@ -16,21 +16,20 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.api.builder;
+package org.wso2.identity.webhook.common.event.handler.api;
 
-import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
-import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 
-public interface RegistrationEventPayloadBuilder {
-
-    EventPayload buildRegistrationSuccessEvent(EventData eventData) throws IdentityEventException;
+/**
+ * This interface is responsible for managing the event profile.
+ */
+public interface EventProfileManager {
 
     /**
-     * Get the event schema type.
+     * Resolves the event URI for the given event.
      *
-     * @return Event schema type.
+     * @param event The event for which the URI needs to be resolved.
+     * @return Event metadata containing the profile, channel and event information.
      */
-    Constants.EventSchema getEventSchemaType();
+    EventMetadata resolveEventMetadata(String event);
 }

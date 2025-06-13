@@ -43,15 +43,15 @@ import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.event.common.publisher.model.common.ComplexSubject;
 import org.wso2.identity.event.common.publisher.model.common.SimpleSubject;
 import org.wso2.identity.event.common.publisher.model.common.Subject;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -347,53 +347,18 @@ public class EventHookHandlerUtils {
     }
 
     /**
-     * Resolve the event URI based on the event schema, event name, and flow.
+     * Get the EventMetadata for the given event profile and event name.
      *
-     * @param eventSchema Event schema.
-     * @param eventName   Event name.
-     * @param flow        Flow type.
-     * @return Event URI.
+     * @param eventProfile Event profile.
+     * @param event        Event name.
+     * @return EventMetadata if found, otherwise null.
      */
-    public static String resolveEventHandlerKey(EventSchema eventSchema, IdentityEventConstants.EventName eventName,
-                                                Constants.Flow flow) {
+    public static EventMetadata getEventProfileManagerByProfile(String eventProfile, String event) {
 
-        if (Objects.requireNonNull(eventSchema) == EventSchema.WSO2) {
-            if (flow == Constants.Flow.LOGIN && Objects.requireNonNull(eventName) ==
-                    IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS) {
-                return Constants.EventHandlerKey.WSO2.LOGIN_SUCCESS_EVENT;
-            } else if (flow == Constants.Flow.LOGIN && eventName ==
-                    IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE) {
-                return Constants.EventHandlerKey.WSO2.LOGIN_FAILED_EVENT;
-            } else if (flow == Constants.Flow.SESSION && eventName ==
-                    IdentityEventConstants.EventName.USER_SESSION_TERMINATE) {
-                return Constants.EventHandlerKey.WSO2.SESSION_REVOKED_EVENT;
-            } else if (flow == Constants.Flow.SESSION && eventName ==
-                    IdentityEventConstants.EventName.SESSION_CREATE) {
-                return Constants.EventHandlerKey.WSO2.SESSION_CREATED_EVENT;
-            } else if (flow == Constants.Flow.CREDENTIAL_UPDATE && (eventName ==
-                    IdentityEventConstants.EventName.POST_ADD_NEW_PASSWORD ||
-                    eventName == IdentityEventConstants.EventName.POST_UPDATE_CREDENTIAL_BY_SCIM)) {
-                return Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_CREDENTIAL;
-            } else if (flow == Constants.Flow.REGISTRATION && (eventName ==
-                    IdentityEventConstants.EventName.POST_ADD_USER ||
-                    eventName == IdentityEventConstants.EventName.POST_SELF_SIGNUP_CONFIRM ||
-                    eventName == IdentityEventConstants.EventName.POST_ADD_NEW_PASSWORD)) {
-                return Constants.EventHandlerKey.WSO2.POST_REGISTRATION_SUCCESS_EVENT;
-            }
-        } else if (eventSchema == EventSchema.CAEP) {
-            if (flow == Constants.Flow.SESSION && Objects.requireNonNull(eventName) ==
-                    IdentityEventConstants.EventName.USER_SESSION_TERMINATE) {
-                return Constants.EventHandlerKey.CAEP.SESSION_REVOKED_EVENT;
-            } else if (flow == Constants.Flow.SESSION && eventName ==
-                    IdentityEventConstants.EventName.SESSION_CREATE) {
-                return Constants.EventHandlerKey.CAEP.SESSION_ESTABLISHED_EVENT;
-            } else if (flow == Constants.Flow.SESSION && (eventName ==
-                    IdentityEventConstants.EventName.SESSION_EXTEND ||
-                    eventName == IdentityEventConstants.EventName.SESSION_UPDATE)) {
-                return Constants.EventHandlerKey.CAEP.SESSION_PRESENTED_EVENT;
-            } else if (flow == Constants.Flow.VERIFICATION && eventName ==
-                    IdentityEventConstants.EventName.VERIFICATION) {
-                return Constants.EventHandlerKey.CAEP.VERIFICATION_EVENT;
+        for (EventProfileManager manager : EventHookHandlerDataHolder.getInstance().getEventProfileManagers()) {
+            EventMetadata metadata = manager.resolveEventMetadata(event);
+            if (metadata != null && eventProfile.equals(metadata.getEventProfile())) {
+                return metadata;
             }
         }
         return null;
