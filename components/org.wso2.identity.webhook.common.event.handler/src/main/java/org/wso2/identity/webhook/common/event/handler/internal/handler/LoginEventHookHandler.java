@@ -27,16 +27,20 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
+import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Login Event Hook Handler.
@@ -44,12 +48,6 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 public class LoginEventHookHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(LoginEventHookHandler.class);
-    private final EventConfigManager eventConfigManager;
-
-    public LoginEventHookHandler(EventConfigManager eventConfigManager) {
-
-        this.eventConfigManager = eventConfigManager;
-    }
 
     @Override
     public String getName() {
@@ -88,45 +86,83 @@ public class LoginEventHookHandler extends AbstractEventHandler {
             return;
         }
 
-        //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
-        EventSchema schema = EventSchema.WSO2;
-        LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                .getLoginEventPayloadBuilder(schema);
-
-        // TODO: Change this when the event schema type is added to the tenant configuration.
-        if (payloadBuilder == null) {
-            throw new IdentityEventException("Login event payload builder not found for schema: " + schema);
-        }
-        EventPublisherConfig loginEventPublisherConfig;
         try {
-            String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-            loginEventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
-                   tenantDomain, event.getEventName(), eventConfigManager);
-
-            EventPayload eventPayload;
-            String eventUri;
-            if (loginEventPublisherConfig.isPublishEnabled()) {
-                eventUri = eventConfigManager.getEventUri(
-                        EventHookHandlerUtils.resolveEventHandlerKey(schema,
-                                IdentityEventConstants.EventName.valueOf(event.getEventName())));
-                switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
-                    case AUTHENTICATION_SUCCESS:
-                        eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
-                        break;
-                    case AUTHENTICATION_STEP_FAILURE:
-                    case AUTHENTICATION_FAILURE:
-                        eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
-                        break;
-                    default:
-                        throw new IdentityRuntimeException("Unsupported event type: " + event.getEventName());
-                }
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
-                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+            List<EventProfile> eventProfileList =
+                    EventHookHandlerDataHolder.getInstance().getWebhookMetadataService().getSupportedEventProfiles();
+            if (eventProfileList.isEmpty()) {
+                log.warn("No event profiles found in the webhook metadata service. " +
+                        "Skipping login event handling.");
+                return;
             }
+            for (EventProfile eventProfile : eventProfileList) {
 
-        } catch (IdentityEventException e) {
-            log.debug("Error while retrieving event publisher configuration for tenant.", e);
+                //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
+                        schema =
+                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                                eventProfile.getProfile());
+                LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
+                        .getLoginEventPayloadBuilder(schema);
+
+                // TODO: Change this when the event schema type is added to the tenant configuration.
+                if (payloadBuilder == null) {
+                    log.debug("Skipping login event handling for profile " + eventProfile.getProfile());
+                    continue;
+                }
+                EventMetadata eventMetadata =
+                        EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
+                                event.getEventName());
+                if (eventMetadata == null) {
+                    log.debug("No event metadata found for event: " + event.getEventName() +
+                            " in profile: " + eventProfile.getProfile());
+                    continue;
+                }
+                String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
+
+                EventPayload eventPayload;
+                String eventUri;
+
+                List<Channel> channels = eventProfile.getChannels();
+                // Get the channel URI for the channel with name "Login Channel"
+                Channel loginChannel = channels.stream()
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
+                        .findFirst()
+                        .orElse(null);
+                if (loginChannel == null) {
+                    log.debug("No channel found for login event profile: " + eventProfile.getProfile());
+                    continue;
+                }
+
+                eventUri = loginChannel.getEvents().stream()
+                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
+                                channelEvent.getEventName()))
+                        .findFirst()
+                        .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
+                        .orElse(null);
+
+                boolean isTopicExists = EventHookHandlerDataHolder.getInstance().getTopicManagementService()
+                        .isTopicExists(loginChannel.getUri(), Constants.EVENT_PROFILE_VERSION, tenantDomain);
+
+                if (isTopicExists) {
+                    switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
+                        case AUTHENTICATION_SUCCESS:
+                            eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
+                            break;
+                        case AUTHENTICATION_STEP_FAILURE:
+                        case AUTHENTICATION_FAILURE:
+                            eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
+                            break;
+                        default:
+                            throw new IdentityRuntimeException("Unsupported event type: " + event.getEventName());
+                    }
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                            .buildSecurityEventToken(eventPayload, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            loginChannel.getUri());
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Error while retrieving login event publisher configuration for tenant.", e);
         }
     }
 }

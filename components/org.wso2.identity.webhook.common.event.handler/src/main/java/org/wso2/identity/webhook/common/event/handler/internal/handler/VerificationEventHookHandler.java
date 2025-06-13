@@ -27,17 +27,21 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
+import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * This class is responsible for handling verification events.
@@ -45,13 +49,6 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 public class VerificationEventHookHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(VerificationEventHookHandler.class);
-
-    private final EventConfigManager eventConfigManager;
-
-    public VerificationEventHookHandler(EventConfigManager eventConfigManager) {
-
-        this.eventConfigManager = eventConfigManager;
-    }
 
     @Override
     public boolean canHandle(MessageContext messageContext) throws IdentityRuntimeException {
@@ -82,35 +79,75 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
 
-        EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
-
-        EventSchema schema = EventSchema.CAEP;
-        VerificationEventPayloadBuilder payloadBuilder =
-                PayloadBuilderFactory.getVerificationEventPayloadBuilder(schema);
-
-        // TODO: Change this when the event schema type is added to the tenant configuration.
-        if (payloadBuilder == null) {
-            throw new IdentityEventException("Login event payload builder not found for schema: " + schema);
-        }
-
-        EventPublisherConfig eventPublisherConfig;
-        EventPayload eventPayload;
-
         try {
-            String tenantDomain = eventData.getAuthenticationContext().getTenantDomain();
-            eventPublisherConfig = EventHookHandlerUtils.getEventPublisherConfigForTenant(
-                    tenantDomain, eventData.getEventName(), eventConfigManager);
+            EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
-            if (eventPublisherConfig.isPublishEnabled()) {
-                eventPayload = payloadBuilder.buildVerificationEventPayload(eventData);
-                Subject subject = EventHookHandlerUtils.buildVerificationSubject(eventData);
-                String eventUri = eventConfigManager.getEventUri(EventHookHandlerUtils.
-                        resolveEventHandlerKey(schema, IdentityEventConstants.EventName.VERIFICATION));
+            List<EventProfile> eventProfileList =
+                    EventHookHandlerDataHolder.getInstance().getWebhookMetadataService().getSupportedEventProfiles();
+            if (eventProfileList.isEmpty()) {
+                log.warn("No event profiles found in the webhook metadata service. " +
+                        "Skipping verification event handling.");
+                return;
+            }
+            for (EventProfile eventProfile : eventProfileList) {
 
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
-                        buildSecurityEventToken(eventPayload, eventUri, subject);
-                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
+                        schema =
+                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                                eventProfile.getProfile());
+                VerificationEventPayloadBuilder payloadBuilder =
+                        PayloadBuilderFactory.getVerificationEventPayloadBuilder(schema);
 
+                // TODO: Change this when the event schema type is added to the tenant configuration.
+                if (payloadBuilder == null) {
+                    log.debug("Skipping verification event handling for profile " + eventProfile.getProfile());
+                    continue;
+                }
+                EventMetadata eventMetadata =
+                        EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
+                                event.getEventName());
+                if (eventMetadata == null) {
+                    log.debug("No event metadata found for event: " + event.getEventName() +
+                            " in profile: " + eventProfile.getProfile());
+                    continue;
+                }
+
+                EventPayload eventPayload;
+                String eventUri;
+
+                String tenantDomain = eventData.getAuthenticationContext().getTenantDomain();
+
+                List<Channel> channels = eventProfile.getChannels();
+                // Get the channel URI for the channel with name "Verification Channel"
+                Channel verificationChannel = channels.stream()
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
+                        .findFirst()
+                        .orElse(null);
+                if (verificationChannel == null) {
+                    log.debug("No channel found for verification event profile: " + eventProfile.getProfile());
+                    continue;
+                }
+
+                eventUri = verificationChannel.getEvents().stream()
+                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
+                                channelEvent.getEventName()))
+                        .findFirst()
+                        .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
+                        .orElse(null);
+
+                boolean isTopicExists = EventHookHandlerDataHolder.getInstance().getTopicManagementService()
+                        .isTopicExists(verificationChannel.getUri(), Constants.EVENT_PROFILE_VERSION, tenantDomain);
+
+                if (isTopicExists) {
+                    eventPayload = payloadBuilder.buildVerificationEventPayload(eventData);
+                    Subject subject = EventHookHandlerUtils.buildVerificationSubject(eventData);
+
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
+                            buildSecurityEventToken(eventPayload, eventUri, subject);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+
+                }
             }
         } catch (Exception e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);

@@ -16,17 +16,18 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.api.constants;
+package org.wso2.identity.webhook.caep.event.handler.api;
 
-/**
- * This enum represents the event schema types.
- */
-public enum EventSchema {
-    WSO2,
-    CAEP,
-    RISC;
+import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 
-    EventSchema() {
+import static org.wso2.identity.webhook.caep.event.handler.internal.util.CAEPPayloadUtils.resolveEventHandlerKey;
 
+public class CAEPEventProfileManager implements EventProfileManager {
+
+    @Override
+    public EventMetadata resolveEventMetadata(String event) {
+
+        return resolveEventHandlerKey(event);
     }
 }

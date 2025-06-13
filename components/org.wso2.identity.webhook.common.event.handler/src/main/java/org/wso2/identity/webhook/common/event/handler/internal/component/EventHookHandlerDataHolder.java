@@ -19,7 +19,10 @@
 package org.wso2.identity.webhook.common.event.handler.internal.component;
 
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
+import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
+import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
+import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
@@ -38,6 +41,9 @@ public class EventHookHandlerDataHolder {
     private static final EventHookHandlerDataHolder instance = new EventHookHandlerDataHolder();
     private ConfigurationManager configurationManager;
     private EventPublisherService eventPublisherService;
+    private WebhookMetadataService webhookMetadataService;
+    private TopicManagementService topicManagementService;
+    private final List<EventProfileManager> eventProfileManagers = new ArrayList<>();
     private final List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
     private final List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
     private final List<SessionEventPayloadBuilder> sessionEventPayloadBuilders = new ArrayList<>();
@@ -52,6 +58,36 @@ public class EventHookHandlerDataHolder {
     public static EventHookHandlerDataHolder getInstance() {
 
         return instance;
+    }
+
+    /**
+     * Get the list of event profile managers available.
+     *
+     * @return List of event profile managers.
+     */
+    public List<EventProfileManager> getEventProfileManagers() {
+
+        return eventProfileManagers;
+    }
+
+    /**
+     * Add an event profile manager to the list.
+     *
+     * @param eventProfileManager An event profile manager.
+     */
+    public void addEventProfileManager(EventProfileManager eventProfileManager) {
+
+        eventProfileManagers.add(eventProfileManager);
+    }
+
+    /**
+     * Remove an event profile manager from the list.
+     *
+     * @param eventProfileManager An event profile manager.
+     */
+    public void removeEventProfileManager(EventProfileManager eventProfileManager) {
+
+        eventProfileManagers.remove(eventProfileManager);
     }
 
     /**
@@ -253,5 +289,45 @@ public class EventHookHandlerDataHolder {
     public void removeRegistrationEventPayloadBuilder(RegistrationEventPayloadBuilder registrationEventPayloadBuilder) {
 
         registrationEventPayloadBuilders.remove(registrationEventPayloadBuilder);
+    }
+
+    /**
+     * Get the webhook metadata service.
+     *
+     * @return Webhook metadata service.
+     */
+    public WebhookMetadataService getWebhookMetadataService() {
+
+        return webhookMetadataService;
+    }
+
+    /**
+     * Set the webhook metadata service.
+     *
+     * @param webhookMetadataService Webhook metadata service.
+     */
+    public void setWebhookMetadataService(WebhookMetadataService webhookMetadataService) {
+
+        this.webhookMetadataService = webhookMetadataService;
+    }
+
+    /**
+     * Get the topic management service.
+     *
+     * @return Topic management service.
+     */
+    public TopicManagementService getTopicManagementService() {
+
+        return topicManagementService;
+    }
+
+    /**
+     * Set the topic management service.
+     *
+     * @param topicManagementService Topic management service.
+     */
+    public void setTopicManagementService(TopicManagementService topicManagementService) {
+
+        this.topicManagementService = topicManagementService;
     }
 }

@@ -23,12 +23,16 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
@@ -39,8 +43,10 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserCl
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
 
 public class WSO2PayloadUtils {
 
@@ -64,7 +70,7 @@ public class WSO2PayloadUtils {
 
     public static void populateUserClaims(User user, AuthenticatedUser authenticatedUser) {
 
-        if (authenticatedUser == null) {
+        if (authenticatedUser == null || authenticatedUser.getUserAttributes() == null) {
             return;
         }
 
@@ -157,5 +163,94 @@ public class WSO2PayloadUtils {
         }
 
         return null;
+    }
+
+    /**
+     * Resolve the event metadata based on the event name.
+     *
+     * @param eventName Event name.
+     * @return Event metadata containing event and channel information.
+     */
+    public static EventMetadata resolveEventHandlerKey(String eventName) {
+
+        String event = null;
+        String channel = null;
+        if (Objects.requireNonNull(eventName).equals(
+                IdentityEventConstants.Event.AUTHENTICATION_SUCCESS)) {
+            channel = org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.LOGIN_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.LOGIN_SUCCESS_EVENT;
+        } else if (IdentityEventConstants.Event.AUTHENTICATION_STEP_FAILURE.equals(eventName)) {
+            channel = org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.LOGIN_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.LOGIN_FAILURE_EVENT;
+        } else if (IdentityEventConstants.Event.USER_SESSION_TERMINATE.equals(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_REVOKED_EVENT;
+        } else if (IdentityEventConstants.Event.SESSION_EXPIRE.equals(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_EXPIRED_EVENT;
+        } else if (IdentityEventConstants.Event.SESSION_UPDATE.equals(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_UPDATED_EVENT;
+        } else if (IdentityEventConstants.Event.SESSION_EXTEND.equals(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_EXTENDED_EVENT;
+        } else if (IdentityEventConstants.Event.SESSION_CREATE.equals(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_CREATED_EVENT;
+        } else if (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_LIST_OF_ROLE_EVENT;
+        } else if (IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_DELETE_USER_EVENT;
+        } else if (IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UNLOCK_ACCOUNT_EVENT;
+        } else if (IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_LOCK_ACCOUNT_EVENT;
+        } else if (((IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                Flow.Name.UPDATE_CREDENTIAL_PASSWORD.equals(
+                        IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName))) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CREDENTIAL_CHANGE_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_CREDENTIAL;
+        } else if ((IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
+                IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
+                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                        Flow.Name.UPDATE_CREDENTIAL_PASSWORD.equals(
+                                IdentityContext.getThreadLocalIdentityContext().getFlow().getName())))) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_SUCCESS_EVENT;
+        }
+        return EventMetadata.builder()
+                .event(String.valueOf(event))
+                .channel(String.valueOf(channel))
+                .eventProfile(WSO2.name())
+                .build();
     }
 }

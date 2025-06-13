@@ -21,7 +21,7 @@ package org.wso2.identity.webhook.caep.event.handler.api.builder;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPVerificationEventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
 import java.util.Map;
@@ -46,8 +46,8 @@ public class CAEPVerificationEventPayloadBuilder implements VerificationEventPay
     }
 
     @Override
-    public EventSchema getEventSchemaType() {
+    public Constants.EventSchema getEventSchemaType() {
 
-        return EventSchema.CAEP;
+        return Constants.EventSchema.CAEP;
     }
 }

@@ -31,7 +31,7 @@ import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
@@ -54,8 +54,6 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
  * WSO2 UserOperation Event Payload Builder.
  */
 public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventPayloadBuilder {
-
-    private static final Log log = LogFactory.getLog(WSO2UserOperationEventPayloadBuilder.class);
 
     @Override
     public EventPayload buildUserGroupUpdateEvent(EventData eventData) throws IdentityEventException {
@@ -221,9 +219,9 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     }
 
     @Override
-    public EventSchema getEventSchemaType() {
+    public Constants.EventSchema getEventSchemaType() {
 
-        return EventSchema.WSO2;
+        return Constants.EventSchema.WSO2;
     }
 
     private Group buildGroup(Map<String, Object> properties, AbstractUserStoreManager userStoreManager)

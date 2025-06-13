@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -16,34 +16,20 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.internal.config;
+package org.wso2.identity.webhook.common.event.handler.api;
 
-import org.json.simple.JSONObject;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 
 /**
- * A wrapper class for JSONObject to hold resource configuration properties.
+ * This interface is responsible for managing the event profile.
  */
-public class ResourceConfig {
-
-    private JSONObject configs;
+public interface EventProfileManager {
 
     /**
-     * Constructor for Resource config .
+     * Resolves the event URI for the given event.
      *
-     * @param configs JSON object.
+     * @param event The event for which the URI needs to be resolved.
+     * @return Event metadata containing the profile, channel and event information.
      */
-    public ResourceConfig(JSONObject configs) {
-
-        this.configs = configs;
-    }
-
-    public JSONObject getConfigs() {
-
-        return configs;
-    }
-
-    public void setConfigs(JSONObject configs) {
-
-        this.configs = configs;
-    }
+    EventMetadata resolveEventMetadata(String event);
 }

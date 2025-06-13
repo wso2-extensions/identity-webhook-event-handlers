@@ -32,7 +32,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayl
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 
 import static org.mockito.Mockito.when;
 
@@ -81,7 +81,7 @@ public class EventHookHandlerServiceComponentTest {
     @Test
     public void testAddAndRemoveCredentialEventPayloadBuilder() {
 
-        when(credentialBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
+        when(credentialBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
         serviceComponent.addCredentialEventPayloadBuilder(credentialBuilder);
         serviceComponent.removeCredentialEventPayloadBuilder(credentialBuilder);
     }
@@ -89,7 +89,7 @@ public class EventHookHandlerServiceComponentTest {
     @Test
     public void testAddAndRemoveSessionEventPayloadBuilder() {
 
-        when(sessionBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
+        when(sessionBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
         serviceComponent.addSessionEventPayloadBuilder(sessionBuilder);
         serviceComponent.removeSessionEventPayloadBuilder(sessionBuilder);
     }
@@ -97,7 +97,7 @@ public class EventHookHandlerServiceComponentTest {
     @Test
     public void testAddAndRemoveLoginEventPayloadBuilder() {
 
-        when(loginBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
+        when(loginBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
         serviceComponent.addLoginEventPayloadBuilder(loginBuilder);
         serviceComponent.removeLoginEventPayloadBuilder(loginBuilder);
     }
@@ -105,7 +105,7 @@ public class EventHookHandlerServiceComponentTest {
     @Test
     public void testAddAndRemoveUserOperationEventPayloadBuilder() {
 
-        when(userOperationBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
+        when(userOperationBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
         serviceComponent.addUserOperationEventPayloadBuilder(userOperationBuilder);
         serviceComponent.removeUserOperationEventPayloadBuilder(userOperationBuilder);
     }
@@ -127,7 +127,7 @@ public class EventHookHandlerServiceComponentTest {
     @Test
     public void testAddAndRemoveRegistrationEventPayloadBuilder() {
 
-        when(registrationBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
+        when(registrationBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
         serviceComponent.addRegistrationEventPayloadBuilder(registrationBuilder);
         serviceComponent.removeRegistrationEventPayloadBuilder(registrationBuilder);
     }

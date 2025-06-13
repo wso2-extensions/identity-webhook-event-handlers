@@ -29,7 +29,7 @@ import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationSuccessEventPayload;
@@ -121,9 +121,9 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
     }
 
     @Override
-    public EventSchema getEventSchemaType() {
+    public Constants.EventSchema getEventSchemaType() {
 
-        return EventSchema.WSO2;
+        return Constants.EventSchema.WSO2;
     }
 
     private List<UserClaim> filterUserClaimsForUserAdd(Map<String, String> userClaims) {

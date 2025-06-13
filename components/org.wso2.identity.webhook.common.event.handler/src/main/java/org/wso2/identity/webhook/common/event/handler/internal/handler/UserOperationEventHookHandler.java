@@ -28,16 +28,20 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
+import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
+
+import java.util.List;
+import java.util.Objects;
 
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
 
@@ -47,12 +51,6 @@ import static org.wso2.identity.webhook.common.event.handler.internal.constant.C
 public class UserOperationEventHookHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(UserOperationEventHookHandler.class);
-    private final EventConfigManager eventConfigManager;
-
-    public UserOperationEventHookHandler(EventConfigManager eventConfigManager) {
-
-        this.eventConfigManager = eventConfigManager;
-    }
 
     @Override
     public String getName() {
@@ -87,62 +85,102 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
 
-        EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
-
-        UserOperationEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                .getUserOperationEventPayloadBuilder(EventSchema.WSO2);
-        EventPublisherConfig userOperationEventPublisherConfig;
         try {
-
-            String tenantDomain =
-                    String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
-
-            userOperationEventPublisherConfig =
-                    eventConfigManager.getEventPublisherConfigForTenant(tenantDomain, event.getEventName());
-
-            EventPayload eventPayload;
-            String eventUri;
-
-            if (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(event.getEventName()) &&
-                    userOperationEventPublisherConfig.isPublishEnabled()) {
-                eventPayload = payloadBuilder.buildUserGroupUpdateEvent(eventData);
-                eventUri =
-                        eventConfigManager.getEventUri(
-                                Constants.EventHandlerKey.WSO2.POST_UPDATE_USER_LIST_OF_ROLE_EVENT);
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
-                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-            } else if (IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(event.getEventName()) &&
-                    userOperationEventPublisherConfig.isPublishEnabled()) {
-
-                String userId =
-                        (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.USER_ID);
-                // Setting the thread-local to keep user-ID for use when publishing post delete user event.
-                IdentityUtil.threadLocalProperties.get().put(PRE_DELETE_USER_ID, userId);
-
-            } else if (IdentityEventConstants.Event.POST_DELETE_USER.equals(event.getEventName()) &&
-                    userOperationEventPublisherConfig.isPublishEnabled()) {
-                eventPayload = payloadBuilder.buildUserDeleteEvent(eventData);
-                eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.WSO2.POST_DELETE_USER_EVENT);
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
-                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-            } else if (IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(event.getEventName()) &&
-                    userOperationEventPublisherConfig.isPublishEnabled()) {
-                eventPayload = payloadBuilder.buildUserUnlockAccountEvent(eventData);
-                eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.WSO2.POST_UNLOCK_ACCOUNT_EVENT);
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
-                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-            } else if (IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(event.getEventName()) &&
-                    userOperationEventPublisherConfig.isPublishEnabled()) {
-                eventPayload = payloadBuilder.buildUserLockAccountEvent(eventData);
-                eventUri = eventConfigManager.getEventUri(Constants.EventHandlerKey.WSO2.POST_LOCK_ACCOUNT_EVENT);
-                SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                        .buildSecurityEventToken(eventPayload, eventUri);
-                EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+            List<EventProfile> eventProfileList =
+                    EventHookHandlerDataHolder.getInstance().getWebhookMetadataService().getSupportedEventProfiles();
+            if (eventProfileList.isEmpty()) {
+                log.warn("No event profiles found in the webhook metadata service. " +
+                        "Skipping user operation event handling.");
+                return;
             }
-        } catch (IdentityEventException e) {
+            for (EventProfile eventProfile : eventProfileList) {
+
+                //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
+                        schema =
+                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                                eventProfile.getProfile());
+                UserOperationEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
+                        .getUserOperationEventPayloadBuilder(schema);
+
+                // TODO: Change this when the event schema type is added to the tenant configuration.
+                if (payloadBuilder == null) {
+                    log.debug("Skipping user operation event handling for profile " + eventProfile.getProfile());
+                    continue;
+                }
+                EventMetadata eventMetadata =
+                        EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
+                                event.getEventName());
+                if (eventMetadata == null) {
+                    log.debug("No event metadata found for event: " + event.getEventName() +
+                            " in profile: " + eventProfile.getProfile());
+                    continue;
+                }
+                EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
+                String tenantDomain =
+                        String.valueOf(
+                                eventData.getEventParams().get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+
+                EventPayload eventPayload;
+                String eventUri;
+
+                List<Channel> channels = eventProfile.getChannels();
+                // Get the channel URI for the channel with name "User Operation Channel"
+                Channel userOperationChannel = channels.stream()
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
+                        .findFirst()
+                        .orElse(null);
+                if (userOperationChannel == null) {
+                    log.debug("No channel found for user operation event profile: " + eventProfile.getProfile());
+                    continue;
+                }
+
+                eventUri = userOperationChannel.getEvents().stream()
+                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
+                                channelEvent.getEventName()))
+                        .findFirst()
+                        .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
+                        .orElse(null);
+
+                boolean isTopicExists = EventHookHandlerDataHolder.getInstance().getTopicManagementService()
+                        .isTopicExists(userOperationChannel.getUri(), Constants.EVENT_PROFILE_VERSION, tenantDomain);
+
+
+                if (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(event.getEventName()) &&
+                        isTopicExists) {
+                    eventPayload = payloadBuilder.buildUserGroupUpdateEvent(eventData);
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                            .buildSecurityEventToken(eventPayload, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                } else if (IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(event.getEventName()) &&
+                        isTopicExists) {
+
+                    String userId =
+                            (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.USER_ID);
+                    // Setting the thread-local to keep user-ID for use when publishing post delete user event.
+                    IdentityUtil.threadLocalProperties.get().put(PRE_DELETE_USER_ID, userId);
+
+                } else if (IdentityEventConstants.Event.POST_DELETE_USER.equals(event.getEventName()) &&
+                        isTopicExists) {
+                    eventPayload = payloadBuilder.buildUserDeleteEvent(eventData);
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                            .buildSecurityEventToken(eventPayload, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                } else if (IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(event.getEventName()) &&
+                        isTopicExists) {
+                    eventPayload = payloadBuilder.buildUserUnlockAccountEvent(eventData);
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                            .buildSecurityEventToken(eventPayload, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                } else if (IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(event.getEventName()) &&
+                        isTopicExists) {
+                    eventPayload = payloadBuilder.buildUserLockAccountEvent(eventData);
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                            .buildSecurityEventToken(eventPayload, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                }
+            }
+        } catch (Exception e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }
     }

@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPVerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPVerificationEventPayload;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
 import java.util.HashMap;
@@ -52,9 +52,9 @@ public class CAEPVerificationEventPayloadBuilderTest {
     @Test
     public void testGetEventSchemaType() {
 
-        EventSchema eventSchema = caepVerificationEventPayloadBuilder.getEventSchemaType();
+        Constants.EventSchema eventSchema = caepVerificationEventPayloadBuilder.getEventSchemaType();
         assertNotNull(eventSchema);
-        assertEquals(eventSchema, EventSchema.CAEP);
+        assertEquals(eventSchema, Constants.EventSchema.CAEP);
     }
 
     @Test

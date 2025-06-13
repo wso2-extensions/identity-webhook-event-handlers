@@ -31,7 +31,7 @@ import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCredentialUpdateEventPayload;
@@ -148,8 +148,8 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
     }
 
     @Override
-    public EventSchema getEventSchemaType() {
+    public Constants.EventSchema getEventSchemaType() {
 
-        return EventSchema.WSO2;
+        return Constants.EventSchema.WSO2;
     }
 }
