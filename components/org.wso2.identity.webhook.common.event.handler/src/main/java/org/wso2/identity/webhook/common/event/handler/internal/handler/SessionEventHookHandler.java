@@ -94,10 +94,8 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
                 List<Channel> channels = eventProfile.getChannels();
                 // Get the channel URI for the channel with name "Session Channel"
-                Channel sessionChannel = channels.stream()
-                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
-                        .findFirst()
-                        .orElse(null);
+                Channel sessionChannel =
+                        EventHookHandlerUtils.findChannelByName(channels, eventMetadata.getChannel());
                 if (sessionChannel == null) {
                     log.debug("No channel found for session event profile: " + eventProfile.getProfile());
                     continue;

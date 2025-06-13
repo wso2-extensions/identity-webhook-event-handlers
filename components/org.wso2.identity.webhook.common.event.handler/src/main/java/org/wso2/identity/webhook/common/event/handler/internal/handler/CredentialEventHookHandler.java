@@ -115,11 +115,8 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
 
                 List<Channel> channels = eventProfile.getChannels();
 
-                Channel credentialChangeChannel = channels.stream()
-                        .filter(channel -> eventMetadata.getChannel()
-                                .equals(channel.getName()))
-                        .findFirst()
-                        .orElse(null);
+                Channel credentialChangeChannel =
+                        EventHookHandlerUtils.findChannelByName(channels, eventMetadata.getChannel());
                 if (credentialChangeChannel == null) {
                     log.debug("No channel found for credential change event profile: " +
                             eventProfile.getProfile());
