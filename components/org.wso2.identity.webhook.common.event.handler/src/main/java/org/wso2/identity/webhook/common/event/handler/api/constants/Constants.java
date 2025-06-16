@@ -50,7 +50,7 @@ public class Constants {
     }
 
     /**
-     * This class represents the event types.
+     * This class represents the identity event types.
      */
     public static class Event {
 
