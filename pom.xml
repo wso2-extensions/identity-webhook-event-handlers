@@ -45,6 +45,7 @@
         <module>components/org.wso2.identity.webhook.common.event.handler</module>
         <module>components/org.wso2.identity.webhook.wso2.event.handler</module>
         <module>components/org.wso2.identity.webhook.caep.event.handler</module>
+        <module>features/event-handlers</module>
     </modules>
 
     <distributionManagement>
@@ -157,6 +158,11 @@
             <dependency>
                 <groupId>org.wso2.identity.webhook.event.handlers</groupId>
                 <artifactId>org.wso2.identity.webhook.common.event.handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.identity.webhook.event.handlers</groupId>
+                <artifactId>org.wso2.identity.webhook.wso2.event.handler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -472,6 +478,8 @@
         <commons-lang.wso2.osgi.version.range>[2.6.0,3.0.0)</commons-lang.wso2.osgi.version.range>
         <apache.felix.scr.ds.annotations.version>1.2.4</apache.felix.scr.ds.annotations.version>
         <commons-collections.wso2.osgi.version.range>[3.2.0,4.0.0)</commons-collections.wso2.osgi.version.range>
+
+        <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
 
         <compiler-source.version>1.8</compiler-source.version>
         <compiler-target.version>1.8</compiler-target.version>
