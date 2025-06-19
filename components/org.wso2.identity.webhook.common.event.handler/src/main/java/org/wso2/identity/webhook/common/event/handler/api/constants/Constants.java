@@ -41,12 +41,12 @@ public class Constants {
      */
     public static class Channel {
 
-        public static final String LOGIN_CHANNEL = "Login Channel";
-        public static final String CREDENTIAL_CHANGE_CHANNEL = "Credential Change Channel";
-        public static final String REGISTRATION_CHANNEL = "Registration Channel";
-        public static final String USER_OPERATION_CHANNEL = "User Operation Channel";
+        public static final String LOGIN_CHANNEL = "Logins";
+        public static final String CREDENTIAL_CHANGE_CHANNEL = "Credential updates";
+        public static final String REGISTRATION_CHANNEL = "Registrations";
+        public static final String USER_OPERATION_CHANNEL = "User management operations";
         public static final String VERIFICATION_CHANNEL = "Verification Channel";
-        public static final String SESSION_CHANNEL = "Session Channel";
+        public static final String SESSION_CHANNEL = "Sessions";
     }
 
     /**
@@ -54,14 +54,14 @@ public class Constants {
      */
     public static class Event {
 
-        public static final String LOGIN_SUCCESS_EVENT = "Login Success Event";
-        public static final String LOGIN_FAILURE_EVENT = "Login Failure Event";
-        public static final String POST_UPDATE_USER_CREDENTIAL = "Post Update User Credential Event";
-        public static final String POST_REGISTRATION_SUCCESS_EVENT = "Registration Success Event";
+        public static final String LOGIN_SUCCESS_EVENT = "Login success";
+        public static final String LOGIN_FAILURE_EVENT = "Login failed";
+        public static final String POST_UPDATE_USER_CREDENTIAL = "Credential updated";
+        public static final String POST_REGISTRATION_SUCCESS_EVENT = "Registration success";
         public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "Post Update User List of Role Event";
-        public static final String POST_DELETE_USER_EVENT = "Post Delete User Event";
-        public static final String POST_UNLOCK_ACCOUNT_EVENT = "Post Unlock Account Event";
-        public static final String POST_LOCK_ACCOUNT_EVENT = "Post Lock Account Event";
+        public static final String POST_DELETE_USER_EVENT = "User account deleted";
+        public static final String POST_UNLOCK_ACCOUNT_EVENT = "User account unlocked";
+        public static final String POST_LOCK_ACCOUNT_EVENT = "User account locked";
         public static final String SESSION_CREATED_EVENT = "Session Created Event";
         public static final String SESSION_REVOKED_EVENT = "Session Revoked Event";
         public static final String SESSION_EXPIRED_EVENT = "Session Expired Event";
