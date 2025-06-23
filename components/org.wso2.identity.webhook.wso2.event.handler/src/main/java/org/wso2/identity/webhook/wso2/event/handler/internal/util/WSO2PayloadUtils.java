@@ -128,29 +128,14 @@ public class WSO2PayloadUtils {
     public static UserStoreManager getUserStoreManagerByTenantDomain(String tenantDomain) {
 
         try {
-            int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-            RealmService realmService = WSO2EventHookHandlerDataHolder.getInstance().getRealmService();
-
-            if (realmService == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("RealmService is not available. Skipping setting user store manager.");
-                }
-                return null;
-            }
-
-            UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
-            if (userRealm == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("UserRealm is null for tenant: " + tenantId);
-                }
-                return null;
-            }
+            UserRealm userRealm = getUserRealm(tenantDomain);
+            if (userRealm == null) return null;
 
             UserStoreManager userStoreManager = userRealm.getUserStoreManager();
 
             if (userStoreManager == null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("UserStoreManager is null for tenant: " + tenantId);
+                    log.debug("UserStoreManager is null for tenant: " + tenantDomain);
                 }
                 return null;
             }
@@ -175,23 +160,8 @@ public class WSO2PayloadUtils {
     public static RealmConfiguration getRealmConfigurationByTenantDomain(String tenantDomain) {
 
         try {
-            int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-            RealmService realmService = WSO2EventHookHandlerDataHolder.getInstance().getRealmService();
-
-            if (realmService == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("RealmService is not available. Skipping setting user store manager.");
-                }
-                return null;
-            }
-
-            UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
-            if (userRealm == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("UserRealm is null for tenant: " + tenantId);
-                }
-                return null;
-            }
+            UserRealm userRealm = getUserRealm(tenantDomain);
+            if (userRealm == null) return null;
 
             return userRealm.getRealmConfiguration();
 
@@ -203,6 +173,28 @@ public class WSO2PayloadUtils {
         }
 
         return null;
+    }
+
+    private static UserRealm getUserRealm(String tenantDomain) throws UserStoreException {
+
+        int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+        RealmService realmService = WSO2EventHookHandlerDataHolder.getInstance().getRealmService();
+
+        if (realmService == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("RealmService is not available. Skipping setting user store manager.");
+            }
+            return null;
+        }
+
+        UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
+        if (userRealm == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("UserRealm is null for tenant: " + tenantId);
+            }
+            return null;
+        }
+        return userRealm;
     }
 
     /**
