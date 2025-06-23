@@ -26,6 +26,8 @@ import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.user.api.RealmConfiguration;
+import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
@@ -42,6 +44,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Step;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
+import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -170,11 +173,12 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
-        AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration()
-                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+        String userStoreDomainName = resolveUserStoreDomain(properties, tenantDomain);
+        UserStore userStore = null;
 
-        UserStore userStore = new UserStore(userStoreDomainName);
+        if (StringUtils.isNotBlank(userStoreDomainName)) {
+            userStore = new UserStore(userStoreDomainName);
+        }
 
         User newUser = new User();
         enrichUser(properties, newUser);
@@ -215,6 +219,23 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                 .userStore(userStore)
                 .reason(reason)
                 .build();
+    }
+
+    private static String resolveUserStoreDomain(Map<String, Object> properties, String tenantDomain) {
+
+        String userStoreDomainName = null;
+        if (properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN) != null) {
+            userStoreDomainName =
+                    String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
+        } else {
+            RealmConfiguration realmConfiguration =
+                    WSO2PayloadUtils.getRealmConfigurationByTenantDomain(tenantDomain);
+            if (realmConfiguration != null) {
+                userStoreDomainName =
+                        realmConfiguration.getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+            }
+        }
+        return userStoreDomainName;
     }
 
 }

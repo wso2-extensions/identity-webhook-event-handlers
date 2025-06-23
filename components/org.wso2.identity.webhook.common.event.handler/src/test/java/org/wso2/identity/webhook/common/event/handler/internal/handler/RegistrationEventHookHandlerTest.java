@@ -151,7 +151,7 @@ public class RegistrationEventHookHandlerTest {
                 {IdentityEventConstants.Event.POST_ADD_USER, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD, SAMPLE_EVENT_KEY},
-                {IdentityEventConstants.Event.REGISTRATION_FAILURE, REGISTRATION_FAILURE_EVENT_KEY}
+                {IdentityEventConstants.Event.USER_REGISTRATION_FAILED, REGISTRATION_FAILURE_EVENT_KEY}
         };
     }
 
