@@ -172,8 +172,8 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         assertNotNull(wso2BaseEventPayload);
 
-//        assertNotNull(wso2BaseEventPayload.getInitiatorType());
-//        assertEquals(wso2BaseEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
+        assertNotNull(wso2BaseEventPayload.getInitiatorType());
+        assertEquals(wso2BaseEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
         assertNotNull(wso2BaseEventPayload.getTenant());
         assertEquals(wso2BaseEventPayload.getTenant().getName(), TENANT_DOMAIN);
@@ -212,10 +212,10 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         when(mockEventData.getEventParams()).thenReturn(params);
 
-//        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-//                .name(Flow.Name.REGISTER_USER)
-//                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-//                .build());
+        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+                .name(Flow.Name.REGISTER_USER)
+                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                .build());
 
         EventPayload eventPayload = payloadBuilder.buildRegistrationFailureEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
@@ -227,8 +227,8 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertEquals(userRegistrationFailurePayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userRegistrationFailurePayload.getUser().getRef(),
                 EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
-//        assertNotNull(userRegistrationFailurePayload.getAction());
-//        assertEquals(userRegistrationFailurePayload.getAction(), Flow.Name.REGISTER_USER.name());
+        assertNotNull(userRegistrationFailurePayload.getAction());
+        assertEquals(userRegistrationFailurePayload.getAction(), Flow.Name.REGISTER_USER.name());
 
         assertNotNull(userRegistrationFailurePayload.getReason());
         assertNotNull(userRegistrationFailurePayload.getReason().getMessage());
