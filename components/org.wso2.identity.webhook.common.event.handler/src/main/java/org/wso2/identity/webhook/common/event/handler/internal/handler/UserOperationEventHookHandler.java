@@ -79,7 +79,8 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                 IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(eventName) ||
                 IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName) ||
                 IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName) ||
-                IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName);
+                IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName) ||
+                "USER_PROFILE_UPDATE".equals(eventName);
     }
 
     @Override
@@ -178,6 +179,14 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                } else if ("USER_PROFILE_UPDATE".equals(event.getEventName()) && isTopicExists) {
+                    eventPayload = payloadBuilder.buildUserProfileUpdateEvent(eventData);
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                            .buildSecurityEventToken(eventPayload, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                } else {
+                    log.debug("Skipping user operation event handling for event: " + event.getEventName() +
+                            " in profile: " + eventProfile.getProfile());
                 }
             }
         } catch (Exception e) {
