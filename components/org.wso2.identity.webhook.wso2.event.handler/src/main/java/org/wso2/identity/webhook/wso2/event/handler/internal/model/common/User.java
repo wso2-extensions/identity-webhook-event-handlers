@@ -31,7 +31,10 @@ public class User {
     private String ref;
     private List<String> groups = new ArrayList<>();
     private List<String> roles = new ArrayList<>();
-    private List<UserClaim> identifiers = new ArrayList<>();
+    private List<UserClaim> additionalClaims;
+    private List<UserClaim> addedClaims;
+    private List<UserClaim> updatedClaims;
+    private List<UserClaim> removedClaims;
 
     public List<String> getGroups() {
 
@@ -93,14 +96,47 @@ public class User {
         this.ref = ref;
     }
 
-    public List<UserClaim> getIdentifiers() {
+    public List<UserClaim> getRemovedClaims() {
 
-        return identifiers;
+        return removedClaims;
     }
 
-    public void setIdentifiers(List<UserClaim> identifiers) {
+    public void setRemovedClaims(
+            List<UserClaim> removedClaims) {
 
-        this.identifiers = identifiers;
+        this.removedClaims = removedClaims;
     }
 
+    public List<UserClaim> getUpdatedClaims() {
+
+        return updatedClaims;
+    }
+
+    public void setUpdatedClaims(
+            List<UserClaim> updatedClaims) {
+
+        this.updatedClaims = updatedClaims;
+    }
+
+    public List<UserClaim> getAddedClaims() {
+
+        return addedClaims;
+    }
+
+    public void setAddedClaims(
+            List<UserClaim> addedClaims) {
+
+        this.addedClaims = addedClaims;
+    }
+
+    public List<UserClaim> getAdditionalClaims() {
+
+        return additionalClaims;
+    }
+
+    public void setAdditionalClaims(
+            List<UserClaim> additionalClaims) {
+
+        this.additionalClaims = additionalClaims;
+    }
 }
