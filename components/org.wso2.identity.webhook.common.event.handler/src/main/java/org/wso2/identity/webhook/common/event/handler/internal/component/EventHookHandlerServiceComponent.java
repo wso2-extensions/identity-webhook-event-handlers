@@ -97,34 +97,26 @@ public class EventHookHandlerServiceComponent {
                     Constants.SESSION_EVENT_HOOK_ENABLED);
             if (isSessionEventHandlerEnabled != null &&
                     isSessionEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
-                log.info("Session Event Handler is enabled.");
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
                         new SessionEventHookHandler(), null);
-            } else {
-                log.error("Session Event Handler is not enabled.");
             }
 
             String isCredentialEventHandlerEnabled = getIdentityEventProperty(Constants.CREDENTIAL_EVENT_HOOK_NAME,
                     Constants.CREDENTIAL_EVENT_HOOK_ENABLED);
             if (isCredentialEventHandlerEnabled != null &&
                     isCredentialEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
-                log.info("Credentials Event Handler is enabled.");
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
                         new CredentialEventHookHandler(), null);
-            } else {
-                log.error("Credential Event Handler is not enabled.");
             }
 
             String isVerificationEventHandlerEnabled = getIdentityEventProperty(
                     Constants.VERIFICATION_EVENT_HOOK_NAME, Constants.VERIFICATION_EVENT_HOOK_ENABLED);
             if (isVerificationEventHandlerEnabled != null &&
                     isVerificationEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
-                log.info("Verification Event Handler is enabled.");
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
                         new VerificationEventHookHandler(), null);
-            } else {
-                log.error("Verification Event Handler is not enabled.");
             }
+
         } catch (IdentityEventServerException e) {
             log.error("Error while activating event handler.", e);
         }
