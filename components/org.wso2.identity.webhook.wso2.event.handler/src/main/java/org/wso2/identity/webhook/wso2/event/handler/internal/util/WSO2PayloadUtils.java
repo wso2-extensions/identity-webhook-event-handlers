@@ -28,6 +28,7 @@ import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
+import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
@@ -127,29 +128,14 @@ public class WSO2PayloadUtils {
     public static UserStoreManager getUserStoreManagerByTenantDomain(String tenantDomain) {
 
         try {
-            int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-            RealmService realmService = WSO2EventHookHandlerDataHolder.getInstance().getRealmService();
-
-            if (realmService == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("RealmService is not available. Skipping setting user store manager.");
-                }
-                return null;
-            }
-
-            UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
-            if (userRealm == null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("UserRealm is null for tenant: " + tenantId);
-                }
-                return null;
-            }
+            UserRealm userRealm = getUserRealm(tenantDomain);
+            if (userRealm == null) return null;
 
             UserStoreManager userStoreManager = userRealm.getUserStoreManager();
 
             if (userStoreManager == null) {
                 if (log.isDebugEnabled()) {
-                    log.debug("UserStoreManager is null for tenant: " + tenantId);
+                    log.debug("UserStoreManager is null for tenant: " + tenantDomain);
                 }
                 return null;
             }
@@ -163,6 +149,52 @@ public class WSO2PayloadUtils {
         }
 
         return null;
+    }
+
+    /**
+     * Retrieves the RealmConfiguration for the given tenant domain.
+     *
+     * @param tenantDomain The tenant domain.
+     * @return The RealmConfiguration for the specified tenant domain, or null if not found.
+     */
+    public static RealmConfiguration getRealmConfigurationByTenantDomain(String tenantDomain) {
+
+        try {
+            UserRealm userRealm = getUserRealm(tenantDomain);
+            if (userRealm == null) return null;
+
+            return userRealm.getRealmConfiguration();
+
+        } catch (UserStoreException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Error occurred while retrieving user store manager for tenant: " +
+                        tenantDomain + ". Error: " + e.getMessage(), e);
+            }
+        }
+
+        return null;
+    }
+
+    private static UserRealm getUserRealm(String tenantDomain) throws UserStoreException {
+
+        int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+        RealmService realmService = WSO2EventHookHandlerDataHolder.getInstance().getRealmService();
+
+        if (realmService == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("RealmService is not available. Skipping setting user store manager.");
+            }
+            return null;
+        }
+
+        UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
+        if (userRealm == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("UserRealm is null for tenant: " + tenantId);
+            }
+            return null;
+        }
+        return userRealm;
     }
 
     /**
@@ -239,6 +271,7 @@ public class WSO2PayloadUtils {
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_CREDENTIAL;
         } else if ((IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
+                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||
                 (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
                         Flow.Name.UPDATE_CREDENTIAL_PASSWORD.equals(
                                 IdentityContext.getThreadLocalIdentityContext().getFlow().getName())))) {
@@ -246,6 +279,11 @@ public class WSO2PayloadUtils {
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
             event =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_SUCCESS_EVENT;
+        } else if (IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_FAILED_EVENT;
         }
         return EventMetadata.builder()
                 .event(String.valueOf(event))

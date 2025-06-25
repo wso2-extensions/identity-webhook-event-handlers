@@ -134,9 +134,16 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
                 if ((IdentityEventConstants.Event.POST_ADD_USER.equals(event.getEventName()) ||
                         IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(event.getEventName()) ||
-                        IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(event.getEventName())) &&
+                        IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(event.getEventName()) ||
+                        IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(event.getEventName())) &&
                         isTopicExists) {
                     eventPayload = payloadBuilder.buildRegistrationSuccessEvent(eventData);
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                            .buildSecurityEventToken(eventPayload, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                } else if (IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(event.getEventName()) &&
+                        isTopicExists) {
+                    eventPayload = payloadBuilder.buildRegistrationFailureEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
@@ -151,6 +158,8 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
         return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName);
+                IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) ||
+                IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName) ||
+                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
     }
 }

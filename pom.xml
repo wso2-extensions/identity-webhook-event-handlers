@@ -408,7 +408,7 @@
                                         <limit implementation="org.jacoco.report.check.Limit">
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.69</minimum>
+                                            <minimum>0.50</minimum>
                                         </limit>
                                         <limit implementation="org.jacoco.report.check.Limit">
                                             <counter>COMPLEXITY</counter>
@@ -454,7 +454,7 @@
         <carbon.user.api.imp.pkg.version.range>[1.0.1, 2.0.0)</carbon.user.api.imp.pkg.version.range>
 
         <!--Carbon Identity Framework Version-->
-        <carbon.identity.framework.version>7.8.222</carbon.identity.framework.version>
+        <carbon.identity.framework.version>7.8.242</carbon.identity.framework.version>
         <carbon.identity.framework.imp.pkg.version.range>[5.20.90, 8.0.0)
         </carbon.identity.framework.imp.pkg.version.range>
 

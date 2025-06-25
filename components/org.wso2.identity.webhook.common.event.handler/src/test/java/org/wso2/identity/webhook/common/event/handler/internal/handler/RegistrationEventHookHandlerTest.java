@@ -89,6 +89,9 @@ public class RegistrationEventHookHandlerTest {
 
     private static final String SAMPLE_EVENT_KEY =
             "schemas.identity.wso2.org/events/registration/event-type/registrationSuccess";
+    private static final String REGISTRATION_FAILURE_EVENT_KEY =
+            "schemas.identity.wso2.org/events/registration/event-type/registrationFailure";
+    private static final String SAMPLE_ATTRIBUTE_JSON = "{\"sendCredentials\":false,\"publishEnabled\":true}";
     private static final String DOMAIN_QUALIFIED_ADDED_USER_NAME = "PRIMARY/john";
     private static final String CARBON_SUPER = "carbon.super";
     private static final String ADMIN = "ADMIN";
@@ -147,7 +150,8 @@ public class RegistrationEventHookHandlerTest {
         return new Object[][] {
                 {IdentityEventConstants.Event.POST_ADD_USER, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM, SAMPLE_EVENT_KEY},
-                {IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD, SAMPLE_EVENT_KEY}
+                {IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD, SAMPLE_EVENT_KEY},
+                {IdentityEventConstants.Event.USER_REGISTRATION_FAILED, REGISTRATION_FAILURE_EVENT_KEY}
         };
     }
 
@@ -239,6 +243,8 @@ public class RegistrationEventHookHandlerTest {
         when(mockedRegistrationEventPayloadBuilder.getEventSchemaType()).thenReturn(
                 org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2);
         when(mockedRegistrationEventPayloadBuilder.buildRegistrationSuccessEvent(any(EventData.class)))
+                .thenReturn(mockedEventPayload);
+        when(mockedRegistrationEventPayloadBuilder.buildRegistrationFailureEvent(any(EventData.class)))
                 .thenReturn(mockedEventPayload);
     }
 

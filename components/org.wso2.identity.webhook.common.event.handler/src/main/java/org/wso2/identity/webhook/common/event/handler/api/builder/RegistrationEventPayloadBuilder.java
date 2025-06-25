@@ -27,10 +27,13 @@ public interface RegistrationEventPayloadBuilder {
 
     EventPayload buildRegistrationSuccessEvent(EventData eventData) throws IdentityEventException;
 
-    /**
-     * Get the event schema type.
-     *
-     * @return Event schema type.
-     */
+    EventPayload buildRegistrationFailureEvent(EventData eventData) throws IdentityEventException;
+
+
+        /**
+         * Get the event schema type.
+         *
+         * @return Event schema type.
+         */
     Constants.EventSchema getEventSchemaType();
 }
