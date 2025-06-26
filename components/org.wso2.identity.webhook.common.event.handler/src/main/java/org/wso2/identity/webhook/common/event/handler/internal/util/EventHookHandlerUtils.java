@@ -372,12 +372,13 @@ public class EventHookHandlerUtils {
                         IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
                 (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
                         Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
-                                        IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                                IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
                 IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
     }
 
     public static boolean isUserRegistrationFailedFlow(String eventName) {
+
         return IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName);
     }
 

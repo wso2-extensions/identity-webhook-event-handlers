@@ -153,7 +153,7 @@ public class LoginEventHookHandlerTest {
     @DataProvider(name = "eventDataProvider")
     public Object[][] eventDataProvider() {
 
-        return new Object[][] {
+        return new Object[][]{
                 {IdentityEventConstants.EventName.AUTHENTICATION_SUCCESS.name(), SAMPLE_EVENT_KEY_LOGIN_SUCCESS},
                 {IdentityEventConstants.EventName.AUTHENTICATION_STEP_FAILURE.name(), SAMPLE_EVENT_KEY_LOGIN_FAILED}
         };

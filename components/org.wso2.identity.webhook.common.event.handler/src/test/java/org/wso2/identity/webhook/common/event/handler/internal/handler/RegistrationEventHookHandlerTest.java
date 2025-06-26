@@ -157,7 +157,7 @@ public class RegistrationEventHookHandlerTest {
     @DataProvider(name = "eventDataProvider")
     public Object[][] eventDataProvider() {
 
-        return new Object[][] {
+        return new Object[][]{
                 {IdentityEventConstants.Event.POST_ADD_USER, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.USER_REGISTRATION_FAILED, REGISTRATION_FAILURE_EVENT_KEY},
@@ -229,7 +229,7 @@ public class RegistrationEventHookHandlerTest {
     private Event createEventWithProperties(String eventName) {
 
         HashMap<String, Object> properties = new HashMap<>();
-        String[] addedUsers = new String[] {DOMAIN_QUALIFIED_ADDED_USER_NAME};
+        String[] addedUsers = new String[]{DOMAIN_QUALIFIED_ADDED_USER_NAME};
         properties.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, CARBON_SUPER);
         properties.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, ADMIN);
