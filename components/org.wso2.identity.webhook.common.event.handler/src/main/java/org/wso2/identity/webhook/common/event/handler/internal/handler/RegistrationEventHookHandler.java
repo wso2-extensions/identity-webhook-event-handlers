@@ -42,6 +42,9 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 import java.util.List;
 import java.util.Objects;
 
+import static org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils.isUserRegistrationFailedFlow;
+import static org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils.isUserRegistrationSuccessFlow;
+
 public class RegistrationEventHookHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(RegistrationEventHookHandler.class);
@@ -132,17 +135,12 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 boolean isTopicExists = EventHookHandlerDataHolder.getInstance().getTopicManagementService()
                         .isTopicExists(registrationChannel.getUri(), Constants.EVENT_PROFILE_VERSION, tenantDomain);
 
-                if ((IdentityEventConstants.Event.POST_ADD_USER.equals(event.getEventName()) ||
-                        IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(event.getEventName()) ||
-                        IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(event.getEventName()) ||
-                        IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(event.getEventName())) &&
-                        isTopicExists) {
+                if (isUserRegistrationSuccessFlow(event.getEventName()) && isTopicExists) {
                     eventPayload = payloadBuilder.buildRegistrationSuccessEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
-                } else if (IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(event.getEventName()) &&
-                        isTopicExists) {
+                } else if (isUserRegistrationFailedFlow(event.getEventName()) && isTopicExists) {
                     eventPayload = payloadBuilder.buildRegistrationFailureEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);
@@ -156,10 +154,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
     private boolean isSupportedEvent(String eventName) {
 
-        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
-                IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) ||
-                IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName) ||
-                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
+        return isUserRegistrationSuccessFlow(eventName) || isUserRegistrationFailedFlow(eventName);
     }
+
 }

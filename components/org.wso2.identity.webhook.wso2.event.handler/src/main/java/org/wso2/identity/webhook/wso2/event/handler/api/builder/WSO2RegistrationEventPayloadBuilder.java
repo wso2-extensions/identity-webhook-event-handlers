@@ -105,7 +105,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
             Map<String, String> claims = (Map<String, String>) properties.get(IdentityEventConstants.EventProperty
                     .USER_CLAIMS);
 
-            if (claims.containsKey(FrameworkConstants.USER_ID_CLAIM)){
+            if (claims.containsKey(FrameworkConstants.USER_ID_CLAIM)) {
                 user.setId(claims.get(FrameworkConstants.USER_ID_CLAIM));
                 user.setRef(
                         EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());

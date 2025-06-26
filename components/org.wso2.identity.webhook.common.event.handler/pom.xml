@@ -117,11 +117,6 @@
             <groupId>org.wso2.identity.event.publishers</groupId>
             <artifactId>org.wso2.identity.event.common.publisher</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.identity.inbound.provisioning.scim2</groupId>
-            <artifactId>org.wso2.carbon.identity.scim2.common</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

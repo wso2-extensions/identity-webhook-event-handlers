@@ -221,12 +221,6 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon.identity.inbound.provisioning.scim2</groupId>
-                <artifactId>org.wso2.carbon.identity.scim2.common</artifactId>
-                <version>${org.wso2.carbon.identity.inbound.provisioning.scim2.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-core</artifactId>
                 <version>${log4j-core.version}</version>
@@ -454,7 +448,7 @@
         <carbon.user.api.imp.pkg.version.range>[1.0.1, 2.0.0)</carbon.user.api.imp.pkg.version.range>
 
         <!--Carbon Identity Framework Version-->
-        <carbon.identity.framework.version>7.8.242</carbon.identity.framework.version>
+        <carbon.identity.framework.version>7.8.252</carbon.identity.framework.version>
         <carbon.identity.framework.imp.pkg.version.range>[5.20.90, 8.0.0)
         </carbon.identity.framework.imp.pkg.version.range>
 
@@ -526,9 +520,6 @@
 
         <!-- Org management dependency versions-->
         <identity.organization.management.core.version>1.1.5</identity.organization.management.core.version>
-
-        <org.wso2.carbon.identity.inbound.provisioning.scim2.version>3.4.72
-        </org.wso2.carbon.identity.inbound.provisioning.scim2.version>
 
         <org.wso2.carbon.identity.inbound.auth.oauth2.version>7.0.114
         </org.wso2.carbon.identity.inbound.auth.oauth2.version>
