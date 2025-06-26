@@ -83,9 +83,9 @@ public class LoginEventHookHandlerTest {
     private static final String SAMPLE_TENANT_DOMAIN = "myorg";
     private static final String SAMPLE_USER = "user";
     private static final String SAMPLE_EVENT_KEY_LOGIN_SUCCESS =
-            "schemas.identity.wso2.org/events/logins/event-type/loginSuccess";
+            "https://schemas.identity.wso2.org/events/logins/event-type/loginSuccess";
     private static final String SAMPLE_EVENT_KEY_LOGIN_FAILED =
-            "schemas.identity.wso2.org/events/logins/event-type/loginFailed";
+            "https://schemas.identity.wso2.org/events/logins/event-type/loginFailed";
 
     @Mock
     private ConfigurationManager mockedConfigurationManager;

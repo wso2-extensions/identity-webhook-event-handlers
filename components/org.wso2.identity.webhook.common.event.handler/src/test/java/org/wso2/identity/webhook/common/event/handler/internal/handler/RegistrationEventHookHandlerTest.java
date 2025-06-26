@@ -27,7 +27,10 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
@@ -44,6 +47,7 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.util.CommonTestUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
@@ -97,12 +101,16 @@ public class RegistrationEventHookHandlerTest {
     private static final String ADMIN = "ADMIN";
 
     @BeforeClass
-    public void setupClass() throws IdentityEventException {
+    public void setupClass() throws Exception {
 
         MockitoAnnotations.openMocks(this);
         setupDataHolderMocks();
         setupPayloadBuilderMocks();
         setupUtilities();
+        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+                .name(Flow.Name.USER_REGISTRATION)
+                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                .build());
     }
 
     @AfterClass
@@ -110,6 +118,8 @@ public class RegistrationEventHookHandlerTest {
 
         closeMockedServiceURLBuilder();
         closeMockedIdentityTenantUtil();
+        PrivilegedCarbonContext.endTenantFlow();
+
     }
 
     @AfterMethod
@@ -150,7 +160,6 @@ public class RegistrationEventHookHandlerTest {
         return new Object[][] {
                 {IdentityEventConstants.Event.POST_ADD_USER, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM, SAMPLE_EVENT_KEY},
-                {IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.USER_REGISTRATION_FAILED, REGISTRATION_FAILURE_EVENT_KEY},
                 {IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS, SAMPLE_EVENT_KEY}
         };
@@ -182,24 +191,21 @@ public class RegistrationEventHookHandlerTest {
 
             try (MockedStatic<EventHookHandlerUtils> utilsMocked = mockStatic(EventHookHandlerUtils.class)) {
                 // Mock all static methods used in the handler
-                EventData eventDataProvider = mock(EventData.class);
                 EventMetadata eventMetadata = mock(EventMetadata.class);
                 SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
 
-                // Set up eventDataProvider to return the correct tenant domain
-                when(eventDataProvider.getEventParams()).thenReturn(
-                        new HashMap<String, Object>() {{
-                            put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, CARBON_SUPER);
-                        }}
-                );
                 // Set up eventMetadata to match the channel and event name
                 when(eventMetadata.getChannel()).thenReturn("Registration Channel");
                 when(eventMetadata.getEvent()).thenReturn(eventName);
 
                 utilsMocked.when(() -> EventHookHandlerUtils.buildEventDataProvider(any(Event.class)))
-                        .thenReturn(eventDataProvider);
+                        .thenCallRealMethod();
                 utilsMocked.when(() -> EventHookHandlerUtils.getEventProfileManagerByProfile(anyString(), anyString()))
                         .thenReturn(eventMetadata);
+                utilsMocked.when(() -> EventHookHandlerUtils.isUserRegistrationSuccessFlow(anyString()))
+                        .thenCallRealMethod();
+                utilsMocked.when(() -> EventHookHandlerUtils.isUserRegistrationFailedFlow(anyString()))
+                        .thenCallRealMethod();
                 utilsMocked.when(() -> EventHookHandlerUtils.buildSecurityEventToken(any(), anyString()))
                         .thenReturn(tokenPayload);
 
@@ -248,12 +254,13 @@ public class RegistrationEventHookHandlerTest {
                 .thenReturn(mockedEventPayload);
     }
 
-    private void setupUtilities() {
+    private void setupUtilities() throws Exception {
 
         mockServiceURLBuilder();
         mockIdentityTenantUtil();
         mockedEventHookHandlerUtils = mock(EventHookHandlerUtils.class, withSettings()
                 .defaultAnswer(Mockito.CALLS_REAL_METHODS));
+        CommonTestUtils.initPrivilegedCarbonContext();
         registrationEventHookHandler = new RegistrationEventHookHandler();
     }
 }
