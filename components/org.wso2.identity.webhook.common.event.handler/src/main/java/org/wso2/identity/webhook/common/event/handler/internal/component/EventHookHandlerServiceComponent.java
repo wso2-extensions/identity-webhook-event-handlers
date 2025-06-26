@@ -99,7 +99,7 @@ public class EventHookHandlerServiceComponent {
             if (isTokensEventHandlerEnabled != null && isTokensEventHandlerEnabled
                     .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new TokensEventHookHandler(EventConfigManager.getInstance()), null);
+                        new TokensEventHookHandler(), null);
             }
 
             String isSessionEventHandlerEnabled = getIdentityEventProperty(Constants.SESSION_EVENT_HOOK_NAME,

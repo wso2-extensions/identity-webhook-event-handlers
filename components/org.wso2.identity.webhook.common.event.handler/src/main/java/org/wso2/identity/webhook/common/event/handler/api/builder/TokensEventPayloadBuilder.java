@@ -2,17 +2,17 @@ package org.wso2.identity.webhook.common.event.handler.api.builder;
 
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
 public interface TokensEventPayloadBuilder {
 
     /**
-     * Returns the EventSchema type of the event payload.
+     * Get the event schema type.
      *
-     * @return Event Schema.
+     * @return Event schema type.
      */
-    EventSchema getEventSchemaType();
+    Constants.EventSchema getEventSchemaType();
 
     EventPayload buildAccessTokenRevokeEvent(EventData eventData) throws IdentityEventException;
 

@@ -1,6 +1,5 @@
 package org.wso2.identity.webhook.common.event.handler.internal.handler;
 
-import org.json.simple.JSONObject;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -12,7 +11,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
-import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resource;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resources;
@@ -20,27 +18,31 @@ import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
+import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
+import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
+import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
+import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
 import org.wso2.identity.event.common.publisher.EventPublisherService;
 import org.wso2.identity.event.common.publisher.model.EventContext;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.TokensEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
-import org.wso2.identity.webhook.common.event.handler.internal.config.EventPublisherConfig;
-import org.wso2.identity.webhook.common.event.handler.internal.config.ResourceConfig;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
-import org.wso2.identity.webhook.common.event.handler.internal.util.EventConfigManager;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.mockito.Answers.CALLS_REAL_METHODS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -68,7 +70,9 @@ public class TokensEventHookHandlerTest {
     @Mock
     private TokensEventPayloadBuilder mockedTokensEventPayloadBuilder;
     @Mock
-    private EventConfigManager mockedEventConfigManager;
+    private WebhookMetadataService mockedWebhookMetadataService;
+    @Mock
+    private TopicManagementService mockedTopicManagementService;
 
     private static final String SAMPLE_EVENT_KEY =
             "schemas.identity.wso2.org/events/token/event-type/accessTokensRevoked";
@@ -128,33 +132,63 @@ public class TokensEventHookHandlerTest {
     public Object[][] eventDataProvider() {
 
         return new Object[][]{
-                {IdentityEventConstants.EventName.SESSION_TERMINATE.name(),
-                        Constants.EventHandlerKey.WSO2.POST_TOKEN_REVOKE_EVENT, SAMPLE_EVENT_KEY}
+                {IdentityEventConstants.EventName.SESSION_TERMINATE.name(), SAMPLE_EVENT_KEY}
         };
     }
 
     @Test(dataProvider = "eventDataProvider")
-    public void testHandleEvent(String eventName, String eventHandlerKey, String expectedEventKey)
-            throws IdentityEventException, ConfigurationManagementException {
+    public void testHandleEvent(String eventName, String expectedEventKey) throws Exception {
 
         Event event = createEventWithProperties(eventName);
-        Resources resources = createResourcesWithAttributes(eventHandlerKey);
-        EventPublisherConfig eventPublisherConfig = new EventPublisherConfig(true,
-                new ResourceConfig(new JSONObject()));
+
+        // Mock event profile and channel
+        org.wso2.carbon.identity.webhook.metadata.api.model.Event channelEvent =
+                new org.wso2.carbon.identity.webhook.metadata.api.model.Event(eventName, "description",
+                        expectedEventKey);
+        Channel channel = new Channel("Tokens Channel", "Tokens Channel", "tokens/channel/uri",
+                Collections.singletonList(channelEvent));
+        EventProfile eventProfile = new EventProfile("WSO2", "uri", Collections.singletonList(channel));
+        List<EventProfile> profiles = Collections.singletonList(eventProfile);
+
+        when(mockedWebhookMetadataService.getSupportedEventProfiles()).thenReturn(profiles);
+        when(mockedTopicManagementService.isTopicExists(anyString(), anyString(), anyString())).thenReturn(true);
 
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
-            mocked.when(() -> PayloadBuilderFactory.getTokensEventPayloadBuilder(any(EventSchema.class)))
+            mocked.when(() -> PayloadBuilderFactory.getTokensEventPayloadBuilder(
+                            org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2))
                     .thenReturn(mockedTokensEventPayloadBuilder);
-            when(mockedConfigurationManager.getTenantResources(anyString(), any())).thenReturn(resources);
-            when(mockedEventConfigManager.getEventUri(anyString())).thenReturn(expectedEventKey);
-            when(mockedEventConfigManager.getEventPublisherConfigForTenant(anyString(), anyString())).thenReturn(
-                    eventPublisherConfig);
-            when(mockedEventConfigManager.extractEventPublisherConfig(any(Resources.class), anyString()))
-                    .thenReturn(eventPublisherConfig);
 
-            tokensEventHookHandler.handleEvent(event);
+            when(mockedTokensEventPayloadBuilder.buildAccessTokenRevokeEvent(any(EventData.class)))
+                    .thenReturn(mockedEventPayload);
 
-            verifyEventPublishedWithExpectedKey(expectedEventKey);
+            try (MockedStatic<EventHookHandlerUtils> utilsMocked = mockStatic(EventHookHandlerUtils.class)) {
+                // Mock all static methods used in the handler
+                EventData eventDataProvider = mock(EventData.class);
+                EventMetadata eventMetadata = mock(EventMetadata.class);
+                SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
+
+                // Set up eventDataProvider to return the correct tenant domain
+                when(eventDataProvider.getEventParams()).thenReturn(
+                        new HashMap<String, Object>() {{
+                            put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, CARBON_SUPER);
+                        }}
+                                                                   );
+                // Set up eventMetadata to match the channel and event name
+                when(eventMetadata.getChannel()).thenReturn("Tokens Channel");
+                when(eventMetadata.getEvent()).thenReturn(eventName);
+
+                utilsMocked.when(() -> EventHookHandlerUtils.buildEventDataProvider(any(Event.class)))
+                        .thenReturn(eventDataProvider);
+                utilsMocked.when(() -> EventHookHandlerUtils.getEventProfileManagerByProfile(anyString(), anyString()))
+                        .thenReturn(eventMetadata);
+                utilsMocked.when(() -> EventHookHandlerUtils.buildSecurityEventToken(any(), anyString()))
+                        .thenReturn(tokenPayload);
+
+                tokensEventHookHandler.handleEvent(event);
+
+                utilsMocked.verify(() -> EventHookHandlerUtils.publishEventPayload(eq(tokenPayload),
+                        eq(CARBON_SUPER), eq(expectedEventKey)), times(1));
+            }
         }
     }
 
@@ -198,11 +232,15 @@ public class TokensEventHookHandlerTest {
 
         EventHookHandlerDataHolder.getInstance().setConfigurationManager(mockedConfigurationManager);
         EventHookHandlerDataHolder.getInstance().setEventPublisherService(mockedEventPublisherService);
+
+        EventHookHandlerDataHolder.getInstance().setWebhookMetadataService(mockedWebhookMetadataService);
+        EventHookHandlerDataHolder.getInstance().setTopicManagementService(mockedTopicManagementService);
     }
 
     private void setupPayloadBuilderMocks() throws IdentityEventException {
 
-        when(mockedTokensEventPayloadBuilder.getEventSchemaType()).thenReturn(EventSchema.WSO2);
+        when(mockedTokensEventPayloadBuilder.getEventSchemaType()).thenReturn(
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2);
         when(mockedTokensEventPayloadBuilder.buildAccessTokenRevokeEvent(any(EventData.class)))
                 .thenReturn(mockedEventPayload);
     }
@@ -213,7 +251,7 @@ public class TokensEventHookHandlerTest {
         mockIdentityTenantUtil();
         mockedEventHookHandlerUtils = mock(EventHookHandlerUtils.class, withSettings()
                 .defaultAnswer(CALLS_REAL_METHODS));
-        tokensEventHookHandler = new TokensEventHookHandler(mockedEventConfigManager);
+        tokensEventHookHandler = new TokensEventHookHandler();
     }
 
 }
