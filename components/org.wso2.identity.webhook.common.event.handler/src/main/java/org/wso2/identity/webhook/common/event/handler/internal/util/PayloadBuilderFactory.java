@@ -135,7 +135,7 @@ public class PayloadBuilderFactory {
         return null;
     }
 
-    public static TokensEventPayloadBuilder getTokensEventPayloadBuilder(EventSchema eventSchemaType) {
+    public static TokensEventPayloadBuilder getTokensEventPayloadBuilder(Constants.EventSchema eventSchemaType) {
 
         List<TokensEventPayloadBuilder> tokensEventPayloadBuilders =
                 EventHookHandlerDataHolder.getInstance().getTokensEventPayloadBuilders();
