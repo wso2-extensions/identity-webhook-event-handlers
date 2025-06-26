@@ -213,7 +213,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         when(mockEventData.getEventParams()).thenReturn(params);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.REGISTER_USER)
+                .name(Flow.Name.USER_REGISTER)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
@@ -228,7 +228,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertEquals(userRegistrationFailurePayload.getUser().getRef(),
                 EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userRegistrationFailurePayload.getAction());
-        assertEquals(userRegistrationFailurePayload.getAction(), Flow.Name.REGISTER_USER.name());
+        assertEquals(userRegistrationFailurePayload.getAction(), Flow.Name.USER_REGISTER.name());
 
         assertNotNull(userRegistrationFailurePayload.getReason());
         assertNotNull(userRegistrationFailurePayload.getReason().getMessage());

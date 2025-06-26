@@ -32,6 +32,7 @@ import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
+import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
@@ -362,5 +363,29 @@ public class EventHookHandlerUtils {
             }
         }
         return null;
+    }
+
+    public static boolean isUserRegistrationSuccessFlow(String eventName) {
+
+        return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
+                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
+                        IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
+                                        IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
+                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
+    }
+
+    public static boolean isUserRegistrationFailedFlow(String eventName) {
+        return IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName);
+    }
+
+    public static boolean isCredentialUpdateFlow(String eventName) {
+
+        return ((IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
+                        IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName));
     }
 }

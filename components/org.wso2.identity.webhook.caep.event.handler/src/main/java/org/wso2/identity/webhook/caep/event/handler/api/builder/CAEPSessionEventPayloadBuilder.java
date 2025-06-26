@@ -86,7 +86,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
                     reasonAdmin.put("en", "User Logout");
                     reasonUser.put("en", "User Logged Out");
                     break;
-                case DELETE_USER:
+                case USER_DELETE:
                     reasonAdmin.put("en", "User Deleted");
                     reasonUser.put("en", "User Deleted");
                     initiatingEntity = "policy";

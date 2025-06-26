@@ -88,9 +88,9 @@ public class RegistrationEventHookHandlerTest {
     private RegistrationEventHookHandler registrationEventHookHandler;
 
     private static final String SAMPLE_EVENT_KEY =
-            "schemas.identity.wso2.org/events/registration/event-type/registrationSuccess";
+            "https://schemas.identity.wso2.org/events/registration/event-type/registrationSuccess";
     private static final String REGISTRATION_FAILURE_EVENT_KEY =
-            "schemas.identity.wso2.org/events/registration/event-type/registrationFailure";
+            "https://schemas.identity.wso2.org/events/registration/event-type/registrationFailure";
     private static final String SAMPLE_ATTRIBUTE_JSON = "{\"sendCredentials\":false,\"publishEnabled\":true}";
     private static final String DOMAIN_QUALIFIED_ADDED_USER_NAME = "PRIMARY/john";
     private static final String CARBON_SUPER = "carbon.super";
@@ -151,7 +151,8 @@ public class RegistrationEventHookHandlerTest {
                 {IdentityEventConstants.Event.POST_ADD_USER, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD, SAMPLE_EVENT_KEY},
-                {IdentityEventConstants.Event.USER_REGISTRATION_FAILED, REGISTRATION_FAILURE_EVENT_KEY}
+                {IdentityEventConstants.Event.USER_REGISTRATION_FAILED, REGISTRATION_FAILURE_EVENT_KEY},
+                {IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS, SAMPLE_EVENT_KEY}
         };
     }
 
@@ -160,7 +161,6 @@ public class RegistrationEventHookHandlerTest {
 
         Event event = createEventWithProperties(eventName);
 
-        // Mock event profile and channel
         org.wso2.carbon.identity.webhook.metadata.api.model.Event channelEvent =
                 new org.wso2.carbon.identity.webhook.metadata.api.model.Event(eventName, "description",
                         expectedEventKey);

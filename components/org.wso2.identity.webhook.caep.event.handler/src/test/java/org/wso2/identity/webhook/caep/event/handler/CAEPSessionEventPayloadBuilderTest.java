@@ -117,7 +117,7 @@ public class CAEPSessionEventPayloadBuilderTest {
                         .initiatingPersona(Flow.InitiatingPersona.SYSTEM).build()},
                 {new Flow.Builder().name(Flow.Name.LOGOUT)
                         .initiatingPersona(Flow.InitiatingPersona.APPLICATION).build()},
-                {new Flow.Builder().name(Flow.Name.DELETE_USER)
+                {new Flow.Builder().name(Flow.Name.USER_DELETE)
                         .initiatingPersona(Flow.InitiatingPersona.ADMIN).build()},
                 {new Flow.Builder().name(Flow.Name.SESSION_REVOKE)
                         .initiatingPersona(Flow.InitiatingPersona.USER).build()},

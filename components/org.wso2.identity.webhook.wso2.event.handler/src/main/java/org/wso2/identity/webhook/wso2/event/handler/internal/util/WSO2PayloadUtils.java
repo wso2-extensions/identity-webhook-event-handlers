@@ -23,8 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
-import org.wso2.carbon.identity.core.context.IdentityContext;
-import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
@@ -48,6 +46,9 @@ import java.util.Objects;
 
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
+import static org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils.isCredentialUpdateFlow;
+import static org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils.isUserRegistrationFailedFlow;
+import static org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils.isUserRegistrationSuccessFlow;
 
 public class WSO2PayloadUtils {
 
@@ -261,25 +262,17 @@ public class WSO2PayloadUtils {
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
             event =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_LOCK_ACCOUNT_EVENT;
-        } else if (((IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
-                Flow.Name.UPDATE_CREDENTIAL_PASSWORD.equals(
-                        IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
-                IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName))) {
+        } else if (isCredentialUpdateFlow(eventName)) {
             channel =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CREDENTIAL_CHANGE_CHANNEL;
             event =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_CREDENTIAL;
-        } else if ((IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
-                IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||
-                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
-                        Flow.Name.UPDATE_CREDENTIAL_PASSWORD.equals(
-                                IdentityContext.getThreadLocalIdentityContext().getFlow().getName())))) {
+        } else if (isUserRegistrationSuccessFlow(eventName)) {
             channel =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
             event =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_SUCCESS_EVENT;
-        } else if (IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName)) {
+        } else if (isUserRegistrationFailedFlow(eventName)) {
             channel =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
             event =
