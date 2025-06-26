@@ -28,8 +28,10 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
@@ -45,6 +47,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEven
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.util.CommonTestUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
@@ -73,10 +76,9 @@ import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mock
 public class CredentialEventHookHandlerTest {
 
     private static final String SAMPLE_EVENT_KEY =
-            "schemas.identity.wso2.org/events/credential/event-type/credentialUpdated";
+            "https://schemas.identity.wso2.org/events/credential/event-type/credentialUpdated";
     private static final String DOMAIN_QUALIFIED_ADDED_USER_NAME = "PRIMARY/john";
     private static final String CARBON_SUPER = "carbon.super";
-    private static final String SAMPLE_TENANT_DOMAIN = "sample-tenant";
 
     @Mock
     private ConfigurationManager mockedConfigurationManager;
@@ -95,12 +97,16 @@ public class CredentialEventHookHandlerTest {
     private CredentialEventHookHandler credentialEventHookHandler;
 
     @BeforeClass
-    public void setupClass() throws IdentityEventException {
+    public void setupClass() throws Exception {
 
         MockitoAnnotations.openMocks(this);
         setupDataHolderMocks();
         setupPayloadBuilderMocks();
         setupUtilities();
+        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+                .name(Flow.Name.PASSWORD_RESET)
+                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                .build());
     }
 
     @AfterClass
@@ -108,6 +114,7 @@ public class CredentialEventHookHandlerTest {
 
         closeMockedServiceURLBuilder();
         closeMockedIdentityTenantUtil();
+        PrivilegedCarbonContext.endTenantFlow();
     }
 
     @AfterMethod
@@ -135,9 +142,9 @@ public class CredentialEventHookHandlerTest {
     @DataProvider(name = "eventDataProvider")
     public Object[][] eventDataProvider() {
 
-        return new Object[][] {
+        return new Object[][]{
                 {IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD, SAMPLE_EVENT_KEY},
-                {IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM, SAMPLE_EVENT_KEY}
+                {IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM, SAMPLE_EVENT_KEY},
         };
     }
 
@@ -174,14 +181,10 @@ public class CredentialEventHookHandlerTest {
 
                 utilsMocked.when(() -> EventHookHandlerUtils.getEventProfileManagerByProfile(anyString(), anyString()))
                         .thenReturn(eventMetadata);
-
-                EventData eventData = mock(EventData.class);
-                AuthenticationContext authContext = mock(AuthenticationContext.class);
-                when(authContext.getLoginTenantDomain()).thenReturn(SAMPLE_TENANT_DOMAIN);
-                when(eventData.getAuthenticationContext()).thenReturn(authContext);
-
+                utilsMocked.when(() -> EventHookHandlerUtils.isCredentialUpdateFlow(anyString()))
+                        .thenCallRealMethod();
                 utilsMocked.when(() -> EventHookHandlerUtils.buildEventDataProvider(any(Event.class)))
-                        .thenReturn(eventData);
+                        .thenCallRealMethod();
 
                 SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
                 utilsMocked.when(() -> EventHookHandlerUtils.buildSecurityEventToken(any(), anyString()))
@@ -190,9 +193,10 @@ public class CredentialEventHookHandlerTest {
                 credentialEventHookHandler.handleEvent(event);
 
                 utilsMocked.verify(() -> EventHookHandlerUtils.publishEventPayload(tokenPayload,
-                        SAMPLE_TENANT_DOMAIN, expectedEventKey), times(1));
+                        CARBON_SUPER, expectedEventKey), times(1));
             }
         }
+        IdentityContext.destroyCurrentContext();
     }
 
     @Test
@@ -244,10 +248,11 @@ public class CredentialEventHookHandlerTest {
                 .thenReturn(mockedEventPayload);
     }
 
-    private void setupUtilities() {
+    private void setupUtilities() throws Exception {
 
         mockServiceURLBuilder();
         mockIdentityTenantUtil();
+        CommonTestUtils.initPrivilegedCarbonContext();
     }
 
     private Event createEvent(String eventName) {
@@ -258,7 +263,7 @@ public class CredentialEventHookHandlerTest {
     private Event createEventWithProperties(String eventName) {
 
         HashMap<String, Object> properties = new HashMap<>();
-        String[] addedUsers = new String[] {DOMAIN_QUALIFIED_ADDED_USER_NAME};
+        String[] addedUsers = new String[]{DOMAIN_QUALIFIED_ADDED_USER_NAME};
         properties.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, CARBON_SUPER);
         return new Event(eventName, properties);
