@@ -55,6 +55,8 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
  */
 public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventPayloadBuilder {
 
+    private static final String UPDATE = "UPDATE";
+
     @Override
     public EventPayload buildUserGroupUpdateEvent(EventData eventData) throws IdentityEventException {
 
@@ -190,9 +192,12 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         UserStore userStore = new UserStore(userStoreDomainName);
 
-        List<UserClaim> addedClaims = populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_ADDED);
-        List<UserClaim> modifiedClaims = populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_MODIFIED);
-        List<UserClaim> deletedClaims = populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_DELETED);
+        List<UserClaim> addedClaims =
+                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_ADDED);
+        List<UserClaim> modifiedClaims =
+                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_MODIFIED);
+        List<UserClaim> deletedClaims =
+                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_DELETED);
         List<UserClaim> additionalClaims = populateClaims(properties, "ADDITIONAL_USER_CLAIMS");
 
         User user = new User();
@@ -211,7 +216,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String action = "";
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
-            action = flow.getName().name();
+            action = resolveAction(flow.getName().name());
         }
 
         return new WSO2UserAccountEventPayload.Builder()
@@ -313,4 +318,11 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return group;
     }
 
+    private String resolveAction(String flowName) {
+
+        if (Flow.Name.PROFILE_UPDATE.name().equals(flowName)) {
+            return UPDATE;
+        }
+        return null;
+    }
 }
