@@ -24,6 +24,8 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 
 public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
 
+    private String action;
+
     private WSO2UserAccountEventPayload(Builder builder) {
 
         this.initiatorType = builder.initiatorType;
@@ -31,6 +33,7 @@ public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
         this.user = builder.user;
         this.userStore = builder.userStore;
         this.tenant = builder.tenant;
+        this.action = builder.action;
     }
 
     /**
@@ -43,6 +46,7 @@ public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
         private Organization organization;
         private UserStore userStore;
         private Organization tenant;
+        private String action;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -71,6 +75,12 @@ public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
         public Builder tenant(Organization tenant) {
 
             this.tenant = tenant;
+            return this;
+        }
+
+        public Builder action(String action) {
+
+            this.action = action;
             return this;
         }
 
