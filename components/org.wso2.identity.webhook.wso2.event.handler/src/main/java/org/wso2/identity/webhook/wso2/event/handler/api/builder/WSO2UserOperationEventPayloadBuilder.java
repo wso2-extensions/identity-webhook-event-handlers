@@ -17,8 +17,6 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
@@ -55,7 +53,7 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
  */
 public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventPayloadBuilder {
 
-    private static final String UPDATE = "UPDATE";
+    private static final String UPDATE_ACTION = "UPDATE";
 
     @Override
     public EventPayload buildUserGroupUpdateEvent(EventData eventData) throws IdentityEventException {
@@ -321,7 +319,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     private String resolveAction(String flowName) {
 
         if (Flow.Name.PROFILE_UPDATE.name().equals(flowName)) {
-            return UPDATE;
+            return UPDATE_ACTION;
         }
         return null;
     }
