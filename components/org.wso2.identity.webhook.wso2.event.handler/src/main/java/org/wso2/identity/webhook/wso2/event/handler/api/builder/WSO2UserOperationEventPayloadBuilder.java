@@ -190,9 +190,9 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         UserStore userStore = new UserStore(userStoreDomainName);
 
-        List<UserClaim> addedClaims = populateClaims(properties, "USER_CLAIMS_ADDED");
-        List<UserClaim> modifiedClaims = populateClaims(properties, "USER_CLAIMS_MODIFIED");
-        List<UserClaim> deletedClaims = populateClaims(properties, "USER_CLAIMS_DELETED");
+        List<UserClaim> addedClaims = populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_ADDED);
+        List<UserClaim> modifiedClaims = populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_MODIFIED);
+        List<UserClaim> deletedClaims = populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_DELETED);
         List<UserClaim> additionalClaims = populateClaims(properties, "ADDITIONAL_USER_CLAIMS");
 
         User user = new User();
@@ -205,14 +205,18 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         user.setRemovedClaims(deletedClaims);
 
         Organization organization = new Organization(tenantId, tenantDomain);
+
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         String initiatorType = "";
+        String action = "";
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
+            action = flow.getName().name();
         }
 
         return new WSO2UserAccountEventPayload.Builder()
                 .initiatorType(initiatorType)
+                .action(action)
                 .user(user)
                 .tenant(organization)
                 .userStore(userStore)
