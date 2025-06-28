@@ -22,6 +22,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
@@ -41,9 +43,6 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 
 import java.util.List;
 import java.util.Objects;
-
-import static org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils.isUserRegistrationFailedFlow;
-import static org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils.isUserRegistrationSuccessFlow;
 
 public class RegistrationEventHookHandler extends AbstractEventHandler {
 
@@ -155,6 +154,23 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
     private boolean isSupportedEvent(String eventName) {
 
         return isUserRegistrationSuccessFlow(eventName) || isUserRegistrationFailedFlow(eventName);
+    }
+
+    public boolean isUserRegistrationSuccessFlow(String eventName) {
+
+        return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
+                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
+                        IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
+                                IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
+                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
+    }
+
+    public boolean isUserRegistrationFailedFlow(String eventName) {
+
+        return IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName);
     }
 
 }

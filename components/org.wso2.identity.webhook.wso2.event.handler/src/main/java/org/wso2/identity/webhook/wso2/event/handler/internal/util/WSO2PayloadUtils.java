@@ -23,6 +23,8 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
@@ -46,9 +48,6 @@ import java.util.Objects;
 
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
-import static org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils.isCredentialUpdateFlow;
-import static org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils.isUserRegistrationFailedFlow;
-import static org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils.isUserRegistrationSuccessFlow;
 
 public class WSO2PayloadUtils {
 
@@ -283,5 +282,30 @@ public class WSO2PayloadUtils {
                 .channel(String.valueOf(channel))
                 .eventProfile(WSO2.name())
                 .build();
+    }
+
+    private static boolean isUserRegistrationSuccessFlow(String eventName) {
+
+        return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
+                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
+                        IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
+                                IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
+                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
+    }
+
+    private static boolean isUserRegistrationFailedFlow(String eventName) {
+
+        return IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName);
+    }
+
+    private static boolean isCredentialUpdateFlow(String eventName) {
+
+        return ((IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
+                        IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName));
     }
 }
