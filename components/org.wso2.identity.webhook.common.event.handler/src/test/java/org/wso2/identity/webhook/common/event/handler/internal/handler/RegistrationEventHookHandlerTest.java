@@ -202,10 +202,6 @@ public class RegistrationEventHookHandlerTest {
                         .thenCallRealMethod();
                 utilsMocked.when(() -> EventHookHandlerUtils.getEventProfileManagerByProfile(anyString(), anyString()))
                         .thenReturn(eventMetadata);
-                utilsMocked.when(() -> EventHookHandlerUtils.isUserRegistrationSuccessFlow(anyString()))
-                        .thenCallRealMethod();
-                utilsMocked.when(() -> EventHookHandlerUtils.isUserRegistrationFailedFlow(anyString()))
-                        .thenCallRealMethod();
                 utilsMocked.when(() -> EventHookHandlerUtils.buildSecurityEventToken(any(), anyString()))
                         .thenReturn(tokenPayload);
 

@@ -22,6 +22,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
@@ -41,8 +43,6 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 
 import java.util.List;
 import java.util.Objects;
-
-import static org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils.isCredentialUpdateFlow;
 
 /**
  * This class handles credential events and builds the event payload.
@@ -147,5 +147,13 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
     private boolean isSupportedEvent(String eventName) {
 
         return isCredentialUpdateFlow(eventName);
+    }
+
+    public boolean isCredentialUpdateFlow(String eventName) {
+
+        return ((IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
+                        IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName));
     }
 }

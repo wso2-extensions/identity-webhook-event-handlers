@@ -181,8 +181,6 @@ public class CredentialEventHookHandlerTest {
 
                 utilsMocked.when(() -> EventHookHandlerUtils.getEventProfileManagerByProfile(anyString(), anyString()))
                         .thenReturn(eventMetadata);
-                utilsMocked.when(() -> EventHookHandlerUtils.isCredentialUpdateFlow(anyString()))
-                        .thenCallRealMethod();
                 utilsMocked.when(() -> EventHookHandlerUtils.buildEventDataProvider(any(Event.class)))
                         .thenCallRealMethod();
 
