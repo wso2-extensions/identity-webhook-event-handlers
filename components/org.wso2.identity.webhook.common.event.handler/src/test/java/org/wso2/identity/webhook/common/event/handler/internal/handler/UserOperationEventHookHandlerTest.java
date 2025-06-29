@@ -153,7 +153,8 @@ public class UserOperationEventHookHandlerTest {
         org.wso2.carbon.identity.webhook.metadata.api.model.Event channelEvent =
                 new org.wso2.carbon.identity.webhook.metadata.api.model.Event(eventName, "description",
                         expectedEventKey);
-        Channel channel = new Channel("User Operation Channel", "User Operation Channel", "user/operation/channel/uri",
+        String channelUri = "user/operation/channel/uri";
+        Channel channel = new Channel("User Operation Channel", "User Operation Channel", channelUri,
                 Collections.singletonList(channelEvent));
         EventProfile eventProfile = new EventProfile("WSO2", "uri", Collections.singletonList(channel));
         List<EventProfile> profiles = Collections.singletonList(eventProfile);
@@ -196,7 +197,7 @@ public class UserOperationEventHookHandlerTest {
                 userOperationEventHookHandler.handleEvent(event);
 
                 utilsMocked.verify(() -> EventHookHandlerUtils.publishEventPayload(eq(tokenPayload),
-                        eq(CARBON_SUPER), eq(expectedEventKey)), times(1));
+                        eq(CARBON_SUPER), eq(channelUri)), times(1));
             }
         }
     }

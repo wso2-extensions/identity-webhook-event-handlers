@@ -143,7 +143,8 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
                         SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
                                 buildSecurityEventToken(eventPayload, eventUri, subject);
-                        EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                        EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                                sessionChannel.getUri());
                     }
                 }
             }

@@ -145,7 +145,8 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
 
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
                             buildSecurityEventToken(eventPayload, eventUri, subject);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            verificationChannel.getUri());
 
                 }
             }

@@ -136,7 +136,8 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
                     eventPayload = payloadBuilder.buildCredentialUpdateEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload =
                             EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            credentialChangeChannel.getUri());
                 }
             }
         } catch (Exception e) {

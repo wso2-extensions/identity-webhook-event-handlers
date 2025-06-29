@@ -151,7 +151,8 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                     eventPayload = payloadBuilder.buildUserGroupUpdateEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            userOperationChannel.getUri());
                 } else if (IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(event.getEventName()) &&
                         isTopicExists) {
 
@@ -165,19 +166,22 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                     eventPayload = payloadBuilder.buildUserDeleteEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            userOperationChannel.getUri());
                 } else if (IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(event.getEventName()) &&
                         isTopicExists) {
                     eventPayload = payloadBuilder.buildUserUnlockAccountEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            userOperationChannel.getUri());
                 } else if (IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(event.getEventName()) &&
                         isTopicExists) {
                     eventPayload = payloadBuilder.buildUserLockAccountEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            userOperationChannel.getUri());
                 }
             }
         } catch (Exception e) {

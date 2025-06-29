@@ -142,7 +142,7 @@ public class CredentialEventHookHandlerTest {
     @DataProvider(name = "eventDataProvider")
     public Object[][] eventDataProvider() {
 
-        return new Object[][]{
+        return new Object[][] {
                 {IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM, SAMPLE_EVENT_KEY},
         };
@@ -156,8 +156,9 @@ public class CredentialEventHookHandlerTest {
         org.wso2.carbon.identity.webhook.metadata.api.model.Event channelEvent =
                 new org.wso2.carbon.identity.webhook.metadata.api.model.Event(eventName, "description",
                         expectedEventKey);
+        String channelUri = "credential/change/channel/uri";
         Channel channel =
-                new Channel("Credential Change Channel", "Credential Change Channel", "credential/change/channel/uri",
+                new Channel("Credential Change Channel", "Credential Change Channel", channelUri,
                         Collections.singletonList(channelEvent));
         EventProfile eventProfile = new EventProfile("WSO2", "uri", Collections.singletonList(channel));
         List<EventProfile> profiles = Collections.singletonList(eventProfile);
@@ -191,7 +192,7 @@ public class CredentialEventHookHandlerTest {
                 credentialEventHookHandler.handleEvent(event);
 
                 utilsMocked.verify(() -> EventHookHandlerUtils.publishEventPayload(tokenPayload,
-                        CARBON_SUPER, expectedEventKey), times(1));
+                        CARBON_SUPER, channelUri), times(1));
             }
         }
         IdentityContext.destroyCurrentContext();
@@ -261,7 +262,7 @@ public class CredentialEventHookHandlerTest {
     private Event createEventWithProperties(String eventName) {
 
         HashMap<String, Object> properties = new HashMap<>();
-        String[] addedUsers = new String[]{DOMAIN_QUALIFIED_ADDED_USER_NAME};
+        String[] addedUsers = new String[] {DOMAIN_QUALIFIED_ADDED_USER_NAME};
         properties.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, CARBON_SUPER);
         return new Event(eventName, properties);
