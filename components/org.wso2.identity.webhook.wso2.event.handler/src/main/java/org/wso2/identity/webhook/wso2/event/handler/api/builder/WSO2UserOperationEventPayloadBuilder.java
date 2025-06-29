@@ -17,8 +17,6 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
@@ -54,6 +52,8 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
  * WSO2 UserOperation Event Payload Builder.
  */
 public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventPayloadBuilder {
+
+    private static final String UPDATE_ACTION = "UPDATE";
 
     @Override
     public EventPayload buildUserGroupUpdateEvent(EventData eventData) throws IdentityEventException {
@@ -178,6 +178,70 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return this.buildUserAccountEvent(eventData);
     }
 
+    @Override
+    public EventPayload buildUserProfileUpdateEvent(EventData eventData) throws IdentityEventException {
+
+        Map<String, Object> properties = eventData.getEventParams();
+        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
+        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+        String userStoreDomainName =
+                String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
+        String userId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_ID));
+
+        UserStore userStore = new UserStore(userStoreDomainName);
+
+        List<UserClaim> addedClaims =
+                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_ADDED);
+        List<UserClaim> modifiedClaims =
+                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_MODIFIED);
+        List<UserClaim> deletedClaims =
+                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_DELETED);
+        List<UserClaim> additionalClaims = populateClaims(properties, "ADDITIONAL_USER_CLAIMS");
+
+        User user = new User();
+        user.setId(userId);
+        user.setRef(
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+        user.setAdditionalClaims(additionalClaims);
+        user.setAddedClaims(addedClaims);
+        user.setUpdatedClaims(modifiedClaims);
+        user.setRemovedClaims(deletedClaims);
+
+        Organization organization = new Organization(tenantId, tenantDomain);
+
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        String initiatorType = "";
+        String action = "";
+        if (flow != null) {
+            initiatorType = flow.getInitiatingPersona().name();
+            action = resolveAction(flow.getName().name());
+        }
+
+        return new WSO2UserAccountEventPayload.Builder()
+                .initiatorType(initiatorType)
+                .action(action)
+                .user(user)
+                .tenant(organization)
+                .userStore(userStore)
+                .build();
+    }
+
+    private List<UserClaim> populateClaims(Map<String, Object> properties, String userClaimKey) {
+
+        if (properties != null && properties.get(userClaimKey) instanceof Map) {
+
+            Map<String, String> userClaimsMap = (Map<String, String>) properties.get(userClaimKey);
+            List<UserClaim> userClaims = new ArrayList<>();
+
+            for (Map.Entry<String, String> entry : userClaimsMap.entrySet()) {
+                UserClaim userClaim = new UserClaim(entry.getKey(), entry.getValue());
+                userClaims.add(userClaim);
+            }
+            return userClaims;
+        }
+        return null;
+    }
+
     private List<User> buildUserList(AbstractUserStoreManager userStoreManager, Map<String, Object> properties,
                                      String userListPropertyName) throws IdentityEventException {
 
@@ -252,4 +316,11 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return group;
     }
 
+    private String resolveAction(String flowName) {
+
+        if (Flow.Name.PROFILE_UPDATE.name().equals(flowName)) {
+            return UPDATE_ACTION;
+        }
+        return null;
+    }
 }
