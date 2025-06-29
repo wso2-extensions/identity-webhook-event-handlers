@@ -138,12 +138,14 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                     eventPayload = payloadBuilder.buildRegistrationSuccessEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            registrationChannel.getUri());
                 } else if (isUserRegistrationFailedFlow(event.getEventName()) && isTopicExists) {
                     eventPayload = payloadBuilder.buildRegistrationFailureEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
                             .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            registrationChannel.getUri());
                 }
             }
         } catch (Exception e) {

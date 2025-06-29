@@ -125,7 +125,7 @@ public class SessionEventHookHandlerTest {
     @DataProvider(name = "eventDataProvider")
     public Object[][] eventDataProvider() {
 
-        return new Object[][]{
+        return new Object[][] {
                 {IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name(),
                         SAMPLE_EVENT_KEY_SESSION_REVOKED
                 },
@@ -158,7 +158,8 @@ public class SessionEventHookHandlerTest {
         org.wso2.carbon.identity.webhook.metadata.api.model.Event channelEvent =
                 new org.wso2.carbon.identity.webhook.metadata.api.model.Event(eventName, "description",
                         expectedEventKey);
-        Channel channel = new Channel("Session Channel", "Session Channel", "session/channel/uri",
+        String channelUri = "session/channel/uri";
+        Channel channel = new Channel("Session Channel", "Session Channel", channelUri,
                 Collections.singletonList(channelEvent));
         EventProfile eventProfile = new EventProfile("CAEP", "uri", Collections.singletonList(channel));
         List<EventProfile> profiles = Collections.singletonList(eventProfile);
@@ -181,26 +182,22 @@ public class SessionEventHookHandlerTest {
                     .thenReturn(mockedEventPayload);
 
             try (MockedStatic<EventHookHandlerUtils> utilsMocked = mockStatic(EventHookHandlerUtils.class)) {
-                // Mock all static methods used in the handler
                 EventData eventDataProvider = mock(EventData.class);
                 org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata eventMetadata =
                         mock(org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata.class);
                 SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
 
-                // Mock AuthenticatedUser for tenant domain
                 org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser mockUser =
                         mock(org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser.class);
                 when(mockUser.getTenantDomain()).thenReturn(SAMPLE_TENANT_DOMAIN);
                 when(eventDataProvider.getAuthenticatedUser()).thenReturn(mockUser);
 
-                // Set up eventDataProvider to return the correct tenant domain (optional, for completeness)
                 when(eventDataProvider.getEventParams()).thenReturn(
                         new HashMap<String, Object>() {{
                             put(org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.TENANT_DOMAIN,
                                     SAMPLE_TENANT_DOMAIN);
                         }}
                 );
-                // Set up eventMetadata to match the channel and event name
                 when(eventMetadata.getChannel()).thenReturn("Session Channel");
                 when(eventMetadata.getEvent()).thenReturn(eventName);
 
@@ -217,7 +214,7 @@ public class SessionEventHookHandlerTest {
                 sessionEventHookHandler.handleEvent(event);
 
                 utilsMocked.verify(() -> EventHookHandlerUtils.publishEventPayload(eq(tokenPayload),
-                        eq(SAMPLE_TENANT_DOMAIN), eq(expectedEventKey)), times(1));
+                        eq(SAMPLE_TENANT_DOMAIN), eq(channelUri)), times(1));
             }
         }
     }

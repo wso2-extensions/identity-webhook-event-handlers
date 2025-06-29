@@ -156,7 +156,8 @@ public class VerificationEventHookHandlerTest {
         org.wso2.carbon.identity.webhook.metadata.api.model.Event channelEvent =
                 new org.wso2.carbon.identity.webhook.metadata.api.model.Event(eventName, "description",
                         expectedEventKey);
-        Channel channel = new Channel("Verification Channel", "Verification Channel", "verification/channel/uri",
+        String channelUri = "verification/channel/uri";
+        Channel channel = new Channel("Verification Channel", "Verification Channel", channelUri,
                 Collections.singletonList(channelEvent));
         EventProfile eventProfile = new EventProfile("CAEP", "uri", Collections.singletonList(channel));
         List<EventProfile> profiles = Collections.singletonList(eventProfile);
@@ -198,7 +199,7 @@ public class VerificationEventHookHandlerTest {
                 verificationEventHookHandler.handleEvent(event);
 
                 utilsMocked.verify(() -> EventHookHandlerUtils.publishEventPayload(eq(tokenPayload),
-                        eq(SAMPLE_TENANT_DOMAIN), eq(expectedEventKey)), times(1));
+                        eq(SAMPLE_TENANT_DOMAIN), eq(channelUri)), times(1));
             }
         }
     }

@@ -95,7 +95,6 @@ public class RegistrationEventHookHandlerTest {
             "https://schemas.identity.wso2.org/events/registration/event-type/registrationSuccess";
     private static final String REGISTRATION_FAILURE_EVENT_KEY =
             "https://schemas.identity.wso2.org/events/registration/event-type/registrationFailure";
-    private static final String SAMPLE_ATTRIBUTE_JSON = "{\"sendCredentials\":false,\"publishEnabled\":true}";
     private static final String DOMAIN_QUALIFIED_ADDED_USER_NAME = "PRIMARY/john";
     private static final String CARBON_SUPER = "carbon.super";
     private static final String ADMIN = "ADMIN";
@@ -157,7 +156,7 @@ public class RegistrationEventHookHandlerTest {
     @DataProvider(name = "eventDataProvider")
     public Object[][] eventDataProvider() {
 
-        return new Object[][]{
+        return new Object[][] {
                 {IdentityEventConstants.Event.POST_ADD_USER, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.USER_REGISTRATION_FAILED, REGISTRATION_FAILURE_EVENT_KEY},
@@ -173,7 +172,8 @@ public class RegistrationEventHookHandlerTest {
         org.wso2.carbon.identity.webhook.metadata.api.model.Event channelEvent =
                 new org.wso2.carbon.identity.webhook.metadata.api.model.Event(eventName, "description",
                         expectedEventKey);
-        Channel channel = new Channel("Registration Channel", "Registration Channel", "registration/channel/uri",
+        String channelUri = "registration/channel/uri";
+        Channel channel = new Channel("Registration Channel", "Registration Channel", channelUri,
                 Collections.singletonList(channelEvent));
         EventProfile eventProfile = new EventProfile("WSO2", "uri", Collections.singletonList(channel));
         List<EventProfile> profiles = Collections.singletonList(eventProfile);
@@ -190,11 +190,9 @@ public class RegistrationEventHookHandlerTest {
                     .thenReturn(mockedEventPayload);
 
             try (MockedStatic<EventHookHandlerUtils> utilsMocked = mockStatic(EventHookHandlerUtils.class)) {
-                // Mock all static methods used in the handler
                 EventMetadata eventMetadata = mock(EventMetadata.class);
                 SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
 
-                // Set up eventMetadata to match the channel and event name
                 when(eventMetadata.getChannel()).thenReturn("Registration Channel");
                 when(eventMetadata.getEvent()).thenReturn(eventName);
 
@@ -208,7 +206,7 @@ public class RegistrationEventHookHandlerTest {
                 registrationEventHookHandler.handleEvent(event);
 
                 utilsMocked.verify(() -> EventHookHandlerUtils.publishEventPayload(eq(tokenPayload),
-                        eq(CARBON_SUPER), eq(expectedEventKey)), times(1));
+                        eq(CARBON_SUPER), eq(channelUri)), times(1));
             }
         }
     }
@@ -225,7 +223,7 @@ public class RegistrationEventHookHandlerTest {
     private Event createEventWithProperties(String eventName) {
 
         HashMap<String, Object> properties = new HashMap<>();
-        String[] addedUsers = new String[]{DOMAIN_QUALIFIED_ADDED_USER_NAME};
+        String[] addedUsers = new String[] {DOMAIN_QUALIFIED_ADDED_USER_NAME};
         properties.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, CARBON_SUPER);
         properties.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, ADMIN);
