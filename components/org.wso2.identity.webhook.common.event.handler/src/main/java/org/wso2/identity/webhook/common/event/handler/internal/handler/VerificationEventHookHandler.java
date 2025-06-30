@@ -53,14 +53,29 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
     @Override
     public boolean canHandle(MessageContext messageContext) throws IdentityRuntimeException {
 
-        IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
-        String eventName = identityContext.getEvent().getEventName();
+        boolean canHandle = false;
+        try {
+            if (!(messageContext instanceof IdentityEventMessageContext)) {
+                log.debug("MessageContext is not of type IdentityEventMessageContext. Cannot handle the event.");
+                return false;
+            }
 
-        boolean canHandle = isSupportedEvent(eventName);
-        if (canHandle) {
-            log.debug(eventName + " event can be handled.");
-        } else {
-            log.debug(eventName + " event cannot be handled.");
+            IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
+            String eventName = identityContext.getEvent() != null ? identityContext.getEvent().getEventName() : null;
+
+            if (eventName == null) {
+                log.debug("Event name is null in IdentityEventMessageContext. Cannot handle the event.");
+                return false;
+            }
+
+            canHandle = isSupportedEvent(eventName);
+            if (canHandle) {
+                log.debug(eventName + " event can be handled.");
+            } else {
+                log.debug(eventName + " event cannot be handled.");
+            }
+        } catch (Exception e) {
+            log.debug("Unexpected error occurred while evaluating event in VerificationEventHookHandler.", e);
         }
         return canHandle;
     }
@@ -152,7 +167,6 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
             }
         } catch (Exception e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
-            throw new IdentityEventException("Error while retrieving event publisher configuration for tenant.", e);
         }
     }
 }
