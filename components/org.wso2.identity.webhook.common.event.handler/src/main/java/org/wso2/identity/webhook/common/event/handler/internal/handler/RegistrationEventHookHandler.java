@@ -60,6 +60,8 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
         IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
         String eventName = identityContext.getEvent().getEventName();
 
+        log.info("Checking if the event " + eventName + " can be handled by the RegistrationEventHookHandler.");
+
         boolean canHandle = isSupportedEvent(eventName);
         if (canHandle) {
             log.debug(eventName + " event can be handled.");
@@ -160,12 +162,13 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
     public boolean isUserRegistrationSuccessFlow(String eventName) {
 
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow.Name flowName = (flow != null) ? flow.getName() : null;
+
         return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
-                        IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)) ||
                 (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
-                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(
-                                IdentityContext.getThreadLocalIdentityContext().getFlow().getName())) ||
+                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
                 IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
     }
