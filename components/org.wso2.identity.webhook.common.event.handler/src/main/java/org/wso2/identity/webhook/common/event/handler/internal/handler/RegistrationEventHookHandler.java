@@ -57,16 +57,30 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
     @Override
     public boolean canHandle(MessageContext messageContext) throws IdentityRuntimeException {
 
-        IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
-        String eventName = identityContext.getEvent().getEventName();
+        boolean canHandle = false;
+        try {
+            if (!(messageContext instanceof IdentityEventMessageContext)) {
+                log.debug("MessageContext is not of type IdentityEventMessageContext. Cannot handle the event.");
+                return false;
+            }
 
-        log.info("Checking if the event " + eventName + " can be handled by the RegistrationEventHookHandler.");
+            IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
+            String eventName = identityContext.getEvent() != null ? identityContext.getEvent().getEventName() : null;
 
-        boolean canHandle = isSupportedEvent(eventName);
-        if (canHandle) {
-            log.debug(eventName + " event can be handled.");
-        } else {
-            log.debug(eventName + " event cannot be handled.");
+            if (eventName == null) {
+                log.debug("Event name is null in IdentityEventMessageContext. Cannot handle the event.");
+                return false;
+            }
+            log.info("Checking if the event " + eventName + " can be handled by the RegistrationEventHookHandler.");
+
+            canHandle = isSupportedEvent(eventName);
+            if (canHandle) {
+                log.debug(eventName + " event can be handled.");
+            } else {
+                log.debug(eventName + " event cannot be handled.");
+            }
+        } catch (Exception e) {
+            log.debug("Unexpected error occurred while evaluating event in RegistrationEventHookHandler.", e);
         }
         return canHandle;
     }
