@@ -51,7 +51,7 @@ import static org.wso2.identity.webhook.common.event.handler.internal.constant.C
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 
 /**
- * WSO2 UserOperation Event Payload Builder.
+ * WSO2 UserOperation Event Payload Builder
  */
 public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventPayloadBuilder {
 
