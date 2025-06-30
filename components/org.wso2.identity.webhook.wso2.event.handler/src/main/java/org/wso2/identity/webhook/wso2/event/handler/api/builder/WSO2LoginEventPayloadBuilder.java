@@ -28,11 +28,13 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
-import org.wso2.identity.webhook.wso2.event.handler.internal.model.AuthenticationFailedReason;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationFailedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationSuccessEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Context;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Reason;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Step;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
@@ -141,19 +143,17 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         return authMethods;
     }
 
-    private AuthenticationFailedReason buildAuthenticationFailedReason(AuthenticationContext authContext) {
+    private Reason buildAuthenticationFailedReason(AuthenticationContext authContext) {
 
-        AuthenticationFailedReason failedReason = new AuthenticationFailedReason();
         HashMap<String, String> dataMap = (HashMap<String, String>) authContext.getParameters().get(Constants.DATA_MAP);
         String errorCode = dataMap.get(Constants.CURRENT_AUTHENTICATOR_ERROR_CODE);
-        failedReason.setId(errorCode);
+        String errorMessage = dataMap.get(Constants.CURRENT_AUTHENTICATOR_ERROR_MESSAGE);
 
-        AuthenticationFailedReason.FailedStep failedStep = new AuthenticationFailedReason.FailedStep();
-        failedStep.setStep(authContext.getCurrentStep());
-        failedStep.setAuthenticator(authContext.getCurrentAuthenticator());
-        failedStep.setIdp(authContext.getExternalIdP() != null ?
-                authContext.getExternalIdP().getIdentityProvider().getIdentityProviderName() : null);
-        failedReason.setFailedStep(failedStep);
+        String idp = authContext.getExternalIdP() != null ?
+                authContext.getExternalIdP().getIdentityProvider().getIdentityProviderName() : null;
+        Step failedStep = new Step(authContext.getCurrentStep(), idp, authContext.getCurrentAuthenticator());
+        Context errorContext = new Context(failedStep);
+        Reason failedReason = new Reason(errorCode, errorMessage, errorContext);
 
         return failedReason;
     }

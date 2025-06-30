@@ -47,6 +47,7 @@ import java.util.Map;
 
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedServiceURLBuilder;
@@ -178,10 +179,14 @@ public class WSO2LoginEventPayloadBuilderTest {
         assertEquals(failedPayload.getTenant().getId(), tenantId);
         assertEquals(failedPayload.getTenant().getName(), tenantName);
         assertEquals(failedPayload.getUser().getRef(), userRef);
-        assertEquals(failedPayload.getReason().getId(), reasonId);
-        assertEquals(failedPayload.getReason().getFailedStep().getStep(), failedStep);
-        assertEquals(failedPayload.getReason().getFailedStep().getIdp(), idp);
-        assertEquals(failedPayload.getReason().getFailedStep().getAuthenticator(), authenticator);
+        assertNotNull(failedPayload.getReason());
+        assertEquals(failedPayload.getReason().getMessage(), SAMPLE_ERROR_CODE);
+//        assertEquals(failedPayload.getReason().getDescription(), SAMPLE_ERROR_CODE); //TODO
+        assertNotNull(failedPayload.getReason().getContext());
+        assertNotNull(failedPayload.getReason().getContext().getFailedStep());
+        assertEquals(failedPayload.getReason().getContext().getFailedStep().getStep(), failedStep);
+        assertEquals(failedPayload.getReason().getContext().getFailedStep().getIdp(), idp);
+        assertEquals(failedPayload.getReason().getContext().getFailedStep().getAuthenticator(), authenticator);
     }
 
     @Test
@@ -199,10 +204,16 @@ public class WSO2LoginEventPayloadBuilderTest {
         assertEquals(failedPayload.getApplication().getName(), SAMPLE_SERVICE_PROVIDER);
         assertEquals(failedPayload.getTenant().getId(), SAMPLE_TENANT_ID);
         assertEquals(failedPayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
-        assertEquals(failedPayload.getReason().getId(), SAMPLE_ERROR_CODE);
-        assertEquals(failedPayload.getReason().getFailedStep().getStep(), 2);
-        assertEquals(failedPayload.getReason().getFailedStep().getIdp(), SAMPLE_IDP);
-        assertEquals(failedPayload.getReason().getFailedStep().getAuthenticator(), SAMPLE_AUTHENTICATOR);
+
+        assertNotNull(failedPayload.getReason());
+        assertEquals(failedPayload.getReason().getMessage(), SAMPLE_ERROR_CODE);
+//        assertEquals(failedPayload.getReason().getDescription(), SAMPLE_ERROR_CODE); //TODO
+        assertNotNull(failedPayload.getReason().getContext());
+        assertNotNull(failedPayload.getReason().getContext().getFailedStep());
+        assertEquals(failedPayload.getReason().getContext().getFailedStep().getStep(), 2);
+        assertEquals(failedPayload.getReason().getContext().getFailedStep().getIdp(), SAMPLE_IDP);
+        assertEquals(failedPayload.getReason().getContext().getFailedStep().getAuthenticator(), SAMPLE_AUTHENTICATOR);
+
     }
 
     private AuthenticationContext createMockAuthenticationContext() {

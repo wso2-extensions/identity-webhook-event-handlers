@@ -82,7 +82,7 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
                 .action(action)
                 .credentialType("PASSWORD")
                 .user(user)
-                .organization(organization)
+                .tenant(organization)
                 .userStore(userStore)
                 .build();
     }

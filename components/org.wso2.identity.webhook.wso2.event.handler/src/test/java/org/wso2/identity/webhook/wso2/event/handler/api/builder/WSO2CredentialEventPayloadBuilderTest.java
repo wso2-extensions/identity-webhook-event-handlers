@@ -219,8 +219,8 @@ public class WSO2CredentialEventPayloadBuilderTest {
 
         assertNotNull(wso2BaseEventPayload);
 
-        assertNotNull(wso2BaseEventPayload.getOrganization());
-        assertEquals(wso2BaseEventPayload.getOrganization().getName(), TENANT_DOMAIN);
+        assertNotNull(wso2BaseEventPayload.getTenant());
+        assertEquals(wso2BaseEventPayload.getTenant().getName(), TENANT_DOMAIN);
 
         assertNotNull(wso2BaseEventPayload.getUserStore());
         assertEquals(wso2BaseEventPayload.getUserStore().getId(), "REVGQVVMVA==");
