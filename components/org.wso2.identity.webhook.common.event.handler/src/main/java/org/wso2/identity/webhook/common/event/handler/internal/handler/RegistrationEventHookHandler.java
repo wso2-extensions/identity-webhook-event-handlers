@@ -60,6 +60,8 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
         IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
         String eventName = identityContext.getEvent().getEventName();
 
+        log.info("Checking if the event " + eventName + " can be handled by the RegistrationEventHookHandler.");
+
         boolean canHandle = isSupportedEvent(eventName);
         if (canHandle) {
             log.debug(eventName + " event can be handled.");
