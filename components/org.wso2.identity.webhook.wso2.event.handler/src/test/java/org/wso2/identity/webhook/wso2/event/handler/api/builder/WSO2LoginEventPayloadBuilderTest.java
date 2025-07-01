@@ -69,7 +69,7 @@ public class WSO2LoginEventPayloadBuilderTest {
     private static final String SAMPLE_SP_ID = "f27178f9-984b-41df-aee5-372de8ef327f";
     private static final String SAMPLE_TENANT_ID = "100";
     private static final String SAMPLE_USER_REF = "https://localhost:9443/t/myorg/scim2/Users/" + SAMPLE_USER_ID;
-    private static final String SAMPLE_ERROR_CODE = "SMS-65020";
+    private static final String SAMPLE_ERROR_MESSAGE = "Sample error message";
 
     @Mock
     private EventData mockEventData;
@@ -153,7 +153,7 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         return new Object[][]{
                 {SAMPLE_USER_ID, SAMPLE_USERSTORE_NAME, SAMPLE_SP_ID, SAMPLE_SERVICE_PROVIDER, SAMPLE_TENANT_ID,
-                        SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, SAMPLE_ERROR_CODE, 2,
+                        SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, SAMPLE_ERROR_MESSAGE, 2,
                         SAMPLE_IDP, SAMPLE_AUTHENTICATOR}
         };
     }
@@ -180,8 +180,7 @@ public class WSO2LoginEventPayloadBuilderTest {
         assertEquals(failedPayload.getTenant().getName(), tenantName);
         assertEquals(failedPayload.getUser().getRef(), userRef);
         assertNotNull(failedPayload.getReason());
-        assertEquals(failedPayload.getReason().getMessage(), SAMPLE_ERROR_CODE);
-//        assertEquals(failedPayload.getReason().getDescription(), SAMPLE_ERROR_CODE); //TODO
+        assertEquals(failedPayload.getReason().getDescription(), SAMPLE_ERROR_MESSAGE);
         assertNotNull(failedPayload.getReason().getContext());
         assertNotNull(failedPayload.getReason().getContext().getFailedStep());
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getStep(), failedStep);
@@ -206,8 +205,7 @@ public class WSO2LoginEventPayloadBuilderTest {
         assertEquals(failedPayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
 
         assertNotNull(failedPayload.getReason());
-        assertEquals(failedPayload.getReason().getMessage(), SAMPLE_ERROR_CODE);
-//        assertEquals(failedPayload.getReason().getDescription(), SAMPLE_ERROR_CODE); //TODO
+        assertEquals(failedPayload.getReason().getDescription(), SAMPLE_ERROR_MESSAGE);
         assertNotNull(failedPayload.getReason().getContext());
         assertNotNull(failedPayload.getReason().getContext().getFailedStep());
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getStep(), 2);
@@ -237,7 +235,7 @@ public class WSO2LoginEventPayloadBuilderTest {
         context.setSubject(authenticatedUser);
 
         HashMap<String, String> dataMap = new HashMap<>();
-        dataMap.put(Constants.CURRENT_AUTHENTICATOR_ERROR_CODE, SAMPLE_ERROR_CODE);
+        dataMap.put(Constants.CURRENT_AUTHENTICATOR_ERROR_MESSAGE, SAMPLE_ERROR_MESSAGE);
         context.setProperty(Constants.DATA_MAP, dataMap);
 
         return context;

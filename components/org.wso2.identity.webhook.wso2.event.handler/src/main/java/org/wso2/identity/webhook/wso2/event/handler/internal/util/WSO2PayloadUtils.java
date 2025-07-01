@@ -86,9 +86,6 @@ public class WSO2PayloadUtils {
                     case Constants.WSO2_CLAIM_GROUPS:
                         user.addGroup(claimValue);
                         break;
-                    case Constants.WSO2_CLAIM_ROLES:
-                        user.addRole(claimValue);
-                        break;
                     case Constants.MULTI_ATTRIBUTE_SEPARATOR:
                         // Not adding the multi attribute separator to the user claims
                         break;
@@ -295,9 +292,8 @@ public class WSO2PayloadUtils {
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
 
         return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)) ||
-                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
-                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)) ||
+                (Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName) ||
+                        Flow.Name.USER_REGISTRATION.equals(flowName))) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
                 IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
     }
@@ -313,7 +309,7 @@ public class WSO2PayloadUtils {
             Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
             Flow.Name flowName = (flow != null) ? flow.getName() : null;
 
-            return !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName);
+            return Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName);
         }
 
         return IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);

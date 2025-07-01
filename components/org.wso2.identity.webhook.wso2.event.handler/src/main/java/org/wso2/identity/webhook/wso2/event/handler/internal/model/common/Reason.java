@@ -20,25 +20,13 @@ package org.wso2.identity.webhook.wso2.event.handler.internal.model.common;
 
 public class Reason {
 
-    private String message;
     private String description;
     private Context context;
 
-    public Reason(String message, String description, Context context) {
+    public Reason(String description, Context context) {
 
-        this.message = message;
         this.description = description;
         this.context = context;
-    }
-
-    public String getMessage() {
-
-        return message;
-    }
-
-    public void setMessage(String message) {
-
-        this.message = message;
     }
 
     public String getDescription() {

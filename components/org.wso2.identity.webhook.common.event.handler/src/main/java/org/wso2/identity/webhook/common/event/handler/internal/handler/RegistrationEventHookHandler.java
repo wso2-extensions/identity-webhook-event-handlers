@@ -71,7 +71,6 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 log.debug("Event name is null in IdentityEventMessageContext. Cannot handle the event.");
                 return false;
             }
-            log.info("Checking if the event " + eventName + " can be handled by the RegistrationEventHookHandler.");
 
             canHandle = isSupportedEvent(eventName);
             if (canHandle) {
@@ -180,9 +179,8 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
 
         return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)) ||
-                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
-                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)) ||
+                (Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName) ||
+                        Flow.Name.USER_REGISTRATION.equals(flowName))) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
                 IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
     }
