@@ -126,7 +126,7 @@ public class CredentialEventHookHandlerTest {
     @Test
     public void testCanHandle() {
 
-        Event event = createEvent(IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD);
+        Event event = createEvent(IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM);
         IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);
         assertTrue(credentialEventHookHandler.canHandle(messageContext));
     }
@@ -143,8 +143,7 @@ public class CredentialEventHookHandlerTest {
     public Object[][] eventDataProvider() {
 
         return new Object[][] {
-                {IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD, SAMPLE_EVENT_KEY},
-                {IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM, SAMPLE_EVENT_KEY},
+                {IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM, SAMPLE_EVENT_KEY}
         };
     }
 

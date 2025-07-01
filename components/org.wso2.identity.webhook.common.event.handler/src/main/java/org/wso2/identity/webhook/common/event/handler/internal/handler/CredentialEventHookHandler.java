@@ -167,7 +167,13 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
 
     public boolean isCredentialUpdateFlow(String eventName) {
 
-        return IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) ||
-                IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);
+        if (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName)) {
+            Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+            Flow.Name flowName = (flow != null) ? flow.getName() : null;
+
+            return Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName);
+        }
+
+        return IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);
     }
 }
