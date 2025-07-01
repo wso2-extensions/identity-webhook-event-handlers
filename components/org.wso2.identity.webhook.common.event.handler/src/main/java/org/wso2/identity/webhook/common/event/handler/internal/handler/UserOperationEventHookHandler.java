@@ -95,13 +95,24 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                 IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName) ||
                 IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName) ||
                 IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName) ||
-                IdentityEventConstants.Event.USER_PROFILE_UPDATE.equals(eventName);
+                IdentityEventConstants.Event.POST_USER_PROFILE_UPDATE.equals(eventName);
     }
 
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
 
         try {
+
+            if (IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(event.getEventName())) {
+
+                String userId =
+                        (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.USER_ID);
+                // Setting the thread-local to keep user-ID for use when publishing post delete user event.
+                IdentityUtil.threadLocalProperties.get().put(PRE_DELETE_USER_ID, userId);
+
+                return;
+            }
+
             List<EventProfile> eventProfileList =
                     EventHookHandlerDataHolder.getInstance().getWebhookMetadataService().getSupportedEventProfiles();
             if (eventProfileList.isEmpty()) {
@@ -168,14 +179,6 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                             .buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
                             userOperationChannel.getUri());
-                } else if (IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(event.getEventName()) &&
-                        isTopicExists) {
-
-                    String userId =
-                            (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.USER_ID);
-                    // Setting the thread-local to keep user-ID for use when publishing post delete user event.
-                    IdentityUtil.threadLocalProperties.get().put(PRE_DELETE_USER_ID, userId);
-
                 } else if (IdentityEventConstants.Event.POST_DELETE_USER.equals(event.getEventName()) &&
                         isTopicExists) {
                     eventPayload = payloadBuilder.buildUserDeleteEvent(eventData);
@@ -197,7 +200,7 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                             .buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
                             userOperationChannel.getUri());
-                } else if (IdentityEventConstants.Event.USER_PROFILE_UPDATE.equals(event.getEventName()) &&
+                } else if (IdentityEventConstants.Event.POST_USER_PROFILE_UPDATE.equals(event.getEventName()) &&
                         isTopicExists) {
                     eventPayload = payloadBuilder.buildUserProfileUpdateEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils

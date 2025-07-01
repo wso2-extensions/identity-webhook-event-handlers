@@ -269,12 +269,7 @@ public class EventHookHandlerUtils {
      */
     public static String getCorrelationID() {
 
-        String correlationID = MDC.get(CORRELATION_ID_MDC);
-        if (StringUtils.isBlank(correlationID)) {
-            correlationID = UUID.randomUUID().toString();
-            MDC.put(CORRELATION_ID_MDC, correlationID);
-        }
-        return correlationID;
+        return MDC.get(CORRELATION_ID_MDC);
     }
 
     private static void setLocalUserClaimsToAuthenticatedUser(AuthenticatedUser authenticatedUser,

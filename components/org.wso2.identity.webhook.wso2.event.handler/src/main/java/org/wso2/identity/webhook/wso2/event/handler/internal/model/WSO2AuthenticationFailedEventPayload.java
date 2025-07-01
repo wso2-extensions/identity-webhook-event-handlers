@@ -20,6 +20,7 @@ package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Reason;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
@@ -28,7 +29,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
  */
 public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
 
-    private final AuthenticationFailedReason reason;
+    private Reason reason;
     private final String userLoginIdentifier;
 
     private WSO2AuthenticationFailedEventPayload(Builder builder) {
@@ -42,7 +43,7 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
         this.userLoginIdentifier = builder.userLoginIdentifier;
     }
 
-    public AuthenticationFailedReason getReason() {
+    public Reason getReason() {
 
         return reason;
     }
@@ -62,7 +63,7 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
         private Organization organization;
         private UserStore userStore;
         private Application application;
-        private AuthenticationFailedReason reason;
+        private Reason reason;
         private String userLoginIdentifier;
 
         public Builder user(User user) {
@@ -95,7 +96,7 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public Builder reason(AuthenticationFailedReason reason) {
+        public Builder reason(Reason reason) {
 
             this.reason = reason;
             return this;

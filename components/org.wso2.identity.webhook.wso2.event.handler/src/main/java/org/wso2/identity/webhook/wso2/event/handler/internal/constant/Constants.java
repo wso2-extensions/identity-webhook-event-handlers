@@ -29,6 +29,7 @@ public class Constants {
     public static final String IDENTITY_PROVIDER_MAPPED_USER_ROLES = "identityProviderMappedUserRoles";
     public static final String USER_ORGANIZATION = "user_organization";
     public static final String CURRENT_AUTHENTICATOR_ERROR_CODE = "currentAuthenticatorErrorCode";
+    public static final String CURRENT_AUTHENTICATOR_ERROR_MESSAGE = "currentAuthenticatorErrorMessage";
     public static final String DATA_MAP = "dataMap";
     public static final String ORGANIZATION_AUTHENTICATOR = "OrganizationAuthenticator";
     public static final String SCIM2_USERS_ENDPOINT = "/scim2/Users";

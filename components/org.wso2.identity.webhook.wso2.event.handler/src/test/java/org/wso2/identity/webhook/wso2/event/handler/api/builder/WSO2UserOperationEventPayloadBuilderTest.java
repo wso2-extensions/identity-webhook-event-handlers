@@ -245,8 +245,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 1);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
-                FrameworkConstants.EMAIL_ADDRESS_CLAIM);
-        assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getValue(), DELETED_USER_EMAIL);
+                FrameworkConstants.USERNAME_CLAIM);
+        assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getValue(), DOMAIN_QUALIFIED_DELETED_USER_NAME);
 
     }
 

@@ -93,24 +93,23 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         UserStore userStore = new UserStore(userStoreDomainName);
 
+        List<UserClaim> userClaims = new ArrayList<>();
+
         String userName =
                 String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
+        UserClaim userNameClaim = new UserClaim(FrameworkConstants.USERNAME_CLAIM, userName);
+        userClaims.add(userNameClaim);
+
+        if (eventData.getEventParams().get("EMAIL_ADDRESS") != null) {
+            String emailAddress = String.valueOf(eventData.getEventParams().get("EMAIL_ADDRESS"));
+            UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
+            userClaims.add(emailAddressUserClaim);
+        }
+
         String userId;
 
         try {
             userId = String.valueOf(IdentityUtil.threadLocalProperties.get().get(PRE_DELETE_USER_ID));
-
-            String emailAddress;
-            try {
-                emailAddress = userStoreManager.getUserClaimValue(userName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
-                        UserCoreConstants.DEFAULT_PROFILE);
-            } catch (UserStoreException e) {
-                throw new IdentityEventException("Error while extracting user claims for the user : " + userName, e);
-            }
-
-            UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
-            List<UserClaim> userClaims = new ArrayList<>();
-            userClaims.add(emailAddressUserClaim);
 
             User deletedUser = new User();
             deletedUser.setId(userId);
