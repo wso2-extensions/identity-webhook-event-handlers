@@ -273,7 +273,13 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .build());
 
         EventPayload eventPayload = payloadBuilder.buildUserUnlockAccountEvent(mockEventData);
-        assertCommonFields((WSO2BaseEventPayload) eventPayload);
+        WSO2BaseEventPayload wso2BaseEventPayload = (WSO2BaseEventPayload)eventPayload;
+        assertNotNull(wso2BaseEventPayload.getTenant());
+        assertEquals(wso2BaseEventPayload.getTenant().getName(), TENANT_DOMAIN);
+
+        assertNotNull(wso2BaseEventPayload.getUserStore());
+        assertEquals(wso2BaseEventPayload.getUserStore().getId(), "REVGQVVMVA==");
+        assertEquals(wso2BaseEventPayload.getUserStore().getName(), "DEFAULT");
 
         WSO2UserAccountEventPayload userAccountEventPayload = (WSO2UserAccountEventPayload) eventPayload;
         // Assert the user account event payload
@@ -311,7 +317,13 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .build());
 
         EventPayload eventPayload = payloadBuilder.buildUserLockAccountEvent(mockEventData);
-        assertCommonFields((WSO2BaseEventPayload) eventPayload);
+        WSO2BaseEventPayload wso2BaseEventPayload = (WSO2BaseEventPayload)eventPayload;
+        assertNotNull(wso2BaseEventPayload.getTenant());
+        assertEquals(wso2BaseEventPayload.getTenant().getName(), TENANT_DOMAIN);
+
+        assertNotNull(wso2BaseEventPayload.getUserStore());
+        assertEquals(wso2BaseEventPayload.getUserStore().getId(), "REVGQVVMVA==");
+        assertEquals(wso2BaseEventPayload.getUserStore().getName(), "DEFAULT");
 
         WSO2UserAccountEventPayload userAccountEventPayload = (WSO2UserAccountEventPayload) eventPayload;
         // Assert the user account event payload

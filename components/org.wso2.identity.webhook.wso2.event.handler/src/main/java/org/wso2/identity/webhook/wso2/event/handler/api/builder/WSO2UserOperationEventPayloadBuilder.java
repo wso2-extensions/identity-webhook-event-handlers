@@ -171,7 +171,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         }
 
         return new WSO2UserAccountEventPayload.Builder()
-                .initiatorType(initiatorType)
                 .user(user)
                 .tenant(organization)
                 .userStore(userStore)
