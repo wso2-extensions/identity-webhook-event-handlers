@@ -76,7 +76,6 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
         User newUser = new User();
         enrichUser(properties, newUser);
-//        addRoles(properties, newUser); // TODO decide and add
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
@@ -188,9 +187,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                     .orElse(null);
         }
 
-//        String errorCode = String.valueOf(properties.get(IdentityEventConstants.EventProperty.ERROR_CODE));
         String errorMessage = String.valueOf(properties.get(IdentityEventConstants.EventProperty.ERROR_MESSAGE));
-
         Context context = null;
 
         if (properties.get(IdentityEventConstants.EventProperty.STEP_ID) != null) {
@@ -205,7 +202,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
         }
 
-        Reason reason = new Reason(null, errorMessage, context);
+        Reason reason = new Reason(errorMessage, context);
 
         return new WSO2RegistrationFailureEventPayload.Builder()
                 .initiatorType(initiatorType)

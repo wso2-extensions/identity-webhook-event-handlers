@@ -86,9 +86,6 @@ public class WSO2PayloadUtils {
                     case Constants.WSO2_CLAIM_GROUPS:
                         user.addGroup(claimValue);
                         break;
-                    case Constants.WSO2_CLAIM_ROLES:
-                        user.addRole(claimValue);
-                        break;
                     case Constants.MULTI_ATTRIBUTE_SEPARATOR:
                         // Not adding the multi attribute separator to the user claims
                         break;
