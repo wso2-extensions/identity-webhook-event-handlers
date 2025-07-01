@@ -22,8 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
-import org.wso2.carbon.identity.core.context.IdentityContext;
-import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
@@ -176,13 +174,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
     public boolean isUserRegistrationSuccessFlow(String eventName) {
 
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        Flow.Name flowName = (flow != null) ? flow.getName() : null;
-
-        return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)) ||
-                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
-                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)) ||
+        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
                 IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
     }

@@ -43,6 +43,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
@@ -213,7 +214,9 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String action = "";
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
-            action = resolveAction(flow.getName().name());
+            action = Optional.ofNullable(resolveAction(flow.getName()))
+                    .map(Enum::name)
+                    .orElse(null);
         }
 
         return new WSO2UserAccountEventPayload.Builder()
@@ -315,11 +318,25 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return group;
     }
 
-    private String resolveAction(String flowName) {
+    private UserOperationAction resolveAction(Flow.Name name) {
 
-        if (Flow.Name.PROFILE_UPDATE.name().equals(flowName)) {
-            return UPDATE_ACTION;
+        if (name == null) {
+            return null;
         }
-        return null;
+
+        switch (name) {
+            case PROFILE_UPDATE:
+                return UserOperationAction.UPDATE;
+            case USER_REGISTRATION_INVITE_WITH_PASSWORD:
+            case INVITED_USER_REGISTRATION:
+                return UserOperationAction.INVITE;
+            default: {
+                return null;
+            }
+        }
+    }
+
+    public enum UserOperationAction {
+        INVITE, UPDATE
     }
 }

@@ -69,7 +69,6 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     private static final String FIRST_NAME = "Tom";
     private static final String LAST_NAME = "Hanks";
     private static final String DOMAIN_QUALIFIED_TEST_USER_NAME = "DEFAULT/tom";
-    private static final String FAILURE_CODE = "30002";
     private static final String FAILURE_MESSAGE = "InvalidOperation Invalid operation. User store is read only";
     public static final String DEFAULT_USER_STORE = "DEFAULT";
 
@@ -148,7 +147,8 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertEquals(userAccountEventPayload.getUser().getRef(),
                 EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getAction());
-        assertEquals(userAccountEventPayload.getAction(), Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.name());
+        assertEquals(userAccountEventPayload.getAction(),
+                WSO2RegistrationEventPayloadBuilder.RegistrationAction.INVITE.name());
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 3);
 
@@ -195,7 +195,6 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         Map<String, Object> params = new HashMap<>();
         params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        params.put(IdentityEventConstants.EventProperty.ERROR_CODE, FAILURE_CODE);
         params.put(IdentityEventConstants.EventProperty.ERROR_MESSAGE, FAILURE_MESSAGE);
         params.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT_USER_STORE);
         params.put(USER_STORE_MANAGER, userStoreManager);
@@ -228,13 +227,12 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertEquals(userRegistrationFailurePayload.getUser().getRef(),
                 EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userRegistrationFailurePayload.getAction());
-        assertEquals(userRegistrationFailurePayload.getAction(), Flow.Name.USER_REGISTRATION.name());
+        assertEquals(userRegistrationFailurePayload.getAction(),
+                WSO2RegistrationEventPayloadBuilder.RegistrationAction.REGISTER.name());
 
         assertNotNull(userRegistrationFailurePayload.getReason());
-        assertNotNull(userRegistrationFailurePayload.getReason().getMessage());
         assertNotNull(userRegistrationFailurePayload.getReason().getDescription());
 
-        assertEquals(userRegistrationFailurePayload.getReason().getMessage(), FAILURE_CODE);
         assertEquals(userRegistrationFailurePayload.getReason().getDescription(), FAILURE_MESSAGE);
 
         assertNotNull(userRegistrationFailurePayload.getUser().getClaims());

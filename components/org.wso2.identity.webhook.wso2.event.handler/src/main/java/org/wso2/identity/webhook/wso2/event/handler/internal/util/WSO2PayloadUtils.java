@@ -291,13 +291,7 @@ public class WSO2PayloadUtils {
 
     private static boolean isUserRegistrationSuccessFlow(String eventName) {
 
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        Flow.Name flowName = (flow != null) ? flow.getName() : null;
-
-        return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)) ||
-                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
-                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)) ||
+        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
                 IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
     }
@@ -309,13 +303,7 @@ public class WSO2PayloadUtils {
 
     private static boolean isCredentialUpdateFlow(String eventName) {
 
-        if (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName)) {
-            Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-            Flow.Name flowName = (flow != null) ? flow.getName() : null;
-
-            return !Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName);
-        }
-
-        return IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);
+        return IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) ||
+                IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);
     }
 }

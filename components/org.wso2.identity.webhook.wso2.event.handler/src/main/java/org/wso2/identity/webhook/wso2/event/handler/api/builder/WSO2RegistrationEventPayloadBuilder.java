@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
@@ -75,7 +76,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
         User newUser = new User();
         enrichUser(properties, newUser);
-        addRoles(properties, newUser);
+//        addRoles(properties, newUser); // TODO decide and add
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
@@ -83,11 +84,10 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         String action = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
-            action = flow.getName().name();
+            action = Optional.ofNullable(resolveAction(flow.getName()))
+                    .map(Enum::name)
+                    .orElse(null);
         }
-
-        List<String> credentialEnrolled = new ArrayList<>();
-        credentialEnrolled.add("PASSWORD");//TODO check totp and passkey flows later.
 
         return new WSO2RegistrationSuccessEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -95,7 +95,6 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                 .user(newUser)
                 .tenant(organization)
                 .userStore(userStore)
-                .credentialsEnrolled(credentialEnrolled)
                 .build();
     }
 
@@ -184,10 +183,12 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         String action = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
-            action = flow.getName().name();
+            action = Optional.ofNullable(resolveAction(flow.getName()))
+                    .map(Enum::name)
+                    .orElse(null);
         }
 
-        String errorCode = String.valueOf(properties.get(IdentityEventConstants.EventProperty.ERROR_CODE));
+//        String errorCode = String.valueOf(properties.get(IdentityEventConstants.EventProperty.ERROR_CODE));
         String errorMessage = String.valueOf(properties.get(IdentityEventConstants.EventProperty.ERROR_MESSAGE));
 
         Context context = null;
@@ -204,7 +205,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
         }
 
-        Reason reason = new Reason(errorCode, errorMessage, context);
+        Reason reason = new Reason(null, errorMessage, context);
 
         return new WSO2RegistrationFailureEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -214,6 +215,29 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                 .userStore(userStore)
                 .reason(reason)
                 .build();
+    }
+
+    private RegistrationAction resolveAction(Flow.Name name) {
+
+        if (name == null) {
+            return null;
+        }
+
+        switch (name) {
+            case USER_REGISTRATION:
+                return RegistrationAction.REGISTER;
+            case USER_REGISTRATION_INVITE_WITH_PASSWORD:
+            case INVITED_USER_REGISTRATION:
+                return RegistrationAction.INVITE;
+            default: {
+                log.warn(name + " is not a valid registration action.");
+                return null;
+            }
+        }
+    }
+
+    public enum RegistrationAction {
+        REGISTER, INVITE
     }
 
     private String resolveUserStoreDomain(Map<String, Object> properties) {
