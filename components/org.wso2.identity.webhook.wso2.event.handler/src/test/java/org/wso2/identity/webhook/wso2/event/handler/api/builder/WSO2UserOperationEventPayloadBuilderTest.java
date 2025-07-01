@@ -91,15 +91,6 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     private EventData mockEventData;
 
     @Mock
-    private RealmService realmService;
-
-    @Mock
-    UserStoreManager userStoreManagerMock;
-
-    @Mock
-    private UserRealm userRealm;
-
-    @Mock
     private RealmConfiguration realmConfiguration;
 
     @Mock
@@ -143,12 +134,16 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     @Test
     public void testBuildUserGroupUpdateEvent() throws IdentityEventException, UserStoreException {
 
+        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+                .name(Flow.Name.USER_GROUP_UPDATE)
+                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                .build());
+
         Map<String, Object> params = new HashMap<>();
         params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         params.put(USER_STORE_MANAGER, userStoreManager);
         params.put(IdentityEventConstants.EventProperty.ROLE_NAME, ROLE_NAME);
-        params.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, Flow.InitiatingPersona.ADMIN.name());
 
         String[] addedUsers = new String[]{DOMAIN_QUALIFIED_ADDED_USER_NAME};
         params.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
@@ -212,17 +207,23 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertEquals(removedUser.getClaims().size(), 1);
         assertEquals(removedUser.getClaims().get(0).getUri(), FrameworkConstants.EMAIL_ADDRESS_CLAIM);
         assertEquals(removedUser.getClaims().get(0).getValue(), DELETED_USER_EMAIL);
+
+        IdentityContext.destroyCurrentContext();
     }
 
     @Test
     public void testBuildUserDeleteEvent() throws IdentityEventException, UserStoreException {
+
+        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+                .name(Flow.Name.USER_DELETE)
+                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                .build());
 
         Map<String, Object> params = new HashMap<>();
         params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         params.put(USER_STORE_MANAGER, userStoreManager);
         params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_DELETED_USER_NAME);
-        params.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, Flow.InitiatingPersona.ADMIN.name());
 
         when(mockEventData.getEventParams()).thenReturn(params);
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_DELETED_USER_NAME),
@@ -248,6 +249,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 FrameworkConstants.USERNAME_CLAIM);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getValue(), DOMAIN_QUALIFIED_DELETED_USER_NAME);
 
+        IdentityContext.destroyCurrentContext();
     }
 
     @Test
@@ -258,7 +260,6 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         params.put(USER_STORE_MANAGER, userStoreManager);
         params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
-        params.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, Flow.InitiatingPersona.ADMIN.name());
 
         when(mockEventData.getEventParams()).thenReturn(params);
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
@@ -297,7 +298,6 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         params.put(USER_STORE_MANAGER, userStoreManager);
         params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
-        params.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, Flow.InitiatingPersona.ADMIN.name());
 
         when(mockEventData.getEventParams()).thenReturn(params);
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),

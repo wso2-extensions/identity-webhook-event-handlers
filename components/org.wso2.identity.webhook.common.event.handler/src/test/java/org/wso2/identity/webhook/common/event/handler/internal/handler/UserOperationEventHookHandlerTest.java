@@ -76,7 +76,6 @@ public class UserOperationEventHookHandlerTest {
             "schemas.identity.wso2.org/events/user-operations/event-type/updateUserGroup";
     private static final String DOMAIN_QUALIFIED_ADDED_USER_NAME = "PRIMARY/john";
     private static final String CARBON_SUPER = "carbon.super";
-    private static final String ADMIN = "ADMIN";
 
     @Mock
     private ConfigurationManager mockedConfigurationManager;
@@ -247,7 +246,6 @@ public class UserOperationEventHookHandlerTest {
         String[] addedUsers = new String[] {DOMAIN_QUALIFIED_ADDED_USER_NAME};
         properties.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, CARBON_SUPER);
-        properties.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, ADMIN);
         return new Event(eventName, properties);
     }
 

@@ -54,8 +54,6 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
  */
 public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventPayloadBuilder {
 
-    private static final String UPDATE_ACTION = "UPDATE";
-
     @Override
     public EventPayload buildUserGroupUpdateEvent(EventData eventData) throws IdentityEventException {
 
@@ -71,7 +69,11 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         UserStore userStore = new UserStore(userStoreDomainName);
 
         Organization organization = new Organization(tenantId, tenantDomain);
-        String initiatorType = String.valueOf(properties.get(IdentityEventConstants.EventProperty.INITIATOR_TYPE));
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        String initiatorType = null;
+        if (flow != null) {
+            initiatorType = flow.getInitiatingPersona().name();
+        }
 
         return new WSO2UserGroupUpdateEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -118,7 +120,11 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             deletedUser.setClaims(userClaims);
 
             Organization organization = new Organization(tenantId, tenantDomain);
-            String initiatorType = String.valueOf(properties.get(IdentityEventConstants.EventProperty.INITIATOR_TYPE));
+            Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+            String initiatorType = null;
+            if (flow != null) {
+                initiatorType = flow.getInitiatingPersona().name();
+            }
 
             return new WSO2UserAccountEventPayload.Builder()
                     .initiatorType(initiatorType)

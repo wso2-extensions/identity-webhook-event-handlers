@@ -226,7 +226,6 @@ public class RegistrationEventHookHandlerTest {
         String[] addedUsers = new String[] {DOMAIN_QUALIFIED_ADDED_USER_NAME};
         properties.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, CARBON_SUPER);
-        properties.put(IdentityEventConstants.EventProperty.INITIATOR_TYPE, ADMIN);
         return new Event(eventName, properties);
     }
 
