@@ -145,8 +145,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
     private Reason buildAuthenticationFailedReason(AuthenticationContext authContext) {
 
-        HashMap<String, String> dataMap = (HashMap<String, String>) authContext.getParameters().get(Constants.DATA_MAP);
-        String errorMessage = dataMap.get(Constants.CURRENT_AUTHENTICATOR_ERROR_MESSAGE);
+        String errorMessage = resolveErrorMessage(authContext);
 
         String idp = authContext.getExternalIdP() != null ?
                 authContext.getExternalIdP().getIdentityProvider().getIdentityProviderName() : null;
@@ -155,5 +154,21 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         Reason failedReason = new Reason(errorMessage, errorContext);
 
         return failedReason;
+    }
+
+    private String resolveErrorMessage(AuthenticationContext authContext) {
+
+        HashMap<String, String> dataMap = (HashMap<String, String>) authContext.getParameters().get(Constants.DATA_MAP);
+
+        if (dataMap == null) {
+            return null;
+        }
+
+        if (dataMap.get(Constants.CURRENT_AUTHENTICATOR_ERROR_MESSAGE) != null) {
+            return dataMap.get(Constants.CURRENT_AUTHENTICATOR_ERROR_MESSAGE);
+        } else if (dataMap.get(Constants.AUTHENTICATION_ERROR_MESSAGE) != null) {
+            return dataMap.get(Constants.AUTHENTICATION_ERROR_MESSAGE);
+        }
+        return null;
     }
 }
