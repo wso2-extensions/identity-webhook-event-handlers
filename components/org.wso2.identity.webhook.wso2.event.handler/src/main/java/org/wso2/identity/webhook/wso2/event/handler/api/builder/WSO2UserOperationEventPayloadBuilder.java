@@ -17,6 +17,7 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
+import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
@@ -177,6 +178,47 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .build();
     }
 
+    private EventPayload buildUserEnableEvent(EventData eventData) throws IdentityEventException {
+
+        Map<String, Object> properties = eventData.getEventParams();
+        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
+        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+
+        String userStoreDomainName =
+                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
+        UserStore userStore = new UserStore(userStoreDomainName);
+
+        String userId = String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_ID));
+        User user = new User();
+        user.setId(userId);
+
+        AbstractUserStoreManager userStoreManager = null;
+        Object userStoreManagerObj = properties.get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
+        if (userStoreManagerObj instanceof AbstractUserStoreManager) {
+            userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
+        }
+        String userName =
+                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
+        enrichUser(userStoreManager, userName, user);
+
+        user.setRef(
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+
+        Organization organization = new Organization(tenantId, tenantDomain);
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        String initiatorType = null;
+        if (flow != null) {
+            initiatorType = flow.getInitiatingPersona().name();
+        }
+
+        return new WSO2UserAccountEventPayload.Builder()
+                .initiatorType(initiatorType)
+                .user(user)
+                .tenant(organization)
+                .userStore(userStore)
+                .build();
+    }
+
     @Override
     public EventPayload buildUserLockAccountEvent(EventData eventData) throws IdentityEventException {
 
@@ -233,6 +275,18 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .build();
     }
 
+    @Override
+    public EventPayload buildUserAccountEnableEvent(EventData eventData) throws IdentityEventException {
+
+        return this.buildUserEnableEvent(eventData);
+    }
+
+    @Override
+    public EventPayload buildUserAccountDisableEvent(EventData eventData) throws IdentityEventException {
+
+        return this.buildUserEnableEvent(eventData);
+    }
+
     private List<UserClaim> populateClaims(Map<String, Object> properties, String userClaimKey) {
 
         if (properties != null && properties.get(userClaimKey) instanceof Map) {
@@ -270,9 +324,11 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         String userId;
         try {
-            userId = userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.USER_ID_CLAIM,
-                    UserCoreConstants.DEFAULT_PROFILE);
-            user.setId(userId);
+            if (StringUtils.isEmpty(user.getId() )) {
+                userId = userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.USER_ID_CLAIM,
+                        UserCoreConstants.DEFAULT_PROFILE);
+                user.setId(userId);
+            }
 
             String emailAddress =
                     userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
