@@ -26,6 +26,16 @@ public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
 
     private String action;
 
+    public String getAction() {
+
+        return action;
+    }
+
+    public void setAction(String action) {
+
+        this.action = action;
+    }
+
     private WSO2UserAccountEventPayload(Builder builder) {
 
         this.initiatorType = builder.initiatorType;
