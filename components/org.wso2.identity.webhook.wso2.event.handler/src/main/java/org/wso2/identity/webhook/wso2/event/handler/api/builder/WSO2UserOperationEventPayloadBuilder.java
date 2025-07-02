@@ -165,7 +165,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        String initiatorType = "";
+        String initiatorType = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
         }
@@ -216,8 +216,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         Organization organization = new Organization(tenantId, tenantDomain);
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        String initiatorType = "";
-        String action = "";
+        String initiatorType = null;
+        String action = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
             action = Optional.ofNullable(resolveAction(flow.getName()))
