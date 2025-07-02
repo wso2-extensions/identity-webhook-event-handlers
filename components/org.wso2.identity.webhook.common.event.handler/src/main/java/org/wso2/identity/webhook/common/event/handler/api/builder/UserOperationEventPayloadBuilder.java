@@ -36,6 +36,8 @@ public interface UserOperationEventPayloadBuilder {
 
     EventPayload buildUserLockAccountEvent(EventData eventData) throws IdentityEventException;
     EventPayload buildUserProfileUpdateEvent(EventData eventData) throws IdentityEventException;
+    EventPayload buildUserAccountEnableEvent(EventData eventData) throws IdentityEventException;
+    EventPayload buildUserAccountDisableEvent(EventData eventData) throws IdentityEventException;
 
     /**
      * Get the event schema type.

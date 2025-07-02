@@ -64,6 +64,8 @@ public class Constants {
         public static final String POST_UNLOCK_ACCOUNT_EVENT = "User account unlocked";
         public static final String POST_LOCK_ACCOUNT_EVENT = "User account locked";
         public static final String POST_USER_PROFILE_UPDATED_EVENT = "User profile updated";
+        public static final String POST_ACCOUNT_ENABLE_EVENT = "User account enabled";
+        public static final String POST_ACCOUNT_DISABLE_EVENT = "User account disabled";
         public static final String SESSION_CREATED_EVENT = "Session established";
         public static final String SESSION_REVOKED_EVENT = "Session(s) revoked";
         public static final String SESSION_EXPIRED_EVENT = "Session Expired Event";
