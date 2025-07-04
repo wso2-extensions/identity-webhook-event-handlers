@@ -82,6 +82,10 @@
             <artifactId>org.wso2.carbon.identity.organization.management.service</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.claim.metadata.mgt</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wso2.orbit.org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
@@ -187,7 +191,9 @@
                             org.wso2.identity.event.common.publisher.model;
                             version="${org.wso2.identity.event.publishers.version.range}",
                             org.wso2.identity.event.common.publisher.exception;
-                            version="${org.wso2.identity.event.publishers.version.range}"
+                            version="${org.wso2.identity.event.publishers.version.range}",
+                            org.wso2.carbon.identity.claim.metadata.mgt.*;
+                            version="${carbon.identity.framework.imp.pkg.version.range}"
                         </Import-Package>
                     </instructions>
                 </configuration>

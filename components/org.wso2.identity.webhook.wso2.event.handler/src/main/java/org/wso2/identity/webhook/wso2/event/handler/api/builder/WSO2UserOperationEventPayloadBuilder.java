@@ -40,6 +40,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organi
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
+import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +67,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String userStoreDomainName = userStoreManager.getRealmConfiguration()
                 .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
 
-        Group group = buildGroup(properties, userStoreManager);
+        Group group = buildGroup(properties, userStoreManager, tenantDomain);
         UserStore userStore = new UserStore(userStoreDomainName);
 
         Organization organization = new Organization(tenantId, tenantDomain);
@@ -101,12 +102,15 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         String userName =
                 String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
-        UserClaim userNameClaim = new UserClaim(FrameworkConstants.USERNAME_CLAIM, userName);
+        UserClaim userNameClaim = WSO2PayloadUtils.generateUserClaim(FrameworkConstants.USERNAME_CLAIM, userName,
+                tenantDomain);
         userClaims.add(userNameClaim);
 
         if (eventData.getEventParams().get("EMAIL_ADDRESS") != null) {
             String emailAddress = String.valueOf(eventData.getEventParams().get("EMAIL_ADDRESS"));
-            UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
+            UserClaim emailAddressUserClaim =
+                    WSO2PayloadUtils.generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
+                            tenantDomain);
             userClaims.add(emailAddressUserClaim);
         }
 
@@ -160,7 +164,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
 
         User user = new User();
-        enrichUser(userStoreManager, userName, user);
+        enrichUser(userStoreManager, userName, user, tenantDomain);
         user.setRef(
                 EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
@@ -199,7 +203,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         }
         String userName =
                 String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
-        enrichUser(userStoreManager, userName, user);
+        enrichUser(userStoreManager, userName, user, tenantDomain);
 
         user.setRef(
                 EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
@@ -238,12 +242,12 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         UserStore userStore = new UserStore(userStoreDomainName);
 
         List<UserClaim> addedClaims =
-                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_ADDED);
+                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_ADDED, tenantDomain);
         List<UserClaim> modifiedClaims =
-                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_MODIFIED);
+                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_MODIFIED, tenantDomain);
         List<UserClaim> deletedClaims =
-                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_DELETED);
-        List<UserClaim> additionalClaims = populateClaims(properties, "ADDITIONAL_USER_CLAIMS");
+                populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_DELETED, tenantDomain);
+        List<UserClaim> additionalClaims = populateClaims(properties, "ADDITIONAL_USER_CLAIMS", tenantDomain);
 
         User user = new User();
         user.setId(userId);
@@ -287,7 +291,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return this.buildUserEnableEvent(eventData);
     }
 
-    private List<UserClaim> populateClaims(Map<String, Object> properties, String userClaimKey) {
+    private List<UserClaim> populateClaims(Map<String, Object> properties, String userClaimKey, String tenantDomain) {
 
         if (properties != null && properties.get(userClaimKey) instanceof Map) {
 
@@ -295,7 +299,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             List<UserClaim> userClaims = new ArrayList<>();
 
             for (Map.Entry<String, String> entry : userClaimsMap.entrySet()) {
-                UserClaim userClaim = new UserClaim(entry.getKey(), entry.getValue());
+                UserClaim userClaim =
+                        WSO2PayloadUtils.generateUserClaim(entry.getKey(), entry.getValue(), tenantDomain);
                 userClaims.add(userClaim);
             }
             return userClaims;
@@ -304,7 +309,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     }
 
     private List<User> buildUserList(AbstractUserStoreManager userStoreManager, Map<String, Object> properties,
-                                     String userListPropertyName) throws IdentityEventException {
+                                     String userListPropertyName, String tenantDomain) throws IdentityEventException {
 
         List<User> users = new ArrayList<>();
 
@@ -312,19 +317,20 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         if (domainQualifiedUsernames != null) {
             for (String domainQualifiedUsername : domainQualifiedUsernames) {
                 User user = new User();
-                enrichUser(userStoreManager, domainQualifiedUsername, user);
+                enrichUser(userStoreManager, domainQualifiedUsername, user, tenantDomain);
                 users.add(user);
             }
         }
         return users;
     }
 
-    private static void enrichUser(UserStoreManager userStoreManager, String domainQualifiedUserName, User user)
+    private static void enrichUser(UserStoreManager userStoreManager, String domainQualifiedUserName, User user,
+                                   String tenantDomain)
             throws IdentityEventException {
 
         String userId;
         try {
-            if (StringUtils.isEmpty(user.getId() )) {
+            if (StringUtils.isEmpty(user.getId())) {
                 userId = userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.USER_ID_CLAIM,
                         UserCoreConstants.DEFAULT_PROFILE);
                 user.setId(userId);
@@ -333,7 +339,9 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             String emailAddress =
                     userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
                             UserCoreConstants.DEFAULT_PROFILE);
-            UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
+            UserClaim emailAddressUserClaim =
+                    WSO2PayloadUtils.generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
+                            tenantDomain);
             List<UserClaim> userClaims = new ArrayList<>();
             userClaims.add(emailAddressUserClaim);
 
@@ -351,7 +359,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return Constants.EventSchema.WSO2;
     }
 
-    private Group buildGroup(Map<String, Object> properties, AbstractUserStoreManager userStoreManager)
+    private Group buildGroup(Map<String, Object> properties, AbstractUserStoreManager userStoreManager,
+                             String tenantDomain)
             throws IdentityEventException {
 
         String groupName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.ROLE_NAME));
@@ -365,9 +374,11 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         String groupLocation = groupFromUserStore.getLocation();
 
         List<User> deletedUsers =
-                buildUserList(userStoreManager, properties, IdentityEventConstants.EventProperty.DELETED_USERS);
+                buildUserList(userStoreManager, properties, IdentityEventConstants.EventProperty.DELETED_USERS,
+                        tenantDomain);
         List<User> addedUsers =
-                buildUserList(userStoreManager, properties, IdentityEventConstants.EventProperty.NEW_USERS);
+                buildUserList(userStoreManager, properties, IdentityEventConstants.EventProperty.NEW_USERS,
+                        tenantDomain);
 
         Group group = new Group();
         group.setName(groupName);

@@ -20,12 +20,16 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
@@ -37,6 +41,7 @@ import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
+import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationFailureEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationSuccessEventPayload;
@@ -47,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -84,10 +90,16 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     @InjectMocks
     private WSO2RegistrationEventPayloadBuilder payloadBuilder;
 
+    @Mock
+    private ClaimMetadataManagementService claimMetadataManagementService;
+
+    private MockedStatic<FrameworkUtils> frameworkUtils;
+
     @BeforeClass
     public void setup() throws Exception {
 
         MockitoAnnotations.openMocks(this);
+        WSO2EventHookHandlerDataHolder.getInstance().setClaimMetadataManagementService(claimMetadataManagementService);
 
         when(realmConfiguration.getUserStoreProperty(
                 UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME)).thenReturn(DEFAULT_USER_STORE);
@@ -95,6 +107,10 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         mockServiceURLBuilder();
         mockIdentityTenantUtil();
+
+        frameworkUtils = mockStatic(FrameworkUtils.class);
+        frameworkUtils.when(FrameworkUtils::getMultiAttributeSeparator).thenReturn(",");
+
         CommonTestUtils.initPrivilegedCarbonContext();
     }
 
@@ -103,7 +119,9 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         closeMockedServiceURLBuilder();
         closeMockedIdentityTenantUtil();
+        Mockito.reset(realmConfiguration, claimMetadataManagementService, userStoreManager);
         PrivilegedCarbonContext.endTenantFlow();
+        frameworkUtils.close();
     }
 
     @Test
@@ -132,9 +150,10 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         when(mockEventData.getEventParams()).thenReturn(params);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD)
-                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
+                    .name(Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD)
+                    .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                    .build());
+
 
         EventPayload eventPayload = payloadBuilder.buildRegistrationSuccessEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
@@ -153,7 +172,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 3);
 
         List<UserClaim> userClaims = userAccountEventPayload.getUser().getClaims();
-        Map<String, String> userClaimsMap = userClaims.stream()
+        Map<String, Object> userClaimsMap = userClaims.stream()
                 .collect(java.util.stream.Collectors.toMap(UserClaim::getUri, UserClaim::getValue));
 
         assertNotNull(userClaimsMap.get(FrameworkConstants.EMAIL_ADDRESS_CLAIM));
@@ -239,7 +258,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertEquals(userRegistrationFailurePayload.getUser().getClaims().size(), 3);
 
         List<UserClaim> userClaims = userRegistrationFailurePayload.getUser().getClaims();
-        Map<String, String> userClaimsMap = userClaims.stream()
+        Map<String, Object> userClaimsMap = userClaims.stream()
                 .collect(java.util.stream.Collectors.toMap(UserClaim::getUri, UserClaim::getValue));
 
         assertNotNull(userClaimsMap.get(FrameworkConstants.EMAIL_ADDRESS_CLAIM));

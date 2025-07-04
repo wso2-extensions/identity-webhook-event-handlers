@@ -42,6 +42,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Step;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
+import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,7 +76,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         UserStore userStore = new UserStore(userStoreDomainName);
 
         User newUser = new User();
-        enrichUser(properties, newUser);
+        enrichUser(properties, newUser, tenantDomain);
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
@@ -97,7 +98,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                 .build();
     }
 
-    private void enrichUser(Map<String, Object> properties, User user) {
+    private void enrichUser(Map<String, Object> properties, User user, String tenantDomain) {
 
         if (properties.containsKey(IdentityEventConstants.EventProperty.USER_CLAIMS)) {
             Map<String, String> claims = (Map<String, String>) properties.get(IdentityEventConstants.EventProperty
@@ -118,7 +119,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                 }
             }
 
-            List<UserClaim> filteredUserClaims = filterUserClaimsForUserAdd(claims);
+            List<UserClaim> filteredUserClaims = filterUserClaimsForUserAdd(claims, tenantDomain);
             user.setClaims(filteredUserClaims);
         }
     }
@@ -141,7 +142,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         return Constants.EventSchema.WSO2;
     }
 
-    private List<UserClaim> filterUserClaimsForUserAdd(Map<String, String> userClaims) {
+    private List<UserClaim> filterUserClaimsForUserAdd(Map<String, String> userClaims, String tenantDomain) {
 
         List<UserClaim> userClaimList = new ArrayList<>();
         List<String> excludedClaims = Arrays.asList(
@@ -153,7 +154,9 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
         for (String userClaimUri : userClaims.keySet()) {
             if (!excludedClaims.contains(userClaimUri)) {
-                userClaimList.add(new UserClaim(userClaimUri, userClaims.get(userClaimUri)));
+                userClaimList.add(
+                        WSO2PayloadUtils.generateUserClaim(userClaimUri, userClaims.get(userClaimUri),
+                                tenantDomain));
             }
         }
         return userClaimList;
@@ -174,7 +177,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         }
 
         User newUser = new User();
-        enrichUser(properties, newUser);
+        enrichUser(properties, newUser, tenantDomain);
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
