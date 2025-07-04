@@ -44,6 +44,7 @@ import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationFailureEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationInvitationEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationSuccessEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.CommonTestUtils;
@@ -150,10 +151,9 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         when(mockEventData.getEventParams()).thenReturn(params);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                    .name(Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD)
-                    .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                    .build());
-
+                .name(Flow.Name.USER_REGISTRATION)
+                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                .build());
 
         EventPayload eventPayload = payloadBuilder.buildRegistrationSuccessEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
@@ -167,7 +167,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
                 EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getAction());
         assertEquals(userAccountEventPayload.getAction(),
-                WSO2RegistrationEventPayloadBuilder.RegistrationAction.INVITE.name());
+                WSO2RegistrationEventPayloadBuilder.RegistrationAction.REGISTER.name());
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 3);
 
@@ -272,4 +272,61 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         IdentityContext.destroyCurrentContext();
     }
+
+    @Test
+    public void testBuildRegistrationInvitationEvent() throws IdentityEventException {
+
+        Map<String, Object> params = new HashMap<>();
+        params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
+        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        params.put(USER_STORE_MANAGER, userStoreManager);
+        params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
+
+        Map<String, String> claims = new HashMap<>();
+        claims.put(FrameworkConstants.EMAIL_ADDRESS_CLAIM, TEST_USER_EMAIL);
+        claims.put(FrameworkConstants.USER_ID_CLAIM, TEST_USER_ID);
+        claims.put(FIRST_NAME_CLAIM_URI, FIRST_NAME);
+        claims.put(LAST_NAME_CLAIM_URI, LAST_NAME);
+
+        params.put(IdentityEventConstants.EventProperty.USER_CLAIMS, claims);
+
+        when(mockEventData.getEventParams()).thenReturn(params);
+
+        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+                .name(Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD)
+                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                .build());
+
+        EventPayload eventPayload = payloadBuilder.buildRegistrationInvitationEvent(mockEventData);
+        assertCommonFields((WSO2BaseEventPayload) eventPayload);
+
+        WSO2RegistrationInvitationEventPayload userAccountEventPayload =
+                (WSO2RegistrationInvitationEventPayload) eventPayload;
+        // Assert the user account event payload
+        assertNotNull(userAccountEventPayload.getUser());
+        assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
+        assertEquals(userAccountEventPayload.getUser().getRef(),
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
+        assertNotNull(userAccountEventPayload.getAction());
+        assertEquals(userAccountEventPayload.getAction(),
+                WSO2RegistrationEventPayloadBuilder.RegistrationAction.INVITE.name());
+        assertNotNull(userAccountEventPayload.getUser().getClaims());
+        assertEquals(userAccountEventPayload.getUser().getClaims().size(), 3);
+
+        List<UserClaim> userClaims = userAccountEventPayload.getUser().getClaims();
+        Map<String, Object> userClaimsMap = userClaims.stream()
+                .collect(java.util.stream.Collectors.toMap(UserClaim::getUri, UserClaim::getValue));
+
+        assertNotNull(userClaimsMap.get(FrameworkConstants.EMAIL_ADDRESS_CLAIM));
+        assertEquals(userClaimsMap.get(FrameworkConstants.EMAIL_ADDRESS_CLAIM), TEST_USER_EMAIL);
+
+        assertNotNull(userClaimsMap.get(FIRST_NAME_CLAIM_URI));
+        assertEquals(userClaimsMap.get(FIRST_NAME_CLAIM_URI), FIRST_NAME);
+
+        assertNotNull(userClaimsMap.get(LAST_NAME_CLAIM_URI));
+        assertEquals(userClaimsMap.get(LAST_NAME_CLAIM_URI), LAST_NAME);
+
+        IdentityContext.destroyCurrentContext();
+    }
+
 }

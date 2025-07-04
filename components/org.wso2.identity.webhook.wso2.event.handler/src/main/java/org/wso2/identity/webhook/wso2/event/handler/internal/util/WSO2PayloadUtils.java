@@ -298,6 +298,11 @@ public class WSO2PayloadUtils {
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
             event =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_FAILED_EVENT;
+        } else if (isUserRegistrationInvitationFlow(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_INVITED_EVENT;
         }
         return EventMetadata.builder()
                 .event(String.valueOf(event))
@@ -311,11 +316,25 @@ public class WSO2PayloadUtils {
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
 
+        /*
+        Event.POST_ADD_USER + Flow.Name.USER_REGISTRATION:
+            Direct user registration, initiated either by an admin or the user.
+
+        Event.POST_ADD_NEW_PASSWORD + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
+            User completes registration after being invited by an admin.
+
+        Event.POST_SELF_SIGNUP_CONFIRM:
+            Self-signup flow completed by the user.
+
+        IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS:
+            Registration via Just-In-Time (JIT) provisioning or the new registration orchestration flow.
+         */
         return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                (Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName) ||
-                        Flow.Name.USER_REGISTRATION.equals(flowName))) ||
+                Flow.Name.USER_REGISTRATION.equals(flowName)) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
+                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||
+                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName));
     }
 
     private static boolean isUserRegistrationFailedFlow(String eventName) {
@@ -323,13 +342,39 @@ public class WSO2PayloadUtils {
         return IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName);
     }
 
-    private static boolean isCredentialUpdateFlow(String eventName) {
+    private static boolean isUserRegistrationInvitationFlow(String eventName) {
 
-        if (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName)) {
+        /*
+        Event.POST_ADD_NEW_PASSWORD + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
+            An admin invites a user via email or offline link.
+         */
+        if (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName)) {
             Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
             Flow.Name flowName = (flow != null) ? flow.getName() : null;
 
             return Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName);
+        }
+        return false;
+    }
+
+    private static boolean isCredentialUpdateFlow(String eventName) {
+
+        /*
+        Event.POST_ADD_NEW_PASSWORD + Flow.Name.PASSWORD_RESET:
+            Triggered when a user resets their password, either:
+                After an admin-enforced password reset, or
+                Through the "Forgot Password" flow.
+
+        Event.POST_UPDATE_CREDENTIAL_BY_SCIM:
+            Triggered when:
+                A user resets their password via the My Account portal, or
+                An admin resets the user's password via the Console.
+         */
+        if (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName)) {
+            Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+            Flow.Name flowName = (flow != null) ? flow.getName() : null;
+
+            return Flow.Name.PASSWORD_RESET.equals(flowName);
         }
 
         return IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);

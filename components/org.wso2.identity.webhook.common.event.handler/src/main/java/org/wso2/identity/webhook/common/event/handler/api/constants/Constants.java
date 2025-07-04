@@ -59,6 +59,7 @@ public class Constants {
         public static final String POST_UPDATE_USER_CREDENTIAL = "Credential updated";
         public static final String POST_REGISTRATION_SUCCESS_EVENT = "Registration success";
         public static final String POST_REGISTRATION_FAILED_EVENT = "Registration failed";
+        public static final String POST_REGISTRATION_INVITED_EVENT = "Registration invite";
         public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "Post Update User List of Role Event";
         public static final String POST_DELETE_USER_EVENT = "User account deleted";
         public static final String POST_UNLOCK_ACCOUNT_EVENT = "User account unlocked";
