@@ -24,7 +24,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 
 import java.util.List;
 
-public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
+public class WSO2RegistrationInvitationEventPayload extends WSO2BaseEventPayload {
 
     private List<String> registrationMethods;
     private List<String> credentialsEnrolled;
@@ -45,7 +45,7 @@ public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
         return action;
     }
 
-    private WSO2RegistrationSuccessEventPayload(Builder builder) {
+    private WSO2RegistrationInvitationEventPayload(Builder builder) {
 
         this.initiatorType = builder.initiatorType;
         this.tenant = builder.tenant;
@@ -116,9 +116,10 @@ public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public WSO2RegistrationSuccessEventPayload build() {
+        public WSO2RegistrationInvitationEventPayload build() {
 
-            return new WSO2RegistrationSuccessEventPayload(this);
+            return new WSO2RegistrationInvitationEventPayload(this);
         }
+
     }
 }

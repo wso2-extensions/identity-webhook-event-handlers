@@ -34,6 +34,7 @@ import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationFailureEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationInvitationEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationSuccessEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Context;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
@@ -140,6 +141,42 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
     public Constants.EventSchema getEventSchemaType() {
 
         return Constants.EventSchema.WSO2;
+    }
+
+    @Override
+    public EventPayload buildRegistrationInvitationEvent(EventData eventData) throws IdentityEventException {
+
+        Map<String, Object> properties = eventData.getEventParams();
+        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
+        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+
+        AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
+        String userStoreDomainName = userStoreManager.getRealmConfiguration()
+                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+
+        UserStore userStore = new UserStore(userStoreDomainName);
+
+        User newUser = new User();
+        enrichUser(properties, newUser, tenantDomain);
+
+        Organization organization = new Organization(tenantId, tenantDomain);
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        String initiatorType = null;
+        String action = null;
+        if (flow != null) {
+            initiatorType = flow.getInitiatingPersona().name();
+            action = Optional.ofNullable(resolveAction(flow.getName()))
+                    .map(Enum::name)
+                    .orElse(null);
+        }
+
+        return new WSO2RegistrationInvitationEventPayload.Builder()
+                .initiatorType(initiatorType)
+                .action(action)
+                .user(newUser)
+                .tenant(organization)
+                .userStore(userStore)
+                .build();
     }
 
     private List<UserClaim> filterUserClaimsForUserAdd(Map<String, String> userClaims, String tenantDomain) {

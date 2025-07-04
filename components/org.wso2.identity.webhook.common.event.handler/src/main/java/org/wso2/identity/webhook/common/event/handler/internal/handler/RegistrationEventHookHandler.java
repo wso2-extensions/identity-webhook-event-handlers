@@ -161,6 +161,12 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                             .buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
                             registrationChannel.getUri());
+                } else if (isUserRegistrationInvitationFlow(event.getEventName()) && isTopicExists) {
+                    eventPayload = payloadBuilder.buildRegistrationInvitationEvent(eventData);
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                            .buildSecurityEventToken(eventPayload, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            registrationChannel.getUri());
                 }
             }
         } catch (Exception e) {
@@ -170,22 +176,52 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
     private boolean isSupportedEvent(String eventName) {
 
-        return isUserRegistrationSuccessFlow(eventName) || isUserRegistrationFailedFlow(eventName);
+        return isUserRegistrationSuccessFlow(eventName) || isUserRegistrationFailedFlow(eventName) ||
+                isUserRegistrationInvitationFlow(eventName);
     }
 
-    public boolean isUserRegistrationSuccessFlow(String eventName) {
+    private boolean isUserRegistrationSuccessFlow(String eventName) {
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
 
+        /*
+        Event.POST_ADD_USER + Flow.Name.USER_REGISTRATION:
+            Direct user registration, initiated either by an admin or the user.
+
+        Event.POST_ADD_NEW_PASSWORD + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
+            User completes registration after being invited by an admin.
+
+        Event.POST_SELF_SIGNUP_CONFIRM:
+            Self-signup flow completed by the user.
+
+        IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS:
+            Registration via Just-In-Time (JIT) provisioning or the new registration orchestration flow.
+         */
         return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                (Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName) ||
-                        Flow.Name.USER_REGISTRATION.equals(flowName))) ||
+                Flow.Name.USER_REGISTRATION.equals(flowName)) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
+                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||
+                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName));
     }
 
-    public boolean isUserRegistrationFailedFlow(String eventName) {
+    private boolean isUserRegistrationInvitationFlow(String eventName) {
+
+        /*
+        Event.POST_ADD_NEW_PASSWORD + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
+            An admin invites a user via email or offline link.
+         */
+        if (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName)) {
+            Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+            Flow.Name flowName = (flow != null) ? flow.getName() : null;
+
+            return Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName);
+        }
+        return false;
+    }
+
+    private boolean isUserRegistrationFailedFlow(String eventName) {
 
         return IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName);
     }
