@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
@@ -33,15 +34,16 @@ import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
+import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
+import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
-import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
@@ -49,7 +51,6 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -58,6 +59,7 @@ import java.util.regex.Pattern;
 
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 
 public class WSO2PayloadUtils {
 
@@ -132,7 +134,7 @@ public class WSO2PayloadUtils {
      * @param tenantDomain The tenant domain.
      * @return The UserStoreManager for the specified tenant domain, or null if not found.
      */
-    public static UserStoreManager getUserStoreManagerByTenantDomain(String tenantDomain) {
+    private static UserStoreManager getUserStoreManagerByTenantDomain(String tenantDomain) {
 
         try {
             UserRealm userRealm = getUserRealm(tenantDomain);
@@ -415,4 +417,43 @@ public class WSO2PayloadUtils {
         return false;
     }
 
+    public static void enrichUser(UserStoreManager userStoreManager, String domainQualifiedUserName, User user,
+                                  String tenantDomain)
+            throws IdentityEventException {
+
+        String userId;
+        try {
+            userId = userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.USER_ID_CLAIM,
+                    UserCoreConstants.DEFAULT_PROFILE);
+            user.setId(userId);
+
+            String emailAddress =
+                    userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
+                            UserCoreConstants.DEFAULT_PROFILE);
+            UserClaim emailAddressUserClaim =
+                    generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
+                            tenantDomain);
+            List<UserClaim> userClaims = new ArrayList<>();
+            userClaims.add(emailAddressUserClaim);
+
+            user.setClaims(userClaims);
+
+        } catch (UserStoreException e) {
+            throw new IdentityEventException(
+                    "Error while extracting user claims for the user : " + domainQualifiedUserName, e);
+        }
+    }
+
+    public static User buildUser(String userStoreDomain, String userName, String tenantDomain)
+            throws IdentityEventException {
+
+        UserStoreManager userStoreManager = getUserStoreManagerByTenantDomain(tenantDomain);
+        User user = new User();
+        if (userStoreManager != null) {
+            String domainQualifiedUserName = userStoreDomain + "/" + userName;
+            WSO2PayloadUtils.enrichUser(userStoreManager, domainQualifiedUserName, user, tenantDomain);
+            user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+        }
+        return user;
+    }
 }
