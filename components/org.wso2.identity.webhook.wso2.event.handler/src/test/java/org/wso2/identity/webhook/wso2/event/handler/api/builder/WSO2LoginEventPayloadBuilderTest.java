@@ -20,6 +20,8 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -29,9 +31,11 @@ import org.wso2.carbon.identity.application.authentication.framework.config.mode
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
@@ -45,6 +49,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2Authentic
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -77,6 +82,9 @@ public class WSO2LoginEventPayloadBuilderTest {
     @Mock
     private OrganizationManager mockOrganizationManager;
 
+    @Mock
+    private ClaimMetadataManagementService claimMetadataManagementService;
+
     @InjectMocks
     private WSO2LoginEventPayloadBuilder payloadBuilder;
 
@@ -86,15 +94,20 @@ public class WSO2LoginEventPayloadBuilderTest {
     @Mock
     private AuthenticatedUser mockAuthenticatedUser;
 
+    private MockedStatic<FrameworkUtils> frameworkUtils;
+
     @BeforeClass
     public void setup() {
 
         MockitoAnnotations.openMocks(this);
         WSO2EventHookHandlerDataHolder.getInstance().setOrganizationManager(mockOrganizationManager);
+        WSO2EventHookHandlerDataHolder.getInstance().setClaimMetadataManagementService(claimMetadataManagementService);
         mockAuthenticationContext = createMockAuthenticationContext();
         mockAuthenticatedUser = createMockAuthenticatedUser();
         mockServiceURLBuilder();
         mockIdentityTenantUtil();
+        frameworkUtils = mockStatic(FrameworkUtils.class);
+        frameworkUtils.when(FrameworkUtils::getMultiAttributeSeparator).thenReturn(",");
     }
 
     @AfterClass
@@ -102,6 +115,8 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         closeMockedServiceURLBuilder();
         closeMockedIdentityTenantUtil();
+        Mockito.reset(mockOrganizationManager, claimMetadataManagementService);
+        frameworkUtils.close();
     }
 
     @DataProvider(name = "successEventDataProvider")
@@ -145,6 +160,7 @@ public class WSO2LoginEventPayloadBuilderTest {
 
     @Test
     public void testGetEventSchemaType() {
+
         assertEquals(payloadBuilder.getEventSchemaType(), EventSchema.WSO2);
     }
 

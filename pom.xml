@@ -206,6 +206,11 @@
                 <version>${org.wso2.identity.event.publishers.version}</version>
                 <scope>compile</scope>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.identity.claim.metadata.mgt</artifactId>
+                <version>${carbon.identity.framework.version}</version>
+            </dependency>
 
             <!--Test dependencies-->
             <dependency>

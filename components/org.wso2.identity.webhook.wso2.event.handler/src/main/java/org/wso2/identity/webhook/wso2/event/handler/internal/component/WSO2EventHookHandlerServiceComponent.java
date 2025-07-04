@@ -27,6 +27,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
@@ -116,4 +117,33 @@ public class WSO2EventHookHandlerServiceComponent {
         log.debug("UnSetting the Realm Service");
         WSO2EventHookHandlerDataHolder.getInstance().setRealmService(null);
     }
+
+    /**
+     * Set claim metadata management service implementation.
+     *
+     * @param claimMetadataManagementService ClaimMetadataManagementService
+     */
+    @Reference(
+            name = "claimMetadataManagementService",
+            service = ClaimMetadataManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetClaimMetadataManagementService")
+    protected void setClaimMetadataManagementService(ClaimMetadataManagementService claimMetadataManagementService) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Setting the Claim Metadata Service");
+        }
+        WSO2EventHookHandlerDataHolder.getInstance().setClaimMetadataManagementService(claimMetadataManagementService);
+    }
+
+    /**
+     * Unset claim metadata management service implementation.
+     */
+    protected void unsetClaimMetadataManagementService(ClaimMetadataManagementService claimMetadataManagementService) {
+
+        log.debug("UnSetting the Claim Metadata Service");
+        WSO2EventHookHandlerDataHolder.getInstance().setClaimMetadataManagementService(null);
+    }
+
 }

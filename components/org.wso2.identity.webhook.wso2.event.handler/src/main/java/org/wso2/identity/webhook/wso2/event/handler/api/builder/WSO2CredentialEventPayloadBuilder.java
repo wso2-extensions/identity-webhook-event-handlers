@@ -62,7 +62,7 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
         String userStoreDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
 
         UserStoreManager userStoreManager = WSO2PayloadUtils.getUserStoreManagerByTenantDomain(tenantDomain);
-        User user = buildUser(userStoreManager, userStoreDomain, userName);
+        User user = buildUser(userStoreManager, userStoreDomain, userName, tenantDomain);
 
         Organization organization = new Organization(tenantId, tenantDomain);
         UserStore userStore = new UserStore(userStoreDomain);
@@ -87,19 +87,21 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
                 .build();
     }
 
-    private User buildUser(UserStoreManager userStoreManager, String userStoreDomain, String userName)
+    private User buildUser(UserStoreManager userStoreManager, String userStoreDomain, String userName,
+                           String tenantDomain)
             throws IdentityEventException {
 
         User user = new User();
         if (userStoreManager != null) {
             String domainQualifiedUserName = userStoreDomain + "/" + userName;
-            enrichUser(userStoreManager, domainQualifiedUserName, user);
+            enrichUser(userStoreManager, domainQualifiedUserName, user, tenantDomain);
             user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
         }
         return user;
     }
 
-    private static void enrichUser(UserStoreManager userStoreManager, String domainQualifiedUserName, User user)
+    private static void enrichUser(UserStoreManager userStoreManager, String domainQualifiedUserName, User user,
+                                   String tenantDomain)
             throws IdentityEventException {
 
         String userId;
@@ -111,7 +113,9 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
             String emailAddress =
                     userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
                             UserCoreConstants.DEFAULT_PROFILE);
-            UserClaim emailAddressUserClaim = new UserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress);
+            UserClaim emailAddressUserClaim =
+                    WSO2PayloadUtils.generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
+                            tenantDomain);
             List<UserClaim> userClaims = new ArrayList<>();
             userClaims.add(emailAddressUserClaim);
 

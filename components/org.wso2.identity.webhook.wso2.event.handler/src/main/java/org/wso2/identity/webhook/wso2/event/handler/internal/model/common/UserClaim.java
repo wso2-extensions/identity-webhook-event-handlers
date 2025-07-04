@@ -24,12 +24,12 @@ package org.wso2.identity.webhook.wso2.event.handler.internal.model.common;
 public class UserClaim {
 
     private String uri;
-    private String value;
+    private Object value;
 
-    public UserClaim(String uri, String value) {
+    public UserClaim(Builder builder) {
 
-        this.uri = uri;
-        this.value = value;
+        this.uri = builder.uri;
+        this.value = builder.value;
     }
 
     public String getUri() {
@@ -37,18 +37,37 @@ public class UserClaim {
         return uri;
     }
 
-    public void setUri(String uri) {
-
-        this.uri = uri;
-    }
-
-    public String getValue() {
+    public Object getValue() {
 
         return value;
     }
 
-    public void setValue(String value) {
+    public static class Builder {
 
-        this.value = value;
+        private String uri;
+        private Object value;
+
+        public Builder uri(String uri) {
+
+            this.uri = uri;
+            return this;
+        }
+
+        public Builder value(String value) {
+
+            this.value = value;
+            return this;
+        }
+
+        public Builder value(String[] value) {
+
+            this.value = value;
+            return this;
+        }
+
+        public UserClaim build() {
+
+            return new UserClaim(this);
+        }
     }
 }

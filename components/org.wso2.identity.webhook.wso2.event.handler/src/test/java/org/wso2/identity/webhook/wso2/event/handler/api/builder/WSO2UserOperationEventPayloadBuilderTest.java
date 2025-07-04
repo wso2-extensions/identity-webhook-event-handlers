@@ -20,27 +20,29 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.user.api.UserRealm;
-import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.config.RealmConfiguration;
-import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
+import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserGroupUpdateEventPayload;
@@ -53,6 +55,7 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -100,10 +103,16 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     @InjectMocks
     private WSO2UserOperationEventPayloadBuilder payloadBuilder;
 
+    @Mock
+    private ClaimMetadataManagementService claimMetadataManagementService;
+
+    private MockedStatic<FrameworkUtils> frameworkUtils;
+
     @BeforeClass
     public void setup() throws Exception {
 
         MockitoAnnotations.openMocks(this);
+        WSO2EventHookHandlerDataHolder.getInstance().setClaimMetadataManagementService(claimMetadataManagementService);
 
         when(realmConfiguration.getUserStoreProperty(
                 UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME)).thenReturn(DEFAULT);
@@ -111,6 +120,9 @@ public class WSO2UserOperationEventPayloadBuilderTest {
 
         mockServiceURLBuilder();
         mockIdentityTenantUtil();
+
+        frameworkUtils = mockStatic(FrameworkUtils.class);
+        frameworkUtils.when(FrameworkUtils::getMultiAttributeSeparator).thenReturn(",");
 
         Map<String, Object> threadLocalMap = new HashMap<>();
         threadLocalMap.put(PRE_DELETE_USER_ID, DELETED_USER_ID);
@@ -123,7 +135,9 @@ public class WSO2UserOperationEventPayloadBuilderTest {
 
         closeMockedServiceURLBuilder();
         closeMockedIdentityTenantUtil();
+        Mockito.reset(realmConfiguration, claimMetadataManagementService, userStoreManager);
         IdentityUtil.threadLocalProperties.remove();
+        frameworkUtils.close();
     }
 
     @Test

@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.internal.component;
 
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.user.core.service.RealmService;
 
@@ -29,6 +30,7 @@ public class WSO2EventHookHandlerDataHolder {
     private static final WSO2EventHookHandlerDataHolder instance = new WSO2EventHookHandlerDataHolder();
     private OrganizationManager organizationManager;
     private RealmService realmService;
+    private ClaimMetadataManagementService claimMetadataManagementService;
 
     private WSO2EventHookHandlerDataHolder() {
 
@@ -77,5 +79,26 @@ public class WSO2EventHookHandlerDataHolder {
     public void setRealmService(RealmService realmService) {
 
         this.realmService = realmService;
+    }
+
+    /**
+     * Get the claim metadata management service.
+     *
+     * @return Claim metadata management service.
+     */
+    public ClaimMetadataManagementService getClaimMetadataManagementService() {
+
+        return claimMetadataManagementService;
+    }
+
+    /*
+     * Set the claim metadata management service.
+     *
+     * @param claimMetadataManagementService Claim metadata management service.
+     */
+    public void setClaimMetadataManagementService(
+            ClaimMetadataManagementService claimMetadataManagementService) {
+
+        this.claimMetadataManagementService = claimMetadataManagementService;
     }
 }

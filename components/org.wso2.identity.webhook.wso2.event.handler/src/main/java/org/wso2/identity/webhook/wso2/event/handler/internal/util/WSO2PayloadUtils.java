@@ -18,11 +18,17 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.internal.util;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
+import org.wso2.carbon.identity.claim.metadata.mgt.exception.ClaimMetadataException;
+import org.wso2.carbon.identity.claim.metadata.mgt.model.LocalClaim;
+import org.wso2.carbon.identity.claim.metadata.mgt.util.ClaimConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
@@ -35,6 +41,7 @@ import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
+import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
@@ -42,9 +49,12 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
@@ -96,7 +106,7 @@ public class WSO2PayloadUtils {
                         // Not adding the user resident organization to the user claims for b2b users
                         break;
                     default:
-                        userClaims.add(new UserClaim(claimUri, claimValue));
+                        userClaims.add(generateUserClaim(claimUri, claimValue, authenticatedUser.getTenantDomain()));
                         break;
                 }
             }
@@ -268,8 +278,7 @@ public class WSO2PayloadUtils {
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
             event =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ACCOUNT_ENABLE_EVENT;
-        }
-        else if (IdentityEventConstants.Event.POST_DISABLE_ACCOUNT.equals(eventName)) {
+        } else if (IdentityEventConstants.Event.POST_DISABLE_ACCOUNT.equals(eventName)) {
             channel =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
             event =
@@ -325,4 +334,40 @@ public class WSO2PayloadUtils {
 
         return IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);
     }
+
+    public static UserClaim generateUserClaim(String claimKey, String claimValue, String tenantDomain) {
+
+        UserClaim.Builder userClaimBuilder = new UserClaim.Builder()
+                .uri(claimKey);
+
+        String multiAttributeSeparator = FrameworkUtils.getMultiAttributeSeparator();
+        if (isMultiValuedClaim(claimKey, tenantDomain)) {
+            userClaimBuilder.value(StringUtils.isBlank(claimValue) ? new String[]{} :
+                    claimValue.split(Pattern.quote(multiAttributeSeparator)));
+        } else {
+            userClaimBuilder.value(claimValue);
+        }
+
+        return userClaimBuilder.build();
+    }
+
+    private static boolean isMultiValuedClaim(String claimUri, String tenantDomain) {
+
+        ClaimMetadataManagementService claimMetadataManagementService =
+                WSO2EventHookHandlerDataHolder.getInstance().getClaimMetadataManagementService();
+
+        try {
+            Optional<LocalClaim>
+                    localClaim = claimMetadataManagementService.getLocalClaim(claimUri, tenantDomain);
+
+            if (localClaim.isPresent()) {
+                return Boolean.parseBoolean(localClaim.get().getClaimProperty(ClaimConstants.MULTI_VALUED_PROPERTY));
+            }
+
+        } catch (ClaimMetadataException e) {
+            log.error("Error while retrieving claim metadata for claim URI: " + claimUri, e);
+        }
+        return false;
+    }
+
 }
