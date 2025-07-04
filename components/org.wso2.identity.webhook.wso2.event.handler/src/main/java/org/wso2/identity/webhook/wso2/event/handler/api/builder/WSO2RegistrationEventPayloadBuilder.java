@@ -70,14 +70,18 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
-        AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration()
-                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
-
+        String userStoreDomainName = resolveUserStoreDomain(properties);
         UserStore userStore = new UserStore(userStoreDomainName);
 
         User newUser = new User();
         enrichUser(properties, newUser, tenantDomain);
+
+        if (StringUtils.isBlank(newUser.getId())) {
+
+            String userName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_NAME));
+            // User set password flow for email invitation by admin.
+            newUser = WSO2PayloadUtils.buildUser(userStoreDomainName, userName, tenantDomain);
+        }
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
@@ -279,10 +283,24 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
     private String resolveUserStoreDomain(Map<String, Object> properties) {
 
+        String userStoreDomainName = null;
         if (properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN) != null) {
-            return String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
+            userStoreDomainName =
+                    String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
         }
-        return null;
+        if (StringUtils.isBlank(userStoreDomainName) &&
+                properties.get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER) != null) {
+
+            Object userStoreManagerObj = properties.get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
+            if (userStoreManagerObj instanceof AbstractUserStoreManager) {
+                AbstractUserStoreManager userStoreManager =
+                        (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
+
+                userStoreDomainName = userStoreManager.getRealmConfiguration()
+                        .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+            }
+        }
+        return userStoreDomainName;
     }
 
 }
