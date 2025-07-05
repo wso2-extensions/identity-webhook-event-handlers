@@ -26,6 +26,7 @@ import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
@@ -67,7 +68,6 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
     public EventPayload buildRegistrationSuccessEvent(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> properties = eventData.getEventParams();
-        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
         String userStoreDomainName = resolveUserStoreDomain(properties);
@@ -81,6 +81,15 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
             String userName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_NAME));
             // User set password flow for email invitation by admin.
             newUser = WSO2PayloadUtils.buildUser(userStoreDomainName, userName, tenantDomain);
+        }
+
+        String tenantId = null;
+        if (properties.get(IdentityEventConstants.EventProperty.TENANT_ID) != null) {
+            tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
+        } else {
+            RealmConfiguration realmConfiguration = WSO2PayloadUtils.getRealmConfigurationByTenantDomain(tenantDomain);
+            if (realmConfiguration != null)
+                tenantId = String.valueOf(realmConfiguration.getTenantId());
         }
 
         Organization organization = new Organization(tenantId, tenantDomain);
