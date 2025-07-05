@@ -33,7 +33,6 @@ import org.wso2.carbon.identity.claim.metadata.mgt.util.ClaimConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
-import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
@@ -68,7 +67,6 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LOCATION_CLAIM;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.MODIFIED_CLAIM;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.RESOURCE_TYPE_CLAIM;
-import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.USER_CREATION_INITIATED;
 
 public class WSO2PayloadUtils {
 
@@ -309,17 +307,7 @@ public class WSO2PayloadUtils {
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
             event =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_USER_CREATED_EVENT;
-        } else if (isUserRegistrationSuccessFlow(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_SUCCESS_EVENT;
-        } else if (isUserRegistrationFailedFlow(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_FAILED_EVENT;
-        }
+        } // TODO Temporary removing until refactoring the metadata resolving.
         return EventMetadata.builder()
                 .event(String.valueOf(event))
                 .channel(String.valueOf(channel))
@@ -360,23 +348,13 @@ public class WSO2PayloadUtils {
 
     private static boolean isUserCreatedFlow(String eventName) {
 
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        Flow.Name flowName = (flow != null) ? flow.getName() : null;
         /*
-        Event.POST_ADD_USER + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
-            A user is created when an admin invites a user via email or offline link.
-
-        Event.POST_ADD_USER + Flow.Name.USER_REGISTRATION:
-            A user is created when a direct user registration, initiated either by an admin or the user.
-
-        IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS:
-            A user is created when successful Just-In-Time (JIT) provisioning or the new registration orchestration flow.
+        All POST_ADD_USER events will result in a userCreated event payload.
+        Since user creation does not imply successful registration,
+        this check is valid and does not cause any issues.
          */
-        return !IdentityUtil.threadLocalProperties.get().containsKey(USER_CREATION_INITIATED) &&
-                ((IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                        (Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName) ||
-                                Flow.Name.USER_REGISTRATION.equals(flowName))) ||
-                        IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName));
+        return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
+                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName));
     }
 
     private static boolean isCredentialUpdateFlow(String eventName) {

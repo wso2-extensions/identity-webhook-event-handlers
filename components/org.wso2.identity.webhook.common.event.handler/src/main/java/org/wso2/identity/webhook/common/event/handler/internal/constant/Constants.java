@@ -44,8 +44,6 @@ public class Constants {
     public static final String VERIFICATION_EVENT_HOOK_NAME = "VerificationEventHook";
     public static final String VERIFICATION_EVENT_HOOK_ENABLED = "VerificationEventHook.enable";
 
-    public static final String USER_CREATION_INITIATED = "USER_CREATION_INITIATED";
-
     /**
      * Constants for event data keys.
      * These names will be equal to the keys in the event data map.

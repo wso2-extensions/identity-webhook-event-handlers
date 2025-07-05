@@ -41,6 +41,4 @@ public class Constants {
     public static final String RESOURCE_TYPE_CLAIM = "http://wso2.org/claims/resourceType";
     public static final String LOCATION_CLAIM = "http://wso2.org/claims/location";
 
-    public static final String USER_CREATION_INITIATED = "USER_CREATION_INITIATED";
-
 }
