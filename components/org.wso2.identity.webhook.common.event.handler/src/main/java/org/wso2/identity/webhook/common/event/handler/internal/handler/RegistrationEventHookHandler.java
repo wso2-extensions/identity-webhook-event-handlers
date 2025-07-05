@@ -161,12 +161,6 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                             .buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
                             registrationChannel.getUri());
-                } else if (isUserRegistrationInvitationFlow(event.getEventName()) && isTopicExists) {
-                    eventPayload = payloadBuilder.buildRegistrationInvitationEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                            .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
-                            registrationChannel.getUri());
                 }
             }
         } catch (Exception e) {
@@ -176,8 +170,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
     private boolean isSupportedEvent(String eventName) {
 
-        return isUserRegistrationSuccessFlow(eventName) || isUserRegistrationFailedFlow(eventName) ||
-                isUserRegistrationInvitationFlow(eventName);
+        return isUserRegistrationSuccessFlow(eventName) || isUserRegistrationFailedFlow(eventName);
     }
 
     private boolean isUserRegistrationSuccessFlow(String eventName) {
@@ -204,21 +197,6 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||
                 (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
                         Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName));
-    }
-
-    private boolean isUserRegistrationInvitationFlow(String eventName) {
-
-        /*
-        Event.POST_ADD_NEW_PASSWORD + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
-            An admin invites a user via email or offline link.
-         */
-        if (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName)) {
-            Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-            Flow.Name flowName = (flow != null) ? flow.getName() : null;
-
-            return Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName);
-        }
-        return false;
     }
 
     private boolean isUserRegistrationFailedFlow(String eventName) {

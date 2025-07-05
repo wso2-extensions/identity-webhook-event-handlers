@@ -24,6 +24,7 @@ import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
@@ -34,6 +35,7 @@ import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCreatedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserGroupUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Group;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
@@ -291,6 +293,54 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return this.buildUserEnableEvent(eventData);
     }
 
+    @Override
+    public EventPayload buildUserCreatedEvent(EventData eventData) throws IdentityEventException {
+
+        Map<String, Object> properties = eventData.getEventParams();
+        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+
+        String userStoreDomainName = WSO2PayloadUtils.resolveUserStoreDomain(properties);
+        UserStore userStore = new UserStore(userStoreDomainName);
+
+        User newUser = new User();
+        WSO2PayloadUtils.enrichUser(properties, newUser, tenantDomain);
+
+        if (StringUtils.isBlank(newUser.getId())) {
+
+            String userName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_NAME));
+            // User set password flow for email invitation by admin.
+            newUser = WSO2PayloadUtils.buildUser(userStoreDomainName, userName, tenantDomain);
+        }
+
+        String tenantId = null;
+        if (properties.get(IdentityEventConstants.EventProperty.TENANT_ID) != null) {
+            tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
+        } else {
+            RealmConfiguration realmConfiguration = WSO2PayloadUtils.getRealmConfigurationByTenantDomain(tenantDomain);
+            if (realmConfiguration != null)
+                tenantId = String.valueOf(realmConfiguration.getTenantId());
+        }
+
+        Organization organization = new Organization(tenantId, tenantDomain);
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        String initiatorType = null;
+        String action = null;
+        if (flow != null) {
+            initiatorType = flow.getInitiatingPersona().name();
+            action = Optional.ofNullable(resolveAction(flow.getName()))
+                    .map(Enum::name)
+                    .orElse(null);
+        }
+
+        return new WSO2UserCreatedEventPayload.Builder()
+                .initiatorType(initiatorType)
+                .action(action)
+                .user(newUser)
+                .tenant(organization)
+                .userStore(userStore)
+                .build();
+    }
+
     private List<UserClaim> populateClaims(Map<String, Object> properties, String userClaimKey, String tenantDomain) {
 
         if (properties != null && properties.get(userClaimKey) instanceof Map) {
@@ -402,6 +452,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             case USER_REGISTRATION_INVITE_WITH_PASSWORD:
             case INVITED_USER_REGISTRATION:
                 return UserOperationAction.INVITE;
+            case USER_REGISTRATION:
+                return UserOperationAction.REGISTER;
             default: {
                 return null;
             }
@@ -409,6 +461,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     }
 
     public enum UserOperationAction {
-        INVITE, UPDATE
+        INVITE, UPDATE, REGISTER
     }
 }

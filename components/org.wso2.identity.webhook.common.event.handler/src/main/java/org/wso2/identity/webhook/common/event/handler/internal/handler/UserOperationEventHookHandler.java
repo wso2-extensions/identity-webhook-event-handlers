@@ -22,6 +22,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -44,6 +46,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.USER_CREATION_INITIATED;
 
 /**
  * User Operation Event Hook Handler.
@@ -97,7 +100,8 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                 IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName) ||
                 IdentityEventConstants.Event.POST_USER_PROFILE_UPDATE.equals(eventName) ||
                 IdentityEventConstants.Event.POST_DISABLE_ACCOUNT.equals(eventName) ||
-                IdentityEventConstants.Event.POST_ENABLE_ACCOUNT.equals(eventName) ;
+                IdentityEventConstants.Event.POST_ENABLE_ACCOUNT.equals(eventName) ||
+                isUserCreatedFlow(eventName);
     }
 
     @Override
@@ -223,8 +227,14 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                             .buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
                             userOperationChannel.getUri());
-                }
-                else {
+                } else if (isUserCreatedFlow(event.getEventName()) && isTopicExists) {
+                    eventPayload = payloadBuilder.buildUserCreatedEvent(eventData);
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                            .buildSecurityEventToken(eventPayload, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            userOperationChannel.getUri());
+                    IdentityUtil.threadLocalProperties.get().put(USER_CREATION_INITIATED, true);
+                } else {
                     log.debug("Skipping user operation event handling for event: " + event.getEventName() +
                             " in profile: " + eventProfile.getProfile());
                 }
@@ -232,5 +242,31 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
         } catch (Exception e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }
+    }
+
+    /**
+     * Where user is created regardless of confirmed account or not.
+     *
+     * @param eventName
+     * @return
+     */
+    private boolean isUserCreatedFlow(String eventName) {
+
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow.Name flowName = (flow != null) ? flow.getName() : null;
+        /*
+        Event.POST_ADD_USER + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
+            A user is created when an admin invites a user via email or offline link.
+
+        Event.POST_ADD_USER + Flow.Name.USER_REGISTRATION:
+            A user is created when a direct user registration, initiated either by an admin or the user.
+
+        IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS:
+            A user is created when successful Just-In-Time (JIT) provisioning or the new registration orchestration flow.
+         */
+        return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
+                (Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName) ||
+                        Flow.Name.USER_REGISTRATION.equals(flowName))) ||
+                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName);
     }
 }
