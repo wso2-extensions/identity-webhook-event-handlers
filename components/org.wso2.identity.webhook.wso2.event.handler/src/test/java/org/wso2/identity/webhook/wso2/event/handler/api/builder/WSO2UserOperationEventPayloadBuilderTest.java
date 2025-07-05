@@ -45,12 +45,15 @@ import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCreatedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserGroupUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Group;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.CommonTestUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -62,6 +65,8 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.FIRST_NAME_CLAIM_URI;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LAST_NAME_CLAIM_URI;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedServiceURLBuilder;
@@ -86,6 +91,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     private static final String ADDED_USER_EMAIL = "john@gmail.com";
     private static final String DELETED_USER_EMAIL = "pearl@gmail.com";
     private static final String TEST_USER_EMAIL = "tom@gmail.com";
+    private static final String FIRST_NAME = "Tom";
+    private static final String LAST_NAME = "Hanks";
     private static final String DOMAIN_QUALIFIED_ADDED_USER_NAME = "DEFAULT/john";
     private static final String DOMAIN_QUALIFIED_DELETED_USER_NAME = "DEFAULT/pearl";
     private static final String DOMAIN_QUALIFIED_TEST_USER_NAME = "DEFAULT/tom";
@@ -443,6 +450,62 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
                 FrameworkConstants.EMAIL_ADDRESS_CLAIM);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getValue(), TEST_USER_EMAIL);
+
+        IdentityContext.destroyCurrentContext();
+    }
+
+    @Test
+    public void testBuildUserCreatedEvent() throws IdentityEventException {
+
+        Map<String, Object> params = new HashMap<>();
+        params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
+        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        params.put(USER_STORE_MANAGER, userStoreManager);
+        params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
+
+        Map<String, String> claims = new HashMap<>();
+        claims.put(FrameworkConstants.EMAIL_ADDRESS_CLAIM, TEST_USER_EMAIL);
+        claims.put(FrameworkConstants.USER_ID_CLAIM, TEST_USER_ID);
+        claims.put(FIRST_NAME_CLAIM_URI, FIRST_NAME);
+        claims.put(LAST_NAME_CLAIM_URI, LAST_NAME);
+
+        params.put(IdentityEventConstants.EventProperty.USER_CLAIMS, claims);
+
+        when(mockEventData.getEventParams()).thenReturn(params);
+
+        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+                .name(Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD)
+                .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                .build());
+
+        EventPayload eventPayload = payloadBuilder.buildUserCreatedEvent(mockEventData);
+        assertCommonFields((WSO2BaseEventPayload) eventPayload);
+
+        WSO2UserCreatedEventPayload userAccountEventPayload =
+                (WSO2UserCreatedEventPayload) eventPayload;
+        // Assert the user account event payload
+        assertNotNull(userAccountEventPayload.getUser());
+        assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
+        assertEquals(userAccountEventPayload.getUser().getRef(),
+                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
+        assertNotNull(userAccountEventPayload.getAction());
+        assertEquals(userAccountEventPayload.getAction(),
+                WSO2RegistrationEventPayloadBuilder.RegistrationAction.INVITE.name());
+        assertNotNull(userAccountEventPayload.getUser().getClaims());
+        assertEquals(userAccountEventPayload.getUser().getClaims().size(), 3);
+
+        List<UserClaim> userClaims = userAccountEventPayload.getUser().getClaims();
+        Map<String, Object> userClaimsMap = userClaims.stream()
+                .collect(java.util.stream.Collectors.toMap(UserClaim::getUri, UserClaim::getValue));
+
+        assertNotNull(userClaimsMap.get(FrameworkConstants.EMAIL_ADDRESS_CLAIM));
+        assertEquals(userClaimsMap.get(FrameworkConstants.EMAIL_ADDRESS_CLAIM), TEST_USER_EMAIL);
+
+        assertNotNull(userClaimsMap.get(FIRST_NAME_CLAIM_URI));
+        assertEquals(userClaimsMap.get(FIRST_NAME_CLAIM_URI), FIRST_NAME);
+
+        assertNotNull(userClaimsMap.get(LAST_NAME_CLAIM_URI));
+        assertEquals(userClaimsMap.get(LAST_NAME_CLAIM_URI), LAST_NAME);
 
         IdentityContext.destroyCurrentContext();
     }

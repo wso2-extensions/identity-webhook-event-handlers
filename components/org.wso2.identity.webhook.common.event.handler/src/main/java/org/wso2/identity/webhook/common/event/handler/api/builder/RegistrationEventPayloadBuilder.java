@@ -36,5 +36,4 @@ public interface RegistrationEventPayloadBuilder {
      */
     Constants.EventSchema getEventSchemaType();
 
-    EventPayload buildRegistrationInvitationEvent(EventData eventData) throws IdentityEventException;
 }
