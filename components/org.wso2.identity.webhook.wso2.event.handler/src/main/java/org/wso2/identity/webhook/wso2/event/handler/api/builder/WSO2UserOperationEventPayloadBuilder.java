@@ -453,6 +453,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             case INVITED_USER_REGISTRATION:
                 return UserOperationAction.INVITE;
             case USER_REGISTRATION:
+            case SELF_REGISTRATION_WITH_VERIFICATION:
                 return UserOperationAction.REGISTER;
             default: {
                 return null;

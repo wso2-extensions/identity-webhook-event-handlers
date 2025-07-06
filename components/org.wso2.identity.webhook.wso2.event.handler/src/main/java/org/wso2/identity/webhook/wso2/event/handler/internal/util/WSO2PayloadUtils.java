@@ -330,11 +330,12 @@ public class WSO2PayloadUtils {
         Event.POST_SELF_SIGNUP_CONFIRM:
             Self-signup flow completed by the user.
          */
-        return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                Flow.Name.USER_REGISTRATION.equals(flowName)) ||
-                IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
-                        Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName));
+        return !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName) &&
+                ((IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
+                        Flow.Name.USER_REGISTRATION.equals(flowName)) ||
+                        IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
+                        (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                                Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)));
     }
 
     private static boolean isUserRegistrationFailedFlow(String eventName) {
@@ -344,12 +345,15 @@ public class WSO2PayloadUtils {
 
     private static boolean isUserCreatedFlow(String eventName) {
 
-        /*
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow.Name flowName = (flow != null) ? flow.getName() : null;
+       /*
         All POST_ADD_USER events will result in a userCreated event payload.
         Since user creation does not imply successful registration,
         this check is valid and does not cause any issues.
          */
-        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName);
+        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
+                !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName);
     }
 
     private static boolean isCredentialUpdateFlow(String eventName) {

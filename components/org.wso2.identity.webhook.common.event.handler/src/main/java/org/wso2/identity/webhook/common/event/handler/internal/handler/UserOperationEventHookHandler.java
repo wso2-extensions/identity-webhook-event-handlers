@@ -22,6 +22,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -248,11 +250,14 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
      */
     private boolean isUserCreatedFlow(String eventName) {
 
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow.Name flowName = (flow != null) ? flow.getName() : null;
        /*
         All POST_ADD_USER events will result in a userCreated event payload.
         Since user creation does not imply successful registration,
         this check is valid and does not cause any issues.
          */
-        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName);
+        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
+                !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName);
     }
 }
