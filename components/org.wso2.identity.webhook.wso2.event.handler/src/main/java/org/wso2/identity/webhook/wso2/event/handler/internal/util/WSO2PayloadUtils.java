@@ -329,14 +329,10 @@ public class WSO2PayloadUtils {
 
         Event.POST_SELF_SIGNUP_CONFIRM:
             Self-signup flow completed by the user.
-
-        IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS:
-            Registration via Just-In-Time (JIT) provisioning or the new registration orchestration flow.
          */
         return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
                 Flow.Name.USER_REGISTRATION.equals(flowName)) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||
                 (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
                         Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName));
     }
@@ -353,8 +349,7 @@ public class WSO2PayloadUtils {
         Since user creation does not imply successful registration,
         this check is valid and does not cause any issues.
          */
-        return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
-                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName));
+        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName);
     }
 
     private static boolean isCredentialUpdateFlow(String eventName) {

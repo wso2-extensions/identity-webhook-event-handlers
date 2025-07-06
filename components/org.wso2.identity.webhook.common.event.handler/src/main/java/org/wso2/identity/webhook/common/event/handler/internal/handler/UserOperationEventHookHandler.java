@@ -253,7 +253,6 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
         Since user creation does not imply successful registration,
         this check is valid and does not cause any issues.
          */
-        return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) ||
-                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName));
+        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName);
     }
 }

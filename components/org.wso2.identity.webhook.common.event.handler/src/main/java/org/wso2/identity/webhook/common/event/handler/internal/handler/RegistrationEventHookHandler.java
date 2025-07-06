@@ -115,6 +115,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                             eventProfile.getProfile());
                     continue;
                 }
+                // TODO Temporary fix to handle same event from different handlers.
                 EventMetadata eventMetadata = getEventMetadata(eventProfile.getProfile(), event.getEventName());
                 if (eventMetadata == null) {
                     log.debug("No event metadata found for event: " + event.getEventName() +
@@ -188,13 +189,10 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
         Event.POST_SELF_SIGNUP_CONFIRM:
             Self-signup flow completed by the user.
 
-        IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS:
-            Registration via Just-In-Time (JIT) provisioning or the new registration orchestration flow.
          */
         return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
                 Flow.Name.USER_REGISTRATION.equals(flowName)) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||
                 (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
                         Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName));
     }
