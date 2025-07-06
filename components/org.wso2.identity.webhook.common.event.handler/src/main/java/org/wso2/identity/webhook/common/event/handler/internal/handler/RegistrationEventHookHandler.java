@@ -44,6 +44,8 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 import java.util.List;
 import java.util.Objects;
 
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
+
 public class RegistrationEventHookHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(RegistrationEventHookHandler.class);
@@ -113,9 +115,8 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                             eventProfile.getProfile());
                     continue;
                 }
-                EventMetadata eventMetadata =
-                        EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
-                                event.getEventName());
+                // TODO Temporary fix to handle same event from different handlers.
+                EventMetadata eventMetadata = getEventMetadata(eventProfile.getProfile(), event.getEventName());
                 if (eventMetadata == null) {
                     log.debug("No event metadata found for event: " + event.getEventName() +
                             " in profile: " + eventProfile.getProfile());
@@ -161,12 +162,6 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                             .buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
                             registrationChannel.getUri());
-                } else if (isUserRegistrationInvitationFlow(event.getEventName()) && isTopicExists) {
-                    eventPayload = payloadBuilder.buildRegistrationInvitationEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                            .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
-                            registrationChannel.getUri());
                 }
             }
         } catch (Exception e) {
@@ -176,8 +171,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
     private boolean isSupportedEvent(String eventName) {
 
-        return isUserRegistrationSuccessFlow(eventName) || isUserRegistrationFailedFlow(eventName) ||
-                isUserRegistrationInvitationFlow(eventName);
+        return isUserRegistrationSuccessFlow(eventName) || isUserRegistrationFailedFlow(eventName);
     }
 
     private boolean isUserRegistrationSuccessFlow(String eventName) {
@@ -195,30 +189,12 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
         Event.POST_SELF_SIGNUP_CONFIRM:
             Self-signup flow completed by the user.
 
-        IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS:
-            Registration via Just-In-Time (JIT) provisioning or the new registration orchestration flow.
          */
         return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
                 Flow.Name.USER_REGISTRATION.equals(flowName)) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||
                 (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
                         Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName));
-    }
-
-    private boolean isUserRegistrationInvitationFlow(String eventName) {
-
-        /*
-        Event.POST_ADD_NEW_PASSWORD + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
-            An admin invites a user via email or offline link.
-         */
-        if (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName)) {
-            Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-            Flow.Name flowName = (flow != null) ? flow.getName() : null;
-
-            return Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName);
-        }
-        return false;
     }
 
     private boolean isUserRegistrationFailedFlow(String eventName) {
@@ -226,4 +202,33 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
         return IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName);
     }
 
+    private EventMetadata getEventMetadata(String eventProfile, String eventName) {
+
+        String event = null;
+        String channel = null;
+
+        if (isUserRegistrationSuccessFlow(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_SUCCESS_EVENT;
+        } else if (isUserRegistrationFailedFlow(eventName)) {
+            channel =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
+            event =
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_FAILED_EVENT;
+        }
+
+        EventMetadata eventMetadata = EventMetadata.builder()
+                .event(String.valueOf(event))
+                .channel(String.valueOf(channel))
+                .eventProfile(WSO2.name())
+                .build();
+
+        if (eventMetadata != null && eventProfile.equals(eventMetadata.getEventProfile())) {
+            return eventMetadata;
+        }
+
+        return null;
+    }
 }

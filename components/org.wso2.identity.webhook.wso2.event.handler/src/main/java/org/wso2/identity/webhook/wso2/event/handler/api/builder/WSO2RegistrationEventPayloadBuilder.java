@@ -21,48 +21,31 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.user.api.RealmConfiguration;
-import org.wso2.carbon.user.core.UserCoreConstants;
-import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.identity.event.common.publisher.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationFailureEventPayload;
-import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationInvitationEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationSuccessEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Context;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Reason;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Step;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
-import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
-import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 
 public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPayloadBuilder {
 
     private static final Log log = LogFactory.getLog(WSO2RegistrationEventPayloadBuilder.class);
-    private static final String WSO2_CLAIM_CREATED = "http://wso2.org/claims/created";
-    private static final String WSO2_CLAIM_MODIFIED = "http://wso2.org/claims/modified";
-    private static final String WSO2_CLAIM_RESOURCE_TYPE = "http://wso2.org/claims/resourceType";
-    private static final String WSO2_CLAIM_LOCATION = "http://wso2.org/claims/location";
-    private static final String LOCATION_CLAIM = "http://wso2.org/claims/location";
 
     @Override
     public EventPayload buildRegistrationSuccessEvent(EventData eventData) throws IdentityEventException {
@@ -70,11 +53,11 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         Map<String, Object> properties = eventData.getEventParams();
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
-        String userStoreDomainName = resolveUserStoreDomain(properties);
+        String userStoreDomainName = WSO2PayloadUtils.resolveUserStoreDomain(properties);
         UserStore userStore = new UserStore(userStoreDomainName);
 
         User newUser = new User();
-        enrichUser(properties, newUser, tenantDomain);
+        WSO2PayloadUtils.enrichUser(properties, newUser, tenantDomain);
 
         if (StringUtils.isBlank(newUser.getId())) {
 
@@ -112,32 +95,6 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                 .build();
     }
 
-    private void enrichUser(Map<String, Object> properties, User user, String tenantDomain) {
-
-        if (properties.containsKey(IdentityEventConstants.EventProperty.USER_CLAIMS)) {
-            Map<String, String> claims = (Map<String, String>) properties.get(IdentityEventConstants.EventProperty
-                    .USER_CLAIMS);
-
-            if (claims.containsKey(FrameworkConstants.USER_ID_CLAIM)) {
-                user.setId(claims.get(FrameworkConstants.USER_ID_CLAIM));
-                user.setRef(
-                        EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
-            } else if (claims.containsKey(LOCATION_CLAIM)) {
-                user.setRef(claims.get(LOCATION_CLAIM));
-                // If the user ID is not set, try to extract it from the ref.
-                if (StringUtils.isNotBlank(user.getRef())) {
-                    String[] refParts = user.getRef().split("/");
-                    if (refParts.length > 0) {
-                        user.setId(refParts[refParts.length - 1]);
-                    }
-                }
-            }
-
-            List<UserClaim> filteredUserClaims = filterUserClaimsForUserAdd(claims, tenantDomain);
-            user.setClaims(filteredUserClaims);
-        }
-    }
-
     private void addRoles(Map<String, Object> properties, User user) {
 
         if (!properties.containsKey(IdentityEventConstants.EventProperty.ROLE_LIST)) {
@@ -157,69 +114,13 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
     }
 
     @Override
-    public EventPayload buildRegistrationInvitationEvent(EventData eventData) throws IdentityEventException {
-
-        Map<String, Object> properties = eventData.getEventParams();
-        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
-        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
-
-        AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration()
-                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
-
-        UserStore userStore = new UserStore(userStoreDomainName);
-
-        User newUser = new User();
-        enrichUser(properties, newUser, tenantDomain);
-
-        Organization organization = new Organization(tenantId, tenantDomain);
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        String initiatorType = null;
-        String action = null;
-        if (flow != null) {
-            initiatorType = flow.getInitiatingPersona().name();
-            action = Optional.ofNullable(resolveAction(flow.getName()))
-                    .map(Enum::name)
-                    .orElse(null);
-        }
-
-        return new WSO2RegistrationInvitationEventPayload.Builder()
-                .initiatorType(initiatorType)
-                .action(action)
-                .user(newUser)
-                .tenant(organization)
-                .userStore(userStore)
-                .build();
-    }
-
-    private List<UserClaim> filterUserClaimsForUserAdd(Map<String, String> userClaims, String tenantDomain) {
-
-        List<UserClaim> userClaimList = new ArrayList<>();
-        List<String> excludedClaims = Arrays.asList(
-                WSO2_CLAIM_CREATED,
-                WSO2_CLAIM_MODIFIED,
-                WSO2_CLAIM_RESOURCE_TYPE,
-                WSO2_CLAIM_LOCATION,
-                FrameworkConstants.USER_ID_CLAIM);
-
-        for (String userClaimUri : userClaims.keySet()) {
-            if (!excludedClaims.contains(userClaimUri)) {
-                userClaimList.add(
-                        WSO2PayloadUtils.generateUserClaim(userClaimUri, userClaims.get(userClaimUri),
-                                tenantDomain));
-            }
-        }
-        return userClaimList;
-    }
-
-    @Override
     public EventPayload buildRegistrationFailureEvent(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> properties = eventData.getEventParams();
         String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
-        String userStoreDomainName = resolveUserStoreDomain(properties);
+        String userStoreDomainName = WSO2PayloadUtils.resolveUserStoreDomain(properties);
         UserStore userStore = null;
 
         if (StringUtils.isNotBlank(userStoreDomainName)) {
@@ -227,7 +128,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         }
 
         User newUser = new User();
-        enrichUser(properties, newUser, tenantDomain);
+        WSO2PayloadUtils.enrichUser(properties, newUser, tenantDomain);
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
@@ -288,28 +189,6 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
     public enum RegistrationAction {
         REGISTER, INVITE
-    }
-
-    private String resolveUserStoreDomain(Map<String, Object> properties) {
-
-        String userStoreDomainName = null;
-        if (properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN) != null) {
-            userStoreDomainName =
-                    String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
-        }
-        if (StringUtils.isBlank(userStoreDomainName) &&
-                properties.get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER) != null) {
-
-            Object userStoreManagerObj = properties.get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
-            if (userStoreManagerObj instanceof AbstractUserStoreManager) {
-                AbstractUserStoreManager userStoreManager =
-                        (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-
-                userStoreDomainName = userStoreManager.getRealmConfiguration()
-                        .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
-            }
-        }
-        return userStoreDomainName;
     }
 
 }

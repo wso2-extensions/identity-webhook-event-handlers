@@ -97,7 +97,8 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                 IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName) ||
                 IdentityEventConstants.Event.POST_USER_PROFILE_UPDATE.equals(eventName) ||
                 IdentityEventConstants.Event.POST_DISABLE_ACCOUNT.equals(eventName) ||
-                IdentityEventConstants.Event.POST_ENABLE_ACCOUNT.equals(eventName) ;
+                IdentityEventConstants.Event.POST_ENABLE_ACCOUNT.equals(eventName) ||
+                isUserCreatedFlow(eventName);
     }
 
     @Override
@@ -223,8 +224,13 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                             .buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
                             userOperationChannel.getUri());
-                }
-                else {
+                } else if (isUserCreatedFlow(event.getEventName()) && isTopicExists) {
+                    eventPayload = payloadBuilder.buildUserCreatedEvent(eventData);
+                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
+                            .buildSecurityEventToken(eventPayload, eventUri);
+                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
+                            userOperationChannel.getUri());
+                } else {
                     log.debug("Skipping user operation event handling for event: " + event.getEventName() +
                             " in profile: " + eventProfile.getProfile());
                 }
@@ -232,5 +238,21 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
         } catch (Exception e) {
             log.debug("Error while retrieving event publisher configuration for tenant.", e);
         }
+    }
+
+    /**
+     * Where user is created regardless of confirmed account or not.
+     *
+     * @param eventName
+     * @return
+     */
+    private boolean isUserCreatedFlow(String eventName) {
+
+       /*
+        All POST_ADD_USER events will result in a userCreated event payload.
+        Since user creation does not imply successful registration,
+        this check is valid and does not cause any issues.
+         */
+        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName);
     }
 }

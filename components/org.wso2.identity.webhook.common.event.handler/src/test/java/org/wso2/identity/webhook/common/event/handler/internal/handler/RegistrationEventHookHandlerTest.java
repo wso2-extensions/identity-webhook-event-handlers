@@ -158,10 +158,7 @@ public class RegistrationEventHookHandlerTest {
 
         return new Object[][] {
                 {IdentityEventConstants.Event.POST_ADD_USER, SAMPLE_EVENT_KEY},
-                {IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM, SAMPLE_EVENT_KEY},
-                {IdentityEventConstants.Event.USER_REGISTRATION_FAILED, REGISTRATION_FAILURE_EVENT_KEY},
-                {IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS, SAMPLE_EVENT_KEY}
-        };
+                {IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM, SAMPLE_EVENT_KEY}};
     }
 
     @Test(dataProvider = "eventDataProvider")
@@ -170,10 +167,10 @@ public class RegistrationEventHookHandlerTest {
         Event event = createEventWithProperties(eventName);
 
         org.wso2.carbon.identity.webhook.metadata.api.model.Event channelEvent =
-                new org.wso2.carbon.identity.webhook.metadata.api.model.Event(eventName, "description",
+                new org.wso2.carbon.identity.webhook.metadata.api.model.Event("Registration success", "description",
                         expectedEventKey);
         String channelUri = "registration/channel/uri";
-        Channel channel = new Channel("Registration Channel", "Registration Channel", channelUri,
+        Channel channel = new Channel("Registrations", "Registration Channel", channelUri,
                 Collections.singletonList(channelEvent));
         EventProfile eventProfile = new EventProfile("WSO2", "uri", Collections.singletonList(channel));
         List<EventProfile> profiles = Collections.singletonList(eventProfile);
@@ -193,8 +190,9 @@ public class RegistrationEventHookHandlerTest {
                 EventMetadata eventMetadata = mock(EventMetadata.class);
                 SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
 
-                when(eventMetadata.getChannel()).thenReturn("Registration Channel");
-                when(eventMetadata.getEvent()).thenReturn(eventName);
+                when(eventMetadata.getChannel()).thenReturn("Registrations");
+                when(eventMetadata.getEvent()).thenReturn("Registration success");
+                when(eventMetadata.getEventProfile()).thenReturn("WSO2");
 
                 utilsMocked.when(() -> EventHookHandlerUtils.buildEventDataProvider(any(Event.class)))
                         .thenCallRealMethod();

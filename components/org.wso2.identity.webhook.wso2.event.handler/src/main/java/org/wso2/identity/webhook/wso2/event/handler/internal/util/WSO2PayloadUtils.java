@@ -41,6 +41,7 @@ import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
@@ -51,15 +52,21 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.CREATED_CLAIM;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LOCATION_CLAIM;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.MODIFIED_CLAIM;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.RESOURCE_TYPE_CLAIM;
 
 public class WSO2PayloadUtils {
 
@@ -95,7 +102,7 @@ public class WSO2PayloadUtils {
 
             if (claimUri != null && claimValue != null) {
                 switch (claimUri) {
-                    case Constants.WSO2_CLAIM_GROUPS:
+                    case Constants.GROUPS_CLAIM:
                         user.addGroup(claimValue);
                         break;
                     case Constants.MULTI_ATTRIBUTE_SEPARATOR:
@@ -290,22 +297,17 @@ public class WSO2PayloadUtils {
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CREDENTIAL_CHANGE_CHANNEL;
             event =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_CREDENTIAL;
-        } else if (isUserRegistrationSuccessFlow(eventName)) {
+        } else if (isUserCreatedFlow(eventName)) {
+            /*
+            The user operation check must always precede the registration check, since user creation occurs before
+            registration, and both events are triggered by the same event: POST_ADD_USER.
+            // TODO this issue is due to sequence utility access of metadata.
+             */
             channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
             event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_SUCCESS_EVENT;
-        } else if (isUserRegistrationFailedFlow(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_FAILED_EVENT;
-        } else if (isUserRegistrationInvitationFlow(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_INVITED_EVENT;
-        }
+                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_USER_CREATED_EVENT;
+        } // TODO Temporary removing until refactoring the metadata resolving.
         return EventMetadata.builder()
                 .event(String.valueOf(event))
                 .channel(String.valueOf(channel))
@@ -327,14 +329,10 @@ public class WSO2PayloadUtils {
 
         Event.POST_SELF_SIGNUP_CONFIRM:
             Self-signup flow completed by the user.
-
-        IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS:
-            Registration via Just-In-Time (JIT) provisioning or the new registration orchestration flow.
          */
         return (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
                 Flow.Name.USER_REGISTRATION.equals(flowName)) ||
                 IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||
                 (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
                         Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName));
     }
@@ -344,19 +342,14 @@ public class WSO2PayloadUtils {
         return IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName);
     }
 
-    private static boolean isUserRegistrationInvitationFlow(String eventName) {
+    private static boolean isUserCreatedFlow(String eventName) {
 
         /*
-        Event.POST_ADD_NEW_PASSWORD + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
-            An admin invites a user via email or offline link.
+        All POST_ADD_USER events will result in a userCreated event payload.
+        Since user creation does not imply successful registration,
+        this check is valid and does not cause any issues.
          */
-        if (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName)) {
-            Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-            Flow.Name flowName = (flow != null) ? flow.getName() : null;
-
-            return Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName);
-        }
-        return false;
+        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName);
     }
 
     private static boolean isCredentialUpdateFlow(String eventName) {
@@ -455,5 +448,73 @@ public class WSO2PayloadUtils {
             user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
         }
         return user;
+    }
+
+    public static String resolveUserStoreDomain(Map<String, Object> properties) {
+
+        String userStoreDomainName = null;
+        if (properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN) != null) {
+            userStoreDomainName =
+                    String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
+        }
+        if (StringUtils.isBlank(userStoreDomainName) &&
+                properties.get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER) != null) {
+
+            Object userStoreManagerObj = properties.get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
+            if (userStoreManagerObj instanceof AbstractUserStoreManager) {
+                AbstractUserStoreManager userStoreManager =
+                        (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
+
+                userStoreDomainName = userStoreManager.getRealmConfiguration()
+                        .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+            }
+        }
+        return userStoreDomainName;
+    }
+
+    public static List<UserClaim> filterUserClaimsForUserAdd(Map<String, String> userClaims, String tenantDomain) {
+
+        List<UserClaim> userClaimList = new ArrayList<>();
+        List<String> excludedClaims = Arrays.asList(
+                CREATED_CLAIM,
+                MODIFIED_CLAIM,
+                RESOURCE_TYPE_CLAIM,
+                LOCATION_CLAIM,
+                FrameworkConstants.USER_ID_CLAIM);
+
+        for (String userClaimUri : userClaims.keySet()) {
+            if (!excludedClaims.contains(userClaimUri)) {
+                userClaimList.add(
+                        generateUserClaim(userClaimUri, userClaims.get(userClaimUri),
+                                tenantDomain));
+            }
+        }
+        return userClaimList;
+    }
+
+    public static void enrichUser(Map<String, Object> properties, User user, String tenantDomain) {
+
+        if (properties.containsKey(IdentityEventConstants.EventProperty.USER_CLAIMS)) {
+            Map<String, String> claims = (Map<String, String>) properties.get(IdentityEventConstants.EventProperty
+                    .USER_CLAIMS);
+
+            if (claims.containsKey(FrameworkConstants.USER_ID_CLAIM)) {
+                user.setId(claims.get(FrameworkConstants.USER_ID_CLAIM));
+                user.setRef(
+                        EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+            } else if (claims.containsKey(LOCATION_CLAIM)) {
+                user.setRef(claims.get(LOCATION_CLAIM));
+                // If the user ID is not set, try to extract it from the ref.
+                if (StringUtils.isNotBlank(user.getRef())) {
+                    String[] refParts = user.getRef().split("/");
+                    if (refParts.length > 0) {
+                        user.setId(refParts[refParts.length - 1]);
+                    }
+                }
+            }
+
+            List<UserClaim> filteredUserClaims = filterUserClaimsForUserAdd(claims, tenantDomain);
+            user.setClaims(filteredUserClaims);
+        }
     }
 }
