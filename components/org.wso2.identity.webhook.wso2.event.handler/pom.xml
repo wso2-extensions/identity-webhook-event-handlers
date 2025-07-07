@@ -114,8 +114,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.identity.event.publishers</groupId>
-            <artifactId>org.wso2.identity.event.common.publisher</artifactId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.event.publisher</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -186,13 +186,9 @@
                             org.json.simple.parser; version="${com.googlecode.json-simple.wso2.version.range}",
                             org.wso2.identity.webhook.common.event.handler.*;
                             version="${org.wso2.identity.webhook.common.event.handler.version.range}",
-                            org.wso2.identity.event.common.publisher;
-                            version="${org.wso2.identity.event.publishers.version.range}",
-                            org.wso2.identity.event.common.publisher.model;
-                            version="${org.wso2.identity.event.publishers.version.range}",
-                            org.wso2.identity.event.common.publisher.exception;
-                            version="${org.wso2.identity.event.publishers.version.range}",
                             org.wso2.carbon.identity.claim.metadata.mgt.*;
+                            version="${carbon.identity.framework.imp.pkg.version.range}",
+                            org.wso2.carbon.identity.event.publisher.api.*;
                             version="${carbon.identity.framework.imp.pkg.version.range}"
                         </Import-Package>
                     </instructions>

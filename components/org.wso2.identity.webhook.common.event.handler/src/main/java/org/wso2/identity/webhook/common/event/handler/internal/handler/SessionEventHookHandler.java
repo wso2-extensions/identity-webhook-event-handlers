@@ -24,11 +24,12 @@ import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
+import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.common.Subject;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
-import org.wso2.identity.event.common.publisher.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
@@ -39,6 +40,8 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 
 import java.util.List;
 import java.util.Objects;
+
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.EVENT_PROFILE_VERSION;
 
 /**
  * This class handles session events and publishes them to the configured event publisher.
@@ -66,8 +69,6 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                 return;
             }
             for (EventProfile eventProfile : eventProfileList) {
-
-                //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
                 org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
                         schema =
                         org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
@@ -75,7 +76,6 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
                 SessionEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getSessionEventPayloadBuilder(schema);
 
-                // TODO: Change this when the event schema type is added to the tenant configuration.
                 if (payloadBuilder == null) {
                     log.debug("Skipping session event handling for profile " + eventProfile.getProfile());
                     continue;
@@ -110,11 +110,17 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                         .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                         .orElse(null);
 
-                boolean isTopicExists = EventHookHandlerDataHolder.getInstance().getTopicManagementService()
-                        .isTopicExists(sessionChannel.getUri(), Constants.EVENT_PROFILE_VERSION,
-                                eventData.getAuthenticatedUser().getTenantDomain());
+                EventContext eventContext = EventContext.builder()
+                        .tenantDomain(eventData.getAuthenticatedUser().getTenantDomain())
+                        .eventUri(sessionChannel.getUri())
+                        .eventProfileName(eventProfile.getProfile())
+                        .eventProfileVersion(EVENT_PROFILE_VERSION)
+                        .build();
 
-                if (isTopicExists) {
+                boolean publisherCanHandleEvent = EventHookHandlerDataHolder.getInstance().getEventPublisherService()
+                        .canHandleEvent(eventContext);
+
+                if (publisherCanHandleEvent) {
                     switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
                         case USER_SESSION_TERMINATE:
                             eventPayload = payloadBuilder.buildSessionTerminateEvent(eventData);
@@ -139,12 +145,11 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                                 org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.CAEP)) {
                             subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
                         }
-                        String tenantDomain = eventData.getAuthenticatedUser().getTenantDomain();
 
                         SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.
                                 buildSecurityEventToken(eventPayload, eventUri, subject);
-                        EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
-                                sessionChannel.getUri());
+                        EventHookHandlerDataHolder.getInstance().getEventPublisherService()
+                                .publish(securityEventTokenPayload, eventContext);
                     }
                 }
             }
