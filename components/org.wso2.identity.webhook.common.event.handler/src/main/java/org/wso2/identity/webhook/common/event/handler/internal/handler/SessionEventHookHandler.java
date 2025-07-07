@@ -149,7 +149,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                 }
             }
         } catch (Exception e) {
-            log.debug("Error while retrieving event publisher configuration for tenant.", e);
+            log.warn("Error while retrieving event publisher configuration for tenant.", e);
         }
     }
 }
