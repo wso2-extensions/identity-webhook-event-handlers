@@ -80,7 +80,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                 log.debug(eventName + " event cannot be handled.");
             }
         } catch (Exception e) {
-            log.debug("Unexpected error occurred while evaluating event in LoginEventHookHandler.", e);
+            log.error("Unexpected error occurred while evaluating event in LoginEventHookHandler.", e);
         }
         return canHandle;
     }
@@ -177,7 +177,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                 }
             }
         } catch (Exception e) {
-            log.debug("Error while retrieving login event publisher configuration for tenant.", e);
+            log.error("Error while retrieving login event publisher configuration for tenant.", e);
         }
     }
 }
