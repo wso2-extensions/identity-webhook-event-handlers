@@ -82,7 +82,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
                 log.debug(eventName + " event cannot be handled.");
             }
         } catch (Exception e) {
-            log.error("Unexpected error occurred while evaluating event in CredentialEventHookHandler.", e);
+            log.warn("Unexpected error occurred while evaluating event in CredentialEventHookHandler.", e);
         }
         return canHandle;
     }
@@ -156,7 +156,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
                 }
             }
         } catch (Exception e) {
-            log.error("Error while retrieving credential change event publisher configuration for tenant.", e);
+            log.warn("Error while retrieving credential change event publisher configuration for tenant.", e);
         }
     }
 

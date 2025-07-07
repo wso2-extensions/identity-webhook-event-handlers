@@ -75,7 +75,7 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
                 log.debug(eventName + " event cannot be handled.");
             }
         } catch (Exception e) {
-            log.error("Unexpected error occurred while evaluating event in VerificationEventHookHandler.", e);
+            log.warn("Unexpected error occurred while evaluating event in VerificationEventHookHandler.", e);
         }
         return canHandle;
     }
@@ -166,7 +166,7 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
                 }
             }
         } catch (Exception e) {
-            log.error("Error while retrieving event publisher configuration for tenant.", e);
+            log.warn("Error while retrieving event publisher configuration for tenant.", e);
         }
     }
 }
