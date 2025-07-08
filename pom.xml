@@ -25,7 +25,7 @@
 
     <groupId>org.wso2.identity.webhook.event.handlers</groupId>
     <modelVersion>4.0.0</modelVersion>
-    <version>1.0.336-SNAPSHOT</version>
+    <version>1.0.338-SNAPSHOT</version>
     <artifactId>identity-webhook-event-handlers</artifactId>
 
     <packaging>pom</packaging>
