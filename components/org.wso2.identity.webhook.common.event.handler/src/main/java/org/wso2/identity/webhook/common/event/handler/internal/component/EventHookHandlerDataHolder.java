@@ -338,8 +338,7 @@ public class EventHookHandlerDataHolder {
         return applicationManagementService;
     }
 
-    public void setApplicationManagementService(
-            ApplicationManagementService applicationManagementService) {
+    public void setApplicationManagementService(ApplicationManagementService applicationManagementService) {
 
         this.applicationManagementService = applicationManagementService;
     }

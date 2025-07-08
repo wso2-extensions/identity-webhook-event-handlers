@@ -63,6 +63,14 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.event.publisher</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.application.mgt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.webhook.metadata</artifactId>
         </dependency>
         <dependency>
@@ -112,10 +120,6 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-inline</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.identity.framework</groupId>
-            <artifactId>org.wso2.carbon.identity.event.publisher</artifactId>
         </dependency>
     </dependencies>
 
