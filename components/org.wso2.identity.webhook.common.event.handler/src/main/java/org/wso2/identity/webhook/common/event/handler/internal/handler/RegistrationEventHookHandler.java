@@ -198,8 +198,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
          */
         return !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName) &&
-                ((IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                        Flow.Name.USER_REGISTRATION.equals(flowName)) ||
+                (IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName)  ||
                         IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
                         (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
                                 Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)));

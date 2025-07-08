@@ -454,6 +454,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 return UserOperationAction.INVITE;
             case USER_REGISTRATION:
                 return UserOperationAction.REGISTER;
+            case JIT_PROVISION:
+                return UserOperationAction.JUST_IN_TIME;
             default: {
                 return null;
             }
@@ -461,6 +463,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     }
 
     public enum UserOperationAction {
-        INVITE, UPDATE, REGISTER
+        INVITE, UPDATE, REGISTER, JUST_IN_TIME
     }
 }

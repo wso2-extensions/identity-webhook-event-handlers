@@ -315,34 +315,6 @@ public class WSO2PayloadUtils {
                 .build();
     }
 
-    private static boolean isUserRegistrationSuccessFlow(String eventName) {
-
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        Flow.Name flowName = (flow != null) ? flow.getName() : null;
-
-        /*
-        Event.POST_ADD_USER + Flow.Name.USER_REGISTRATION:
-            Direct user registration, initiated either by an admin or the user.
-
-        Event.POST_ADD_NEW_PASSWORD + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
-            User completes registration after being invited by an admin.
-
-        Event.POST_SELF_SIGNUP_CONFIRM:
-            Self-signup flow completed by the user.
-         */
-        return !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName) &&
-                ((IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                        Flow.Name.USER_REGISTRATION.equals(flowName)) ||
-                        IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                        (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
-                                Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)));
-    }
-
-    private static boolean isUserRegistrationFailedFlow(String eventName) {
-
-        return IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName);
-    }
-
     private static boolean isUserCreatedFlow(String eventName) {
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
