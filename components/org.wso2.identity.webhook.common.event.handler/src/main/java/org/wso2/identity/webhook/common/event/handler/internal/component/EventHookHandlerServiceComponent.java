@@ -236,6 +236,23 @@ public class EventHookHandlerServiceComponent {
     }
 
     @Reference(
+            name = "application.management.service.component",
+            service = ApplicationManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetApplicationManagementService"
+    )
+    protected void setApplicationManagementService(ApplicationManagementService applicationManagementService) {
+
+        EventHookHandlerDataHolder.getInstance().setApplicationManagementService(applicationManagementService);
+    }
+
+    protected void unsetApplicationManagementService(ApplicationManagementService applicationManagementService) {
+
+        EventHookHandlerDataHolder.getInstance().setApplicationManagementService(null);
+    }
+
+    @Reference(
             name = "login.event.payload.builder",
             service = LoginEventPayloadBuilder.class,
             cardinality = ReferenceCardinality.MULTIPLE,
@@ -298,7 +315,7 @@ public class EventHookHandlerServiceComponent {
     }
 
     @Reference(
-            name = "org.wso2.identity.event.common.publisher",
+            name = "carbon.identity.event.publisher",
             service = EventPublisherService.class,
             cardinality = ReferenceCardinality.MANDATORY,
             policy = ReferencePolicy.DYNAMIC,
@@ -346,23 +363,6 @@ public class EventHookHandlerServiceComponent {
     protected void unsetTopicManagementService(TopicManagementService topicManagementService) {
 
         EventHookHandlerDataHolder.getInstance().setTopicManagementService(null);
-    }
-
-    @Reference(
-            name = "application.service.component",
-            service = ApplicationManagementService.class,
-            cardinality = ReferenceCardinality.MANDATORY,
-            policy = ReferencePolicy.DYNAMIC,
-            unbind = "unsetApplicationManagementService"
-    )
-    protected void setApplicationManagementService(ApplicationManagementService applicationManagementService) {
-
-        EventHookHandlerDataHolder.getInstance().setApplicationManagementService(applicationManagementService);
-    }
-
-    protected void unsetApplicationManagementService(ApplicationManagementService applicationManagementService) {
-
-        EventHookHandlerDataHolder.getInstance().setApplicationManagementService(null);
     }
 
     /**
