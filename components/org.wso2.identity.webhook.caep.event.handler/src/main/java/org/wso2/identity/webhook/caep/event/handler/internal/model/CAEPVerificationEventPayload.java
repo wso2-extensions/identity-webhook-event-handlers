@@ -19,7 +19,7 @@
 package org.wso2.identity.webhook.caep.event.handler.internal.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 
 /**
  * This class represents the payload of a CAEP verification event.

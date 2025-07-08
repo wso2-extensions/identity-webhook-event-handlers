@@ -27,7 +27,7 @@ import org.wso2.carbon.identity.application.authentication.framework.model.UserS
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;

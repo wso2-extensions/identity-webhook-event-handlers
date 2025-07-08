@@ -22,7 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPVerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPVerificationEventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;

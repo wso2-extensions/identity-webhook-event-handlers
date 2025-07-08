@@ -26,7 +26,7 @@ import org.osgi.service.component.ComponentContext;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
-import org.wso2.identity.event.common.publisher.EventPublisherService;
+import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;

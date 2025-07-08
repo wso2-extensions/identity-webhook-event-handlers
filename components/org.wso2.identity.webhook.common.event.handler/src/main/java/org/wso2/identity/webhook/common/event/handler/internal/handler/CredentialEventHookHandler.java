@@ -29,10 +29,11 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
+import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
@@ -43,6 +44,8 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 
 import java.util.List;
 import java.util.Objects;
+
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.EVENT_PROFILE_VERSION;
 
 /**
  * This class handles credential events and builds the event payload.
@@ -101,7 +104,6 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
             }
             for (EventProfile eventProfile : eventProfileList) {
 
-                //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
                 org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
                         org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
                                 eventProfile.getProfile());
@@ -144,15 +146,22 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
                         .findFirst().map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                         .orElse(null);
 
-                boolean isTopicExists = EventHookHandlerDataHolder.getInstance().getTopicManagementService()
-                        .isTopicExists(credentialChangeChannel.getUri(), Constants.EVENT_PROFILE_VERSION, tenantDomain);
+                EventContext eventContext = EventContext.builder()
+                        .tenantDomain(tenantDomain)
+                        .eventUri(credentialChangeChannel.getUri())
+                        .eventProfileName(eventProfile.getProfile())
+                        .eventProfileVersion(EVENT_PROFILE_VERSION)
+                        .build();
 
-                if (isCredentialUpdateFlow(event.getEventName()) && isTopicExists) {
+                boolean publisherCanHandleEvent = EventHookHandlerDataHolder.getInstance().getEventPublisherService()
+                        .canHandleEvent(eventContext);
+
+                if (isCredentialUpdateFlow(event.getEventName()) && publisherCanHandleEvent) {
                     eventPayload = payloadBuilder.buildCredentialUpdateEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload =
                             EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerUtils.publishEventPayload(securityEventTokenPayload, tenantDomain,
-                            credentialChangeChannel.getUri());
+                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
+                            .publish(securityEventTokenPayload, eventContext);
                 }
             }
         } catch (Exception e) {

@@ -126,6 +126,11 @@
                 <version>${carbon.identity.framework.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.framework</groupId>
+                <artifactId>org.wso2.carbon.identity.event.publisher</artifactId>
+                <version>${carbon.identity.framework.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.identity.organization.management.core</groupId>
                 <artifactId>org.wso2.carbon.identity.organization.management.service</artifactId>
                 <version>${identity.organization.management.core.version}</version>
@@ -199,12 +204,6 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${com.fasterxml.jackson.databind.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.identity.event.publishers</groupId>
-                <artifactId>org.wso2.identity.event.common.publisher</artifactId>
-                <version>${org.wso2.identity.event.publishers.version}</version>
-                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.identity.framework</groupId>
@@ -453,7 +452,7 @@
         <carbon.user.api.imp.pkg.version.range>[1.0.1, 2.0.0)</carbon.user.api.imp.pkg.version.range>
 
         <!--Carbon Identity Framework Version-->
-        <carbon.identity.framework.version>7.8.274</carbon.identity.framework.version>
+        <carbon.identity.framework.version>7.8.282</carbon.identity.framework.version>
         <carbon.identity.framework.imp.pkg.version.range>[5.20.90, 8.0.0)
         </carbon.identity.framework.imp.pkg.version.range>
 

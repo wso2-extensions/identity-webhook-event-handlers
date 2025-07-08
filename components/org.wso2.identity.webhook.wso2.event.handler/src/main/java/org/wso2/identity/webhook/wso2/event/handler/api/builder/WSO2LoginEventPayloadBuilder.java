@@ -24,7 +24,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
@@ -151,9 +151,8 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                 authContext.getExternalIdP().getIdentityProvider().getIdentityProviderName() : null;
         Step failedStep = new Step(authContext.getCurrentStep(), idp, authContext.getCurrentAuthenticator());
         Context errorContext = new Context(failedStep);
-        Reason failedReason = new Reason(errorMessage, errorContext);
 
-        return failedReason;
+        return new Reason(errorMessage, errorContext);
     }
 
     private String resolveErrorMessage(AuthenticationContext authContext) {

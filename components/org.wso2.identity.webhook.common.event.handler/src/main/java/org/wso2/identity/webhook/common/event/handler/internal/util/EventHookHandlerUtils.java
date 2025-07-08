@@ -37,12 +37,11 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
-import org.wso2.identity.event.common.publisher.model.EventContext;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
-import org.wso2.identity.event.common.publisher.model.common.ComplexSubject;
-import org.wso2.identity.event.common.publisher.model.common.SimpleSubject;
-import org.wso2.identity.event.common.publisher.model.common.Subject;
+import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.common.ComplexSubject;
+import org.wso2.carbon.identity.event.publisher.api.model.common.SimpleSubject;
+import org.wso2.carbon.identity.event.publisher.api.model.common.Subject;
 import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
@@ -57,7 +56,6 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils.CORRELATION_ID_MDC;
-import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.EVENT_PROFILE_VERSION;
 
 /**
  * Utility class for Event Handler Hooks.
@@ -314,31 +312,6 @@ public class EventHookHandlerUtils {
             log.debug("Error occurred while building the tenant qualified URL.", e);
         }
         return null;
-    }
-
-    /**
-     * Publish the event payload.
-     *
-     * @param securityEventTokenPayload Security event token payload.
-     * @param tenantDomain              Tenant domain.
-     * @param eventUri                  Event URI.
-     * @throws IdentityEventException If an error occurs.
-     */
-    public static void publishEventPayload(SecurityEventTokenPayload securityEventTokenPayload, String tenantDomain,
-                                           String eventUri) throws IdentityEventException {
-
-        try {
-            EventContext eventContext = EventContext.builder()
-                    .tenantDomain(tenantDomain)
-                    .eventUri(eventUri)
-                    .eventProfileVersion(EVENT_PROFILE_VERSION)
-                    .build();
-            EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                    .publish(securityEventTokenPayload, eventContext);
-        } catch (Exception e) {
-            throw new IdentityEventException(String.format("Error while handling %s event.",
-                    eventUri), e);
-        }
     }
 
     /**

@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionPresentedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionRevokedEventPayload;
