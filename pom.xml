@@ -530,5 +530,6 @@
 
         <org.wso2.identity.webhook.common.event.handler.version.range>[1.0.0, 2.0.0)
         </org.wso2.identity.webhook.common.event.handler.version.range>
+        <org.slf4j.imp.pkg.version.range>[1.6.1,2.0.0)</org.slf4j.imp.pkg.version.range>
     </properties>
 </project>

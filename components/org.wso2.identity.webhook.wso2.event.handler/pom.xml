@@ -189,7 +189,8 @@
                             org.wso2.carbon.identity.claim.metadata.mgt.*;
                             version="${carbon.identity.framework.imp.pkg.version.range}",
                             org.wso2.carbon.identity.event.publisher.api.*;
-                            version="${carbon.identity.framework.imp.pkg.version.range}"
+                            version="${carbon.identity.framework.imp.pkg.version.range}",
+                            org.slf4j; version="${org.slf4j.imp.pkg.version.range}"
                         </Import-Package>
                     </instructions>
                 </configuration>
