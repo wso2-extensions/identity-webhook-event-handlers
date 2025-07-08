@@ -140,10 +140,10 @@ public class RegistrationEventHookHandlerTest {
     @Test
     public void testCanHandle() {
 
-        Event event = new Event(IdentityEventConstants.Event.POST_ADD_USER);
+        Event event = new Event(IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS);
         IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);
         boolean canHandle = registrationEventHookHandler.canHandle(messageContext);
-        assertTrue(canHandle, "The event handler should be able to handle the event POST_ADD_USER.");
+        assertTrue(canHandle, "The event handler should be able to handle the event USER_REGISTRATION_SUCCESS.");
     }
 
     @Test
@@ -159,7 +159,7 @@ public class RegistrationEventHookHandlerTest {
     public Object[][] eventDataProvider() {
 
         return new Object[][] {
-                {IdentityEventConstants.Event.POST_ADD_USER, SAMPLE_EVENT_KEY},
+                {IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS, SAMPLE_EVENT_KEY},
                 {IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM, SAMPLE_EVENT_KEY}};
     }
 
@@ -228,7 +228,7 @@ public class RegistrationEventHookHandlerTest {
     @Test
     public void testHandleEventWithNoProfiles() throws Exception {
 
-        Event event = createEventWithProperties(IdentityEventConstants.Event.POST_ADD_USER);
+        Event event = createEventWithProperties(IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS);
         when(mockedWebhookMetadataService.getSupportedEventProfiles()).thenReturn(Collections.emptyList());
         registrationEventHookHandler.handleEvent(event);
         verify(mockedEventPublisherService, times(0)).publish(any(), any());
