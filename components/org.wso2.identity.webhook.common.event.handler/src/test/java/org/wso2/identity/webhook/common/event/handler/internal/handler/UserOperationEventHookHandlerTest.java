@@ -32,13 +32,14 @@ import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
+import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
+import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
+import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherService;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
-import org.wso2.identity.event.common.publisher.EventPublisherService;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
@@ -52,6 +53,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -159,7 +161,8 @@ public class UserOperationEventHookHandlerTest {
         List<EventProfile> profiles = Collections.singletonList(eventProfile);
 
         when(mockedWebhookMetadataService.getSupportedEventProfiles()).thenReturn(profiles);
-        when(mockedTopicManagementService.isTopicExists(anyString(), anyString(), anyString())).thenReturn(true);
+        when(mockedTopicManagementService.isTopicExists(anyString(), anyString(), anyString(), anyString())).thenReturn(
+                true);
 
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
             mocked.when(() -> PayloadBuilderFactory.getUserOperationEventPayloadBuilder(
@@ -193,10 +196,19 @@ public class UserOperationEventHookHandlerTest {
                 utilsMocked.when(() -> EventHookHandlerUtils.buildSecurityEventToken(any(), anyString()))
                         .thenReturn(tokenPayload);
 
+                // Mock canHandleEvent to return true
+                when(mockedEventPublisherService.canHandleEvent(any(EventContext.class))).thenReturn(true);
+
                 userOperationEventHookHandler.handleEvent(event);
 
-                utilsMocked.verify(() -> EventHookHandlerUtils.publishEventPayload(eq(tokenPayload),
-                        eq(CARBON_SUPER), eq(channelUri)), times(1));
+                // Verify publish is called with correct arguments
+                verify(mockedEventPublisherService, times(1))
+                        .publish(eq(tokenPayload), argThat(ctx ->
+                                ctx.getTenantDomain().equals(CARBON_SUPER) &&
+                                        ctx.getEventUri().equals(channelUri) &&
+                                        ctx.getEventProfileName().equals("WSO2") &&
+                                        ctx.getEventProfileVersion().equals("v1")
+                        ));
             }
         }
     }

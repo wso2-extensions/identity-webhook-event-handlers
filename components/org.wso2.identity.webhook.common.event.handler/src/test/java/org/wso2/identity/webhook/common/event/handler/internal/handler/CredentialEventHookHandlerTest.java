@@ -36,13 +36,15 @@ import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
+import org.wso2.carbon.identity.event.publisher.api.exception.EventPublisherException;
+import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
+import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
+import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherService;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
-import org.wso2.identity.event.common.publisher.EventPublisherService;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
@@ -57,6 +59,8 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -163,7 +167,8 @@ public class CredentialEventHookHandlerTest {
         List<EventProfile> profiles = Collections.singletonList(eventProfile);
 
         when(mockedWebhookMetadataService.getSupportedEventProfiles()).thenReturn(profiles);
-        when(mockedTopicManagementService.isTopicExists(anyString(), anyString(), anyString())).thenReturn(true);
+        when(mockedTopicManagementService.isTopicExists(anyString(), anyString(), anyString(), anyString())).thenReturn(
+                true);
 
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
             mocked.when(() -> PayloadBuilderFactory.getCredentialEventPayloadBuilder(
@@ -181,17 +186,31 @@ public class CredentialEventHookHandlerTest {
 
                 utilsMocked.when(() -> EventHookHandlerUtils.getEventProfileManagerByProfile(anyString(), anyString()))
                         .thenReturn(eventMetadata);
+
+                // Mock EventData to return correct tenant domain
+                EventData eventData = mock(EventData.class);
+                HashMap<String, Object> params = new HashMap<>();
+                params.put(org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.TENANT_DOMAIN,
+                        CARBON_SUPER);
+                when(eventData.getEventParams()).thenReturn(params);
                 utilsMocked.when(() -> EventHookHandlerUtils.buildEventDataProvider(any(Event.class)))
-                        .thenCallRealMethod();
+                        .thenReturn(eventData);
 
                 SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
                 utilsMocked.when(() -> EventHookHandlerUtils.buildSecurityEventToken(any(), anyString()))
                         .thenReturn(tokenPayload);
 
+                when(mockedEventPublisherService.canHandleEvent(any(EventContext.class))).thenReturn(true);
+
                 credentialEventHookHandler.handleEvent(event);
 
-                utilsMocked.verify(() -> EventHookHandlerUtils.publishEventPayload(tokenPayload,
-                        CARBON_SUPER, channelUri), times(1));
+                verify(mockedEventPublisherService, times(1))
+                        .publish(eq(tokenPayload), argThat(ctx ->
+                                ctx.getTenantDomain().equals(CARBON_SUPER) &&
+                                        ctx.getEventUri().equals(channelUri) &&
+                                        ctx.getEventProfileName().equals("WSO2") &&
+                                        ctx.getEventProfileVersion().equals("v1")
+                        ));
             }
         }
         IdentityContext.destroyCurrentContext();
@@ -207,7 +226,7 @@ public class CredentialEventHookHandlerTest {
     }
 
     @Test
-    public void testHandleEventThrowsExceptionAtNoProperties() throws IdentityEventException {
+    public void testHandleEventThrowsExceptionAtNoProperties() throws IdentityEventException, EventPublisherException {
 
         Event event = new Event(IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD, null);
 

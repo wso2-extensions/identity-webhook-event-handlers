@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.common.event.handler.internal.component;
 
+import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherService;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
@@ -43,6 +44,7 @@ public class EventHookHandlerDataHolder {
     private EventPublisherService eventPublisherService;
     private WebhookMetadataService webhookMetadataService;
     private TopicManagementService topicManagementService;
+    private ApplicationManagementService applicationManagementService;
     private final List<EventProfileManager> eventProfileManagers = new ArrayList<>();
     private final List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
     private final List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
@@ -329,5 +331,16 @@ public class EventHookHandlerDataHolder {
     public void setTopicManagementService(TopicManagementService topicManagementService) {
 
         this.topicManagementService = topicManagementService;
+    }
+
+    public ApplicationManagementService getApplicationManagementService() {
+
+        return applicationManagementService;
+    }
+
+    public void setApplicationManagementService(
+            ApplicationManagementService applicationManagementService) {
+
+        this.applicationManagementService = applicationManagementService;
     }
 }

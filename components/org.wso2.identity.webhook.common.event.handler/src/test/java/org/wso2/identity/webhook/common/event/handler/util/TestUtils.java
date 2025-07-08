@@ -103,6 +103,7 @@ public class TestUtils {
     public static void mockIdentityTenantUtil() {
 
         mockedStaticIdentityTenantUtil = mockStatic(IdentityTenantUtil.class);
+        when(IdentityTenantUtil.isTenantedSessionsEnabled()).thenReturn(false);
         when(IdentityTenantUtil.getTenantId(SAMPLE_TENANT_DOMAIN)).thenReturn(SAMPLE_TENANT_ID);
     }
 

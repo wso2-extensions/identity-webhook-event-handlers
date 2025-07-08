@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.common.event.handler.internal.handler;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
@@ -162,10 +163,16 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                         .eventProfileVersion(EVENT_PROFILE_VERSION)
                         .build();
 
+                String applicationNameInEvent = eventData.getAuthenticationContext().getServiceProviderName();
+                boolean isEventTriggeredForSystemApplication = StringUtils.isNotBlank(applicationNameInEvent)
+                        && EventHookHandlerDataHolder.getInstance().getApplicationManagementService()
+                        .getSystemApplications().stream()
+                        .anyMatch(systemApplication -> systemApplication.equals(applicationNameInEvent));
+
                 boolean publisherCanHandleEvent = EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                         .canHandleEvent(eventContext);
 
-                if (publisherCanHandleEvent) {
+                if (publisherCanHandleEvent && !isEventTriggeredForSystemApplication) {
                     switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
                         case AUTHENTICATION_SUCCESS:
                             eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
