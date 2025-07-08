@@ -159,7 +159,8 @@
                             org.json.simple.parser; version="${com.googlecode.json-simple.wso2.version.range}",
                             org.wso2.identity.webhook.common.event.handler.*;
                             version="${org.wso2.identity.webhook.common.event.handler.version.range}",
-                            org.wso2.carbon.identity.event.publisher.api.*; version="${carbon.identity.framework.imp.pkg.version.range}"
+                            org.wso2.carbon.identity.event.publisher.api.*; version="${carbon.identity.framework.imp.pkg.version.range}",
+                            org.slf4j; version="${org.slf4j.imp.pkg.version.range}"
                         </Import-Package>
                     </instructions>
                 </configuration>
