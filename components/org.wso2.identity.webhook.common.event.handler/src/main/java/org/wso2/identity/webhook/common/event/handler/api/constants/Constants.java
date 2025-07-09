@@ -44,7 +44,7 @@ public class Constants {
         public static final String LOGIN_CHANNEL = "Logins";
         public static final String CREDENTIAL_CHANGE_CHANNEL = "Credential updates";
         public static final String REGISTRATION_CHANNEL = "Registrations";
-        public static final String USER_OPERATION_CHANNEL = "User management operations";
+        public static final String USER_OPERATION_CHANNEL = "User account management";
         public static final String VERIFICATION_CHANNEL = "Verification Channel";
         public static final String SESSION_CHANNEL = "Sessions";
     }
