@@ -61,6 +61,26 @@ import java.util.regex.Pattern;
 
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CREDENTIAL_CHANGE_CHANNEL;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.LOGIN_CHANNEL;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.LOGIN_FAILURE_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.LOGIN_SUCCESS_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ACCOUNT_DISABLE_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ACCOUNT_ENABLE_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_DELETE_USER_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_LOCK_ACCOUNT_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UNLOCK_ACCOUNT_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_CREDENTIAL;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_LIST_OF_ROLE_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_USER_CREATED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_USER_PROFILE_UPDATED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_CREATED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_EXPIRED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_EXTENDED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_REVOKED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_UPDATED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.CREATED_CLAIM;
@@ -223,109 +243,69 @@ public class WSO2PayloadUtils {
 
         String event = null;
         String channel = null;
-        if (Objects.requireNonNull(eventName).equals(
-                IdentityEventConstants.Event.AUTHENTICATION_SUCCESS)) {
-            channel = org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.LOGIN_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.LOGIN_SUCCESS_EVENT;
-        } else if (IdentityEventConstants.Event.AUTHENTICATION_STEP_FAILURE.equals(eventName)) {
-            channel = org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.LOGIN_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.LOGIN_FAILURE_EVENT;
-        } else if (IdentityEventConstants.Event.USER_SESSION_TERMINATE.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_REVOKED_EVENT;
-        } else if (IdentityEventConstants.Event.SESSION_EXPIRE.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_EXPIRED_EVENT;
-        } else if (IdentityEventConstants.Event.SESSION_UPDATE.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_UPDATED_EVENT;
-        } else if (IdentityEventConstants.Event.SESSION_EXTEND.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_EXTENDED_EVENT;
-        } else if (IdentityEventConstants.Event.SESSION_CREATE.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_CREATED_EVENT;
-        } else if (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_LIST_OF_ROLE_EVENT;
-        } else if (IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_DELETE_USER_EVENT;
-        } else if (IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UNLOCK_ACCOUNT_EVENT;
-        } else if (IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_LOCK_ACCOUNT_EVENT;
-        } else if (IdentityEventConstants.Event.POST_USER_PROFILE_UPDATE.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_USER_PROFILE_UPDATED_EVENT;
-        } else if (IdentityEventConstants.Event.POST_ENABLE_ACCOUNT.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ACCOUNT_ENABLE_EVENT;
-        } else if (IdentityEventConstants.Event.POST_DISABLE_ACCOUNT.equals(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ACCOUNT_DISABLE_EVENT;
-        } else if (isCredentialUpdateFlow(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CREDENTIAL_CHANGE_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_CREDENTIAL;
-        } else if (isUserCreatedFlow(eventName)) {
-            /*
-            The user operation check must always precede the registration check, since user creation occurs before
-            registration, and both events are triggered by the same event: POST_ADD_USER.
-            // TODO this issue is due to sequence utility access of metadata.
-             */
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_USER_CREATED_EVENT;
-        } // TODO Temporary removing until refactoring the metadata resolving.
+
+        if (!isBulkOperation()) {
+            if (Objects.requireNonNull(eventName).equals(
+                    IdentityEventConstants.Event.AUTHENTICATION_SUCCESS)) {
+                channel = LOGIN_CHANNEL;
+                event = LOGIN_SUCCESS_EVENT;
+            } else if (IdentityEventConstants.Event.AUTHENTICATION_STEP_FAILURE.equals(eventName)) {
+                channel = LOGIN_CHANNEL;
+                event = LOGIN_FAILURE_EVENT;
+            } else if (IdentityEventConstants.Event.USER_SESSION_TERMINATE.equals(eventName)) {
+                channel = SESSION_CHANNEL;
+                event = SESSION_REVOKED_EVENT;
+            } else if (IdentityEventConstants.Event.SESSION_EXPIRE.equals(eventName)) {
+                channel = SESSION_CHANNEL;
+                event = SESSION_EXPIRED_EVENT;
+            } else if (IdentityEventConstants.Event.SESSION_UPDATE.equals(eventName)) {
+                channel = SESSION_CHANNEL;
+                event = SESSION_UPDATED_EVENT;
+            } else if (IdentityEventConstants.Event.SESSION_EXTEND.equals(eventName)) {
+                channel = SESSION_CHANNEL;
+                event = SESSION_EXTENDED_EVENT;
+            } else if (IdentityEventConstants.Event.SESSION_CREATE.equals(eventName)) {
+                channel = SESSION_CHANNEL;
+                event = SESSION_CREATED_EVENT;
+            } else if (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(eventName)) {
+                channel = USER_OPERATION_CHANNEL;
+                event = POST_UPDATE_USER_LIST_OF_ROLE_EVENT;
+            } else if (IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName)) {
+                channel = USER_OPERATION_CHANNEL;
+                event = POST_DELETE_USER_EVENT;
+            } else if (IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName)) {
+                channel = USER_OPERATION_CHANNEL;
+                event = POST_UNLOCK_ACCOUNT_EVENT;
+            } else if (IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName)) {
+                channel = USER_OPERATION_CHANNEL;
+                event = POST_LOCK_ACCOUNT_EVENT;
+            } else if (IdentityEventConstants.Event.POST_USER_PROFILE_UPDATE.equals(eventName)) {
+                channel = USER_OPERATION_CHANNEL;
+                event = POST_USER_PROFILE_UPDATED_EVENT;
+            } else if (IdentityEventConstants.Event.POST_ENABLE_ACCOUNT.equals(eventName)) {
+                channel = USER_OPERATION_CHANNEL;
+                event = POST_ACCOUNT_ENABLE_EVENT;
+            } else if (IdentityEventConstants.Event.POST_DISABLE_ACCOUNT.equals(eventName)) {
+                channel = USER_OPERATION_CHANNEL;
+                event = POST_ACCOUNT_DISABLE_EVENT;
+            } else if (isCredentialUpdateFlow(eventName)) {
+                channel = CREDENTIAL_CHANGE_CHANNEL;
+                event = POST_UPDATE_USER_CREDENTIAL;
+            } else if (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName)) {
+                /*
+                The user operation check must always precede the registration check, since user creation occurs before
+                registration, and both events are triggered by the same event: POST_ADD_USER.
+                // TODO this issue is due to sequence utility access of metadata.
+                 */
+                channel = USER_OPERATION_CHANNEL;
+                event = POST_USER_CREATED_EVENT;
+            }
+        }
         return EventMetadata.builder()
                 .event(String.valueOf(event))
                 .channel(String.valueOf(channel))
                 .eventProfile(WSO2.name())
                 .build();
-    }
-
-    private static boolean isUserCreatedFlow(String eventName) {
-
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        Flow.Name flowName = (flow != null) ? flow.getName() : null;
-       /*
-        All POST_ADD_USER events will result in a userCreated event payload.
-        Since user creation does not imply successful registration,
-        this check is valid and does not cause any issues.
-         */
-        return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
-                !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName);
     }
 
     private static boolean isCredentialUpdateFlow(String eventName) {
@@ -492,5 +472,13 @@ public class WSO2PayloadUtils {
             List<UserClaim> filteredUserClaims = filterUserClaimsForUserAdd(claims, tenantDomain);
             user.setClaims(filteredUserClaims);
         }
+    }
+
+    private static boolean isBulkOperation() {
+
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow.Name flowName = (flow != null) ? flow.getName() : null;
+
+        return Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName);
     }
 }
