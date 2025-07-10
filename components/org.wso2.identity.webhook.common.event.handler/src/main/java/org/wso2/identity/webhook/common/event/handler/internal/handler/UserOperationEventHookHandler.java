@@ -94,15 +94,30 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
 
     private boolean isSupportedEvent(String eventName) {
 
-        return IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(eventName) ||
-                IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(eventName) ||
-                IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName) ||
-                IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName) ||
-                IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName) ||
-                IdentityEventConstants.Event.POST_USER_PROFILE_UPDATE.equals(eventName) ||
-                IdentityEventConstants.Event.POST_DISABLE_ACCOUNT.equals(eventName) ||
-                IdentityEventConstants.Event.POST_ENABLE_ACCOUNT.equals(eventName) ||
-                isUserCreatedFlow(eventName);
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow.Name flowName = (flow != null) ? flow.getName() : null;
+
+        /*
+        Event.POST_ADD_USER + Flow.Name.USER_REGISTRATION:
+            Direct user registration, initiated either by an admin or the user.
+
+        Event.POST_ADD_NEW_PASSWORD + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
+            User completes registration after being invited by an admin.
+
+        Event.POST_SELF_SIGNUP_CONFIRM:
+            Self-signup flow completed by the user.
+
+         */
+        return !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName) &&
+                (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(eventName) ||
+                        IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(eventName) ||
+                        IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName) ||
+                        IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName) ||
+                        IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName) ||
+                        IdentityEventConstants.Event.POST_USER_PROFILE_UPDATE.equals(eventName) ||
+                        IdentityEventConstants.Event.POST_DISABLE_ACCOUNT.equals(eventName) ||
+                        IdentityEventConstants.Event.POST_ENABLE_ACCOUNT.equals(eventName) ||
+                        IdentityEventConstants.Event.POST_ADD_USER.equals(eventName));
     }
 
     @Override
