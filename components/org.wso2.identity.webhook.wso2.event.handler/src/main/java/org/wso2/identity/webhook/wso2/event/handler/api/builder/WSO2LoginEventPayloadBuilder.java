@@ -17,6 +17,7 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
@@ -43,6 +44,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.USERNAME_CLAIM;
+
 /**
  * WSO2 Login Event Payload Builder.
  */
@@ -63,6 +66,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         User user = new User();
         WSO2PayloadUtils.populateUserClaims(user, authenticatedUser);
         WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
+        addInitialClaims(user, authenticatedUser);
 
         Organization tenant = new Organization(
                 String.valueOf(IdentityTenantUtil.getTenantId(authenticationContext.getTenantDomain())),
@@ -169,5 +173,21 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
             return dataMap.get(Constants.AUTHENTICATION_ERROR_MESSAGE);
         }
         return null;
+    }
+
+    private void addInitialClaims(User user, AuthenticatedUser authenticatedUser) {
+
+        if (user == null || authenticatedUser == null) {
+            return;
+        }
+
+        if (user.getClaims() == null) {
+            user.setClaims(new ArrayList<>());
+        }
+
+        if (StringUtils.isNotBlank(authenticatedUser.getUserName())) {
+            user.getClaims().add(WSO2PayloadUtils.generateUserClaim(USERNAME_CLAIM, authenticatedUser.getUserName(),
+                    authenticatedUser.getTenantDomain()));
+        }
     }
 }
