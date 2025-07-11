@@ -164,10 +164,9 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                         .build();
 
                 String applicationNameInEvent = eventData.getAuthenticationContext().getServiceProviderName();
+                //TODO: Remove this once the system application type is introduced.
                 boolean isEventTriggeredForSystemApplication = StringUtils.isNotBlank(applicationNameInEvent)
-                        && EventHookHandlerDataHolder.getInstance().getApplicationManagementService()
-                        .getSystemApplications().stream()
-                        .anyMatch(systemApplication -> systemApplication.equals(applicationNameInEvent));
+                        && "Console".equals(applicationNameInEvent);
 
                 boolean publisherCanHandleEvent = EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                         .canHandleEvent(eventContext);
