@@ -41,12 +41,12 @@ public class Constants {
      */
     public static class Channel {
 
-        public static final String LOGIN_CHANNEL = "Logins";
-        public static final String CREDENTIAL_CHANGE_CHANNEL = "Credential updates";
-        public static final String REGISTRATION_CHANNEL = "Registrations";
-        public static final String USER_OPERATION_CHANNEL = "User account management";
-        public static final String VERIFICATION_CHANNEL = "Verification Channel";
-        public static final String SESSION_CHANNEL = "Sessions";
+        public static final String LOGIN_CHANNEL = "https://schemas.identity.wso2.org/events/login";
+        public static final String CREDENTIAL_CHANGE_CHANNEL = "https://schemas.identity.wso2.org/events/user";
+        public static final String REGISTRATION_CHANNEL = "https://schemas.identity.wso2.org/events/registration";
+        public static final String USER_OPERATION_CHANNEL = "https://schemas.identity.wso2.org/events/credential";
+        public static final String VERIFICATION_CHANNEL = "https://schemas.identity.wso2.org/events/verification";
+        public static final String SESSION_CHANNEL = "https://schemas.identity.wso2.org/events/session";
     }
 
     /**
@@ -54,26 +54,26 @@ public class Constants {
      */
     public static class Event {
 
-        public static final String LOGIN_SUCCESS_EVENT = "Login success";
-        public static final String LOGIN_FAILURE_EVENT = "Login failed";
-        public static final String POST_UPDATE_USER_CREDENTIAL = "Credential updated";
-        public static final String POST_REGISTRATION_SUCCESS_EVENT = "Registration success";
-        public static final String POST_REGISTRATION_FAILED_EVENT = "Registration failed";
-        public static final String POST_USER_CREATED_EVENT = "User created";
-        public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "Post Update User List of Role Event";
-        public static final String POST_DELETE_USER_EVENT = "User account deleted";
-        public static final String POST_UNLOCK_ACCOUNT_EVENT = "User account unlocked";
-        public static final String POST_LOCK_ACCOUNT_EVENT = "User account locked";
-        public static final String POST_USER_PROFILE_UPDATED_EVENT = "User profile updated";
-        public static final String POST_ACCOUNT_ENABLE_EVENT = "User account enabled";
-        public static final String POST_ACCOUNT_DISABLE_EVENT = "User account disabled";
-        public static final String SESSION_CREATED_EVENT = "Session established";
-        public static final String SESSION_REVOKED_EVENT = "Session(s) revoked";
-        public static final String SESSION_EXPIRED_EVENT = "Session Expired Event";
-        public static final String SESSION_UPDATED_EVENT = "Session Updated Event";
-        public static final String SESSION_EXTENDED_EVENT = "Session Extended Event";
-        public static final String SESSION_ESTABLISHED_EVENT = "Session Established Event";
-        public static final String SESSION_PRESENTED_EVENT = "Session Presented Event";
-        public static final String VERIFICATION_EVENT = "Verification Event";
+        public static final String LOGIN_SUCCESS_EVENT = "https://schemas.identity.wso2.org/events/login/event-type/loginSuccess";
+        public static final String LOGIN_FAILURE_EVENT = "https://schemas.identity.wso2.org/events/login/event-type/loginFailed";
+        public static final String POST_UPDATE_USER_CREDENTIAL = "https://schemas.identity.wso2.org/events/credential/event-type/credentialUpdated";
+        public static final String POST_REGISTRATION_SUCCESS_EVENT = "https://schemas.identity.wso2.org/events/registration/event-type/registrationSuccess";
+        public static final String POST_REGISTRATION_FAILED_EVENT = "https://schemas.identity.wso2.org/events/registration/event-type/registrationFailed";
+        public static final String POST_USER_CREATED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/userCreated";
+        public static final String POST_UPDATE_USER_LIST_OF_ROLE_EVENT = "https://schemas.identity.wso2.org/events/group/event-type/groupUpdated";
+        public static final String POST_DELETE_USER_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/userDeleted";
+        public static final String POST_UNLOCK_ACCOUNT_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/userAccountUnlocked";
+        public static final String POST_LOCK_ACCOUNT_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/userAccountLocked";
+        public static final String POST_USER_PROFILE_UPDATED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/userProfileUpdated";
+        public static final String POST_ACCOUNT_ENABLE_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/userEnabled";
+        public static final String POST_ACCOUNT_DISABLE_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/userDisabled";
+        public static final String SESSION_CREATED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionEstablished";
+        public static final String SESSION_REVOKED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionRevoked";
+        public static final String SESSION_EXPIRED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionExpired";
+        public static final String SESSION_UPDATED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionUpdated";
+        public static final String SESSION_EXTENDED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionExtended";
+        public static final String SESSION_ESTABLISHED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionEstablished";
+        public static final String SESSION_PRESENTED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionPresented";
+        public static final String VERIFICATION_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/verification";
     }
 }

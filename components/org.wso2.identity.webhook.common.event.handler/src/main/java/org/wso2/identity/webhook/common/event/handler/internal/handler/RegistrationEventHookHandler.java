@@ -132,7 +132,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 List<Channel> channels = eventProfile.getChannels();
                 // Get the channel URI for the channel with name "Registration Channel"
                 Channel registrationChannel = channels.stream()
-                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
                         .findFirst()
                         .orElse(null);
                 if (registrationChannel == null) {
@@ -142,7 +142,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
                 eventUri = registrationChannel.getEvents().stream()
                         .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
-                                channelEvent.getEventName()))
+                                channelEvent.getEventUri()))
                         .findFirst()
                         .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                         .orElse(null);

@@ -171,7 +171,7 @@ public class RegistrationEventHookHandlerTest {
         org.wso2.carbon.identity.webhook.metadata.api.model.Event channelEvent =
                 new org.wso2.carbon.identity.webhook.metadata.api.model.Event("Registration success", "description",
                         expectedEventKey);
-        String channelUri = "registration/channel/uri";
+        String channelUri = "https://schemas.identity.wso2.org/events/registration";
         Channel channel = new Channel("Registrations", "Registration Channel", channelUri,
                 Collections.singletonList(channelEvent));
         EventProfile eventProfile = new EventProfile("WSO2", "uri", Collections.singletonList(channel));
@@ -193,8 +193,8 @@ public class RegistrationEventHookHandlerTest {
                 EventMetadata eventMetadata = mock(EventMetadata.class);
                 SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
 
-                when(eventMetadata.getChannel()).thenReturn("Registrations");
-                when(eventMetadata.getEvent()).thenReturn("Registration success");
+                when(eventMetadata.getChannel()).thenReturn(channelUri);
+                when(eventMetadata.getEvent()).thenReturn(expectedEventKey);
                 when(eventMetadata.getEventProfile()).thenReturn("WSO2");
 
                 // Mock getEventMetadata to return our eventMetadata
