@@ -134,7 +134,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
                 List<Channel> channels = eventProfile.getChannels();
 
                 Channel credentialChangeChannel =
-                        channels.stream().filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
+                        channels.stream().filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
                                 .findFirst().orElse(null);
                 if (credentialChangeChannel == null) {
                     log.debug("No channel found for credential change event profile: " + eventProfile.getProfile());
@@ -142,7 +142,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
                 }
 
                 eventUri = credentialChangeChannel.getEvents().stream()
-                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(), channelEvent.getEventName()))
+                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(), channelEvent.getEventUri()))
                         .findFirst().map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                         .orElse(null);
 

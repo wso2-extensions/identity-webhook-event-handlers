@@ -136,7 +136,7 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
                 List<Channel> channels = eventProfile.getChannels();
                 // Get the channel URI for the channel with name "Verification Channel"
                 Channel verificationChannel = channels.stream()
-                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
                         .findFirst()
                         .orElse(null);
                 if (verificationChannel == null) {
@@ -146,7 +146,7 @@ public class VerificationEventHookHandler extends AbstractEventHandler {
 
                 eventUri = verificationChannel.getEvents().stream()
                         .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
-                                channelEvent.getEventName()))
+                                channelEvent.getEventUri()))
                         .findFirst()
                         .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                         .orElse(null);

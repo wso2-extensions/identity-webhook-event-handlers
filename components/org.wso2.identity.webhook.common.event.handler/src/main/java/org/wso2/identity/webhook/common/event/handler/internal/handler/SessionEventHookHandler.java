@@ -95,7 +95,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                 List<Channel> channels = eventProfile.getChannels();
                 // Get the channel URI for the channel with name "Session Channel"
                 Channel sessionChannel = channels.stream()
-                        .filter(channel -> eventMetadata.getChannel().equals(channel.getName()))
+                        .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
                         .findFirst()
                         .orElse(null);
                 if (sessionChannel == null) {
@@ -105,7 +105,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
                 eventUri = sessionChannel.getEvents().stream()
                         .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
-                                channelEvent.getEventName()))
+                                channelEvent.getEventUri()))
                         .findFirst()
                         .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                         .orElse(null);
