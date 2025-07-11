@@ -42,9 +42,9 @@ public class Constants {
     public static class Channel {
 
         public static final String LOGIN_CHANNEL = "https://schemas.identity.wso2.org/events/login";
-        public static final String CREDENTIAL_CHANGE_CHANNEL = "https://schemas.identity.wso2.org/events/user";
+        public static final String CREDENTIAL_CHANGE_CHANNEL = "https://schemas.identity.wso2.org/events/credential";
         public static final String REGISTRATION_CHANNEL = "https://schemas.identity.wso2.org/events/registration";
-        public static final String USER_OPERATION_CHANNEL = "https://schemas.identity.wso2.org/events/credential";
+        public static final String USER_OPERATION_CHANNEL = "https://schemas.identity.wso2.org/events/user";
         public static final String VERIFICATION_CHANNEL = "https://schemas.identity.wso2.org/events/verification";
         public static final String SESSION_CHANNEL = "https://schemas.identity.wso2.org/events/session";
     }
