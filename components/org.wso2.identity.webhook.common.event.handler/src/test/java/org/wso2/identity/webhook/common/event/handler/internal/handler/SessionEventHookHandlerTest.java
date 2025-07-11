@@ -201,8 +201,8 @@ public class SessionEventHookHandlerTest {
                                     SAMPLE_TENANT_DOMAIN);
                         }}
                 );
-                when(eventMetadata.getChannel()).thenReturn("Session Channel");
-                when(eventMetadata.getEvent()).thenReturn(eventName);
+                when(eventMetadata.getChannel()).thenReturn(channelUri);
+                when(eventMetadata.getEvent()).thenReturn(expectedEventKey);
 
                 utilsMocked.when(() -> EventHookHandlerUtils.buildEventDataProvider(any(Event.class)))
                         .thenReturn(eventDataProvider);

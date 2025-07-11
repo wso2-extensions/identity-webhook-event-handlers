@@ -202,8 +202,8 @@ public class LoginEventHookHandlerTest {
                 // Mock login tenant domain and service provider name
 
                 EventMetadata eventMetadata = mock(EventMetadata.class);
-                when(eventMetadata.getChannel()).thenReturn("Login Channel");
-                when(eventMetadata.getEvent()).thenReturn(eventName);
+                when(eventMetadata.getChannel()).thenReturn("login/channel/uri");
+                when(eventMetadata.getEvent()).thenReturn(expectedEventKey);
 
                 SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
 

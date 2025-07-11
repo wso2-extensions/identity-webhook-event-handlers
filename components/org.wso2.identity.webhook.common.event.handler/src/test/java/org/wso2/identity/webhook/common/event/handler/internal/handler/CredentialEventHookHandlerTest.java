@@ -181,8 +181,8 @@ public class CredentialEventHookHandlerTest {
             try (MockedStatic<EventHookHandlerUtils> utilsMocked = mockStatic(EventHookHandlerUtils.class)) {
                 org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata eventMetadata =
                         mock(org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata.class);
-                when(eventMetadata.getChannel()).thenReturn("Credential Change Channel");
-                when(eventMetadata.getEvent()).thenReturn(eventName);
+                when(eventMetadata.getChannel()).thenReturn(channelUri);
+                when(eventMetadata.getEvent()).thenReturn(expectedEventKey);
 
                 utilsMocked.when(() -> EventHookHandlerUtils.getEventProfileManagerByProfile(anyString(), anyString()))
                         .thenReturn(eventMetadata);

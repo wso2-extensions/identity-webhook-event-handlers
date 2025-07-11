@@ -182,8 +182,8 @@ public class VerificationEventHookHandlerTest {
                 // Mock EventMetadata to match the channel and event name
                 org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata eventMetadata =
                         mock(org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata.class);
-                when(eventMetadata.getChannel()).thenReturn("Verification Channel");
-                when(eventMetadata.getEvent()).thenReturn(eventName);
+                when(eventMetadata.getChannel()).thenReturn(channelUri);
+                when(eventMetadata.getEvent()).thenReturn(expectedEventKey);
 
                 utilsMocked.when(() -> EventHookHandlerUtils.getEventProfileManagerByProfile(anyString(), anyString()))
                         .thenReturn(eventMetadata);
