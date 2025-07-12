@@ -135,7 +135,9 @@ public class WSO2PayloadUtils {
                         // Not adding the user resident organization to the user claims for b2b users
                         break;
                     default:
-                        userClaims.add(generateUserClaim(claimUri, claimValue, authenticatedUser.getTenantDomain()));
+                        Optional<UserClaim> userClaimOptional =
+                                generateUserClaim(claimUri, claimValue, authenticatedUser.getTenantDomain());
+                        userClaimOptional.ifPresent(userClaims::add);
                         break;
                 }
             }
@@ -331,12 +333,19 @@ public class WSO2PayloadUtils {
         return IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);
     }
 
-    public static UserClaim generateUserClaim(String claimKey, String claimValue, String tenantDomain) {
+    public static Optional<UserClaim> generateUserClaim(String claimKey, String claimValue, String tenantDomain) {
 
-        UserClaim.Builder userClaimBuilder = new UserClaim.Builder()
-                .uri(claimKey);
+        if (StringUtils.isBlank(claimKey) || StringUtils.isBlank(claimValue)) {
+            return Optional.empty();
+        }
+
+        UserClaim.Builder userClaimBuilder = new UserClaim.Builder().uri(claimKey);
 
         String multiAttributeSeparator = FrameworkUtils.getMultiAttributeSeparator();
+        if (multiAttributeSeparator == null) {
+            multiAttributeSeparator = ","; // default fallback
+        }
+
         if (isMultiValuedClaim(claimKey, tenantDomain)) {
             userClaimBuilder.value(StringUtils.isBlank(claimValue) ? new String[]{} :
                     claimValue.split(Pattern.quote(multiAttributeSeparator)));
@@ -344,7 +353,7 @@ public class WSO2PayloadUtils {
             userClaimBuilder.value(claimValue);
         }
 
-        return userClaimBuilder.build();
+        return Optional.of(userClaimBuilder.build());
     }
 
     private static boolean isMultiValuedClaim(String claimUri, String tenantDomain) {
@@ -379,11 +388,11 @@ public class WSO2PayloadUtils {
             String emailAddress =
                     userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
                             UserCoreConstants.DEFAULT_PROFILE);
-            UserClaim emailAddressUserClaim =
+            Optional<UserClaim> emailAddressUserClaimOptional =
                     generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
                             tenantDomain);
             List<UserClaim> userClaims = new ArrayList<>();
-            userClaims.add(emailAddressUserClaim);
+            emailAddressUserClaimOptional.ifPresent(userClaims::add);
 
             user.setClaims(userClaims);
 
@@ -440,9 +449,9 @@ public class WSO2PayloadUtils {
 
         for (String userClaimUri : userClaims.keySet()) {
             if (!excludedClaims.contains(userClaimUri)) {
-                userClaimList.add(
-                        generateUserClaim(userClaimUri, userClaims.get(userClaimUri),
-                                tenantDomain));
+                Optional<UserClaim> userClaimOptional = generateUserClaim(userClaimUri, userClaims.get(userClaimUri),
+                        tenantDomain);
+                userClaimOptional.ifPresent(userClaimList::add);
             }
         }
         return userClaimList;

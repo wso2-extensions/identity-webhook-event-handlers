@@ -83,7 +83,9 @@ public class User {
 
     public void setClaims(List<UserClaim> claims) {
 
-        this.claims = claims;
+        if (claims != null && !claims.isEmpty()) {
+            this.claims = claims;
+        }
     }
 
     public String getRef() {

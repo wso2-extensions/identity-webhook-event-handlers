@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
@@ -37,12 +38,14 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organi
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Reason;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Step;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.USERNAME_CLAIM;
 
@@ -52,6 +55,8 @@ import static org.wso2.carbon.identity.application.authentication.framework.util
 public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
     private static final Log log = LogFactory.getLog(WSO2LoginEventPayloadBuilder.class);
+    private static final String USERNAME_USER_INPUT = "usernameUserInput";
+    private static final String USER = "user";
 
     @Override
     public EventPayload buildAuthenticationSuccessEvent(EventData eventData) throws IdentityEventException {
@@ -107,6 +112,27 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                 userStore = new UserStore(authenticatedUser.getUserStoreDomain());
             }
             WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
+        }
+
+        if (eventData.getEventParams() != null && eventData.getEventParams()
+                .get(USER) instanceof org.wso2.carbon.identity.application.common.model.User) {
+
+            org.wso2.carbon.identity.application.common.model.User failedUser =
+                    (org.wso2.carbon.identity.application.common.model.User) eventData.getEventParams().get(USER);
+
+            List<UserClaim> userClaims = user.getClaims();
+            if (userClaims == null) {
+                userClaims = new ArrayList<>();
+            }
+
+            if (StringUtils.isNotBlank(failedUser.getUserName())) {
+                Optional<UserClaim>
+                        usernameClaimOptional =
+                        WSO2PayloadUtils.generateUserClaim(FrameworkConstants.USERNAME_CLAIM, failedUser.getUserName(),
+                                failedUser.getTenantDomain());
+                usernameClaimOptional.ifPresent(userClaims::add);
+                user.setClaims(userClaims);
+            }
         }
 
         Organization tenant = new Organization(
