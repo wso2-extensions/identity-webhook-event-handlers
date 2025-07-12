@@ -104,16 +104,16 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         String userName =
                 String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
-        UserClaim userNameClaim = WSO2PayloadUtils.generateUserClaim(FrameworkConstants.USERNAME_CLAIM, userName,
+        Optional<UserClaim> userNameOptional = WSO2PayloadUtils.generateUserClaim(FrameworkConstants.USERNAME_CLAIM, userName,
                 tenantDomain);
-        userClaims.add(userNameClaim);
+        userNameOptional.ifPresent(userClaims::add);
 
         if (eventData.getEventParams().get("EMAIL_ADDRESS") != null) {
             String emailAddress = String.valueOf(eventData.getEventParams().get("EMAIL_ADDRESS"));
-            UserClaim emailAddressUserClaim =
+            Optional<UserClaim> emailAddressOptional =
                     WSO2PayloadUtils.generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
                             tenantDomain);
-            userClaims.add(emailAddressUserClaim);
+            emailAddressOptional.ifPresent(userClaims::add);
         }
 
         String userId;
@@ -349,9 +349,9 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             List<UserClaim> userClaims = new ArrayList<>();
 
             for (Map.Entry<String, String> entry : userClaimsMap.entrySet()) {
-                UserClaim userClaim =
+                Optional<UserClaim> userClaimOptional =
                         WSO2PayloadUtils.generateUserClaim(entry.getKey(), entry.getValue(), tenantDomain);
-                userClaims.add(userClaim);
+                userClaimOptional.ifPresent(userClaims::add);
             }
             return userClaims;
         }
@@ -389,14 +389,10 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             String emailAddress =
                     userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
                             UserCoreConstants.DEFAULT_PROFILE);
-            UserClaim emailAddressUserClaim =
+            Optional<UserClaim> emailAddressUserOptional =
                     WSO2PayloadUtils.generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
                             tenantDomain);
-            List<UserClaim> userClaims = new ArrayList<>();
-            userClaims.add(emailAddressUserClaim);
-
-            user.setClaims(userClaims);
-
+            emailAddressUserOptional.ifPresent(user::addClaim);
         } catch (UserStoreException e) {
             throw new IdentityEventException(
                     "Error while extracting user claims for the user : " + domainQualifiedUserName, e);

@@ -139,4 +139,15 @@ public class User {
 
         this.additionalClaims = additionalClaims;
     }
+
+    public void addClaim(UserClaim claim) {
+
+        if (claim != null) {
+            if (this.claims == null) {
+                this.claims = new ArrayList<>();
+            }
+            this.claims.add(claim);
+        }
+    }
+
 }
