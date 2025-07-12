@@ -114,7 +114,6 @@ public class WSO2PayloadUtils {
             return;
         }
 
-        List<UserClaim> userClaims = new ArrayList<>();
         for (Map.Entry<ClaimMapping, String> entry : authenticatedUser.getUserAttributes().entrySet()) {
             ClaimMapping claimMapping = entry.getKey();
             String claimUri = claimMapping.getLocalClaim().getClaimUri();
@@ -137,12 +136,11 @@ public class WSO2PayloadUtils {
                     default:
                         Optional<UserClaim> userClaimOptional =
                                 generateUserClaim(claimUri, claimValue, authenticatedUser.getTenantDomain());
-                        userClaimOptional.ifPresent(userClaims::add);
+                        userClaimOptional.ifPresent(user::addClaim);
                         break;
                 }
             }
         }
-        user.setClaims(userClaims);
     }
 
     public static void populateUserIdAndRef(User user, AuthenticatedUser authenticatedUser) {
@@ -391,11 +389,7 @@ public class WSO2PayloadUtils {
             Optional<UserClaim> emailAddressUserClaimOptional =
                     generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
                             tenantDomain);
-            List<UserClaim> userClaims = new ArrayList<>();
-            emailAddressUserClaimOptional.ifPresent(userClaims::add);
-
-            user.setClaims(userClaims);
-
+            emailAddressUserClaimOptional.ifPresent(user::addClaim);
         } catch (UserStoreException e) {
             throw new IdentityEventException(
                     "Error while extracting user claims for the user : " + domainQualifiedUserName, e);

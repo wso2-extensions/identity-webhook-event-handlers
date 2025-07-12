@@ -120,18 +120,12 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
             org.wso2.carbon.identity.application.common.model.User failedUser =
                     (org.wso2.carbon.identity.application.common.model.User) eventData.getEventParams().get(USER);
 
-            List<UserClaim> userClaims = user.getClaims();
-            if (userClaims == null) {
-                userClaims = new ArrayList<>();
-            }
-
             if (StringUtils.isNotBlank(failedUser.getUserName())) {
                 Optional<UserClaim>
                         usernameClaimOptional =
                         WSO2PayloadUtils.generateUserClaim(FrameworkConstants.USERNAME_CLAIM, failedUser.getUserName(),
                                 failedUser.getTenantDomain());
-                usernameClaimOptional.ifPresent(userClaims::add);
-                user.setClaims(userClaims);
+                usernameClaimOptional.ifPresent(user::addClaim);
             }
         }
 
@@ -207,13 +201,11 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
             return;
         }
 
-        if (user.getClaims() == null) {
-            user.setClaims(new ArrayList<>());
-        }
-
         if (StringUtils.isNotBlank(authenticatedUser.getUserName())) {
-            user.getClaims().add(WSO2PayloadUtils.generateUserClaim(USERNAME_CLAIM, authenticatedUser.getUserName(),
-                    authenticatedUser.getTenantDomain()));
+            Optional<UserClaim> userNameClaimOptional =
+                    WSO2PayloadUtils.generateUserClaim(USERNAME_CLAIM, authenticatedUser.getUserName(),
+                            authenticatedUser.getTenantDomain());
+            userNameClaimOptional.ifPresent(user::addClaim);
         }
     }
 }

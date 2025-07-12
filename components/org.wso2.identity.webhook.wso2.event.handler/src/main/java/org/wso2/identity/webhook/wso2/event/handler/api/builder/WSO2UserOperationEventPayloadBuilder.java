@@ -392,10 +392,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             Optional<UserClaim> emailAddressUserOptional =
                     WSO2PayloadUtils.generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
                             tenantDomain);
-            List<UserClaim> userClaims = new ArrayList<>();
-            emailAddressUserOptional.ifPresent(userClaims::add);
-            user.setClaims(userClaims);
-
+            emailAddressUserOptional.ifPresent(user::addClaim);
         } catch (UserStoreException e) {
             throw new IdentityEventException(
                     "Error while extracting user claims for the user : " + domainQualifiedUserName, e);
