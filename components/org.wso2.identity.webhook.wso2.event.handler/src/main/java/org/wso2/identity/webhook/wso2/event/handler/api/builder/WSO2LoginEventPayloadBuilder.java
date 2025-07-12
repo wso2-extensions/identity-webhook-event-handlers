@@ -55,7 +55,6 @@ import static org.wso2.carbon.identity.application.authentication.framework.util
 public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
     private static final Log log = LogFactory.getLog(WSO2LoginEventPayloadBuilder.class);
-    private static final String USERNAME_USER_INPUT = "usernameUserInput";
     private static final String USER = "user";
 
     @Override
