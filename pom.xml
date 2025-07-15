@@ -457,7 +457,7 @@
         <carbon.user.api.imp.pkg.version.range>[1.0.1, 2.0.0)</carbon.user.api.imp.pkg.version.range>
 
         <!--Carbon Identity Framework Version-->
-        <carbon.identity.framework.version>7.8.283</carbon.identity.framework.version>
+        <carbon.identity.framework.version>7.8.305</carbon.identity.framework.version>
         <carbon.identity.framework.imp.pkg.version.range>[5.20.90, 8.0.0)
         </carbon.identity.framework.imp.pkg.version.range>
 
@@ -518,11 +518,6 @@
         <com.fasterxml.jackson.databind.version>2.14.1</com.fasterxml.jackson.databind.version>
         <servlet-api.version>2.5</servlet-api.version>
         <imp.pkg.version.javax.servlet>[2.6.0, 3.0.0)</imp.pkg.version.javax.servlet>
-
-        <!--Web Sub Hub Adapter dependency versions-->
-        <org.wso2.identity.event.publishers.version>1.0.11</org.wso2.identity.event.publishers.version>
-        <org.wso2.identity.event.publishers.version.range>[1.0.0,2.0.0)
-        </org.wso2.identity.event.publishers.version.range>
 
         <!--Check style dependency versions-->
         <maven.checkstyleplugin.version>2.17</maven.checkstyleplugin.version>
