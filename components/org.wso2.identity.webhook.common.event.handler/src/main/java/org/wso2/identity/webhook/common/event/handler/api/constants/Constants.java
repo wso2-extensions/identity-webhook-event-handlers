@@ -67,13 +67,12 @@ public class Constants {
         public static final String POST_USER_PROFILE_UPDATED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/userProfileUpdated";
         public static final String POST_ACCOUNT_ENABLE_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/userEnabled";
         public static final String POST_ACCOUNT_DISABLE_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/userDisabled";
-        public static final String SESSION_CREATED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionEstablished";
-        public static final String SESSION_REVOKED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionRevoked";
-        public static final String SESSION_EXPIRED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionExpired";
-        public static final String SESSION_UPDATED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionUpdated";
-        public static final String SESSION_EXTENDED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionExtended";
-        public static final String SESSION_ESTABLISHED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionEstablished";
-        public static final String SESSION_PRESENTED_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/sessionPresented";
+        public static final String SESSION_CREATED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionEstablished";
+        public static final String SESSION_REVOKED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionRevoked";
+        public static final String SESSION_EXPIRED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionExpired";
+        public static final String SESSION_UPDATED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionUpdated";
+        public static final String SESSION_EXTENDED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionExtended";
+        public static final String SESSION_PRESENTED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionPresented";
         public static final String VERIFICATION_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/verification";
     }
 }

@@ -21,6 +21,7 @@ package org.wso2.identity.webhook.caep.event.handler.api.builder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
+import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
@@ -62,7 +63,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Map<String, String> reasonAdmin = new HashMap<>();
         Map<String, String> reasonUser = new HashMap<>();
 
-        Flow flow = eventData.getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         if (flow != null) {
             // TODO: Switch these with relevant flow names
             switch (flow.getInitiatingPersona()) {

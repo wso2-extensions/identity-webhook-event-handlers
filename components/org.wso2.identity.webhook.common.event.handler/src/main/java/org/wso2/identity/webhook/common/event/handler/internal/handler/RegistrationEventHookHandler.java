@@ -122,9 +122,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                             " in profile: " + eventProfile.getProfile());
                     continue;
                 }
-                String tenantDomain =
-                        String.valueOf(
-                                eventData.getEventParams().get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+                String tenantDomain = eventData.getTenantDomain();
 
                 EventPayload eventPayload;
                 String eventUri;
