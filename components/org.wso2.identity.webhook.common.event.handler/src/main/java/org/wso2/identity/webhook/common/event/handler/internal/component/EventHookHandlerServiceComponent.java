@@ -51,7 +51,6 @@ import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEven
 import org.wso2.identity.webhook.common.event.handler.internal.handler.RegistrationEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.SessionEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.UserOperationEventHookHandler;
-import org.wso2.identity.webhook.common.event.handler.internal.handler.VerificationEventHookHandler;
 
 /**
  * WSO2 Event Handler service component class.
@@ -109,15 +108,6 @@ public class EventHookHandlerServiceComponent {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
                         new CredentialEventHookHandler(), null);
             }
-
-            String isVerificationEventHandlerEnabled = getIdentityEventProperty(
-                    Constants.VERIFICATION_EVENT_HOOK_NAME, Constants.VERIFICATION_EVENT_HOOK_ENABLED);
-            if (isVerificationEventHandlerEnabled != null &&
-                    isVerificationEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
-                bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new VerificationEventHookHandler(), null);
-            }
-
         } catch (IdentityEventServerException e) {
             log.error("Error while activating event handler.", e);
         }

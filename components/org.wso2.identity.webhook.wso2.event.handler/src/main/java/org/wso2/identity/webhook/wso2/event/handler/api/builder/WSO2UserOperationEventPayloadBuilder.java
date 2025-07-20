@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -33,7 +34,6 @@ import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCreatedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserGroupUpdateEventPayload;
@@ -63,8 +63,10 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         Map<String, Object> properties = eventData.getEventParams();
         String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
-        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+        String tenantDomain = eventData.getTenantDomain();
 
+        // todo: should remove retrieving user store manager as a property.
+        //  Rather load user store managed from realm service.
         AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
         String userStoreDomainName = userStoreManager.getRealmConfiguration()
                 .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
@@ -91,8 +93,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     public EventPayload buildUserDeleteEvent(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> properties = eventData.getEventParams();
-        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
-        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+        String tenantDomain = eventData.getTenantDomain();
+        String tenantId = String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain));
 
         AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
         String userStoreDomainName = userStoreManager.getRealmConfiguration()
@@ -123,7 +125,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
             User deletedUser = new User();
             deletedUser.setId(userId);
-            deletedUser.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + userId);
+            deletedUser.setRef(WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + userId);
             deletedUser.setClaims(userClaims);
 
             Organization organization = new Organization(tenantId, tenantDomain);
@@ -153,8 +155,8 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     private EventPayload buildUserAccountEvent(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> properties = eventData.getEventParams();
-        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
-        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+        String tenantDomain = eventData.getTenantDomain();
+        String tenantId = String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain));
 
         AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
         String userStoreDomainName = userStoreManager.getRealmConfiguration()
@@ -168,7 +170,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         User user = new User();
         enrichUser(userStoreManager, userName, user, tenantDomain);
         user.setRef(
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+                WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
@@ -208,7 +210,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         enrichUser(userStoreManager, userName, user, tenantDomain);
 
         user.setRef(
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+                WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
         Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
@@ -254,7 +256,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         User user = new User();
         user.setId(userId);
         user.setRef(
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+                WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
         user.setAdditionalClaims(additionalClaims);
         user.setAddedClaims(addedClaims);
         user.setUpdatedClaims(modifiedClaims);

@@ -22,7 +22,6 @@ import org.wso2.carbon.identity.application.authentication.framework.Authenticat
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
-import org.wso2.carbon.identity.core.context.model.Flow;
 
 import java.util.Map;
 
@@ -40,8 +39,8 @@ public class EventData {
     private final AuthenticatorStatus authenticatorStatus;
     private final AuthenticatedUser authenticatedUser;
     private final SessionContext sessionContext;
-    private final Flow flow;
-
+    private final String userId;
+    private final String tenantDomain;
 
     private EventData(Builder builder) {
 
@@ -52,7 +51,8 @@ public class EventData {
         this.authenticatorStatus = builder.authenticatorStatus;
         this.authenticatedUser = builder.authenticatedUser;
         this.sessionContext = builder.sessionContext;
-        this.flow = builder.flow;
+        this.userId = builder.userId;
+        this.tenantDomain = builder.tenantDomain;
     }
 
     public String getEventName() {
@@ -90,9 +90,14 @@ public class EventData {
         return sessionContext;
     }
 
-    public Flow getFlow() {
+    public String getUserId() {
 
-        return flow;
+        return userId;
+    }
+
+    public String getTenantDomain() {
+
+        return tenantDomain;
     }
 
     public static Builder builder() {
@@ -112,7 +117,8 @@ public class EventData {
         private AuthenticatorStatus authenticatorStatus;
         private AuthenticatedUser authenticatedUser;
         private SessionContext sessionContext;
-        private Flow flow;
+        private String userId;
+        private String tenantDomain;
 
         public Builder eventName(String eventName) {
 
@@ -156,9 +162,15 @@ public class EventData {
             return this;
         }
 
-        public Builder flow(Flow flow) {
+        public Builder userId(String userId) {
 
-            this.flow = flow;
+            this.userId = userId;
+            return this;
+        }
+
+        public Builder tenantDomain(String tenantDomain) {
+
+            this.tenantDomain = tenantDomain;
             return this;
         }
 

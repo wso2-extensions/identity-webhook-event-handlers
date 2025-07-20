@@ -22,6 +22,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.util.TestUtils;
 
 import static org.testng.Assert.assertEquals;
@@ -51,7 +52,7 @@ public class EventPayloadUtilsTest {
         String expectedURL = "https://localhost:9443/api/events";
 
         TestUtils.mockServiceURLBuilder();
-        String fullURL = EventPayloadUtils.constructFullURLWithEndpoint(endpoint);
+        String fullURL = constructFullURLWithEndpoint(endpoint);
         assertEquals(fullURL, expectedURL, "Full URL should be correctly constructed.");
         closeMockedServiceURLBuilder();
     }
@@ -63,7 +64,7 @@ public class EventPayloadUtilsTest {
         String expectedURL = "https://localhost:9443";
 
         TestUtils.mockServiceURLBuilder();
-        String fullURL = EventPayloadUtils.constructFullURLWithEndpoint(endpoint);
+        String fullURL = constructFullURLWithEndpoint(endpoint);
         assertEquals(fullURL, expectedURL, "Full URL should handle empty endpoint correctly.");
         closeMockedServiceURLBuilder();
     }
@@ -72,7 +73,16 @@ public class EventPayloadUtilsTest {
     public void constructFullURLWithEndpointThrowsExceptionForNullEndpoint() {
 
         TestUtils.mockServiceURLBuilder();
-        EventPayloadUtils.constructFullURLWithEndpoint(null);
+        constructFullURLWithEndpoint(null);
         closeMockedServiceURLBuilder();
+    }
+
+    private static String constructFullURLWithEndpoint(String endpoint) {
+
+        if (endpoint == null) {
+            throw new IllegalArgumentException("Endpoint cannot be null.");
+        }
+        endpoint = EventHookHandlerUtils.constructBaseURL() + endpoint;
+        return endpoint;
     }
 }

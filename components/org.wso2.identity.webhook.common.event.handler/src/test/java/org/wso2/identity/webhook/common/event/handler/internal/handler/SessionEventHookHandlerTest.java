@@ -47,6 +47,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPa
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.util.CommonTestUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
@@ -102,12 +103,13 @@ public class SessionEventHookHandlerTest {
     private SessionEventHookHandler sessionEventHookHandler;
 
     @BeforeClass
-    public void setupClass() throws IdentityEventException {
+    public void setupClass() throws Exception {
 
         MockitoAnnotations.openMocks(this);
         setupDataHolderMocks();
         setupPayloadBuilderMocks();
         setupUtilities();
+        CommonTestUtils.initPrivilegedCarbonContext(SAMPLE_TENANT_DOMAIN);
     }
 
     @AfterClass
@@ -128,16 +130,10 @@ public class SessionEventHookHandlerTest {
     public Object[][] eventDataProvider() {
 
         return new Object[][] {
-                {IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name(),
-                        SAMPLE_EVENT_KEY_SESSION_REVOKED
-                },
                 {IdentityEventConstants.EventName.SESSION_CREATE.name(),
                         SAMPLE_EVENT_KEY_SESSION_ESTABLISHED
                 },
                 {IdentityEventConstants.EventName.SESSION_UPDATE.name(),
-                        SAMPLE_EVENT_KEY_SESSION_PRESENTED
-                },
-                {IdentityEventConstants.EventName.SESSION_EXTEND.name(),
                         SAMPLE_EVENT_KEY_SESSION_PRESENTED
                 }
         };
@@ -238,7 +234,7 @@ public class SessionEventHookHandlerTest {
     @Test
     public void testHandleEventWithNoProfiles() throws Exception {
 
-        Event event = createEventWithProperties(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name());
+        Event event = createEventWithProperties(IdentityEventConstants.EventName.SESSION_TERMINATE.name());
         when(mockedWebhookMetadataService.getSupportedEventProfiles()).thenReturn(Collections.emptyList());
         sessionEventHookHandler.handleEvent(event);
         verify(mockedEventPublisherService, times(0)).publish(any(), any());

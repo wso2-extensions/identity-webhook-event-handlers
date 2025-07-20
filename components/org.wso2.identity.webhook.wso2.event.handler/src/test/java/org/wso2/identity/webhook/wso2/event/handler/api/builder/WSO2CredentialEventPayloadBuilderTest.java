@@ -46,7 +46,6 @@ import org.wso2.carbon.user.core.config.RealmConfiguration;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCredentialUpdateEventPayload;
@@ -70,6 +69,7 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUti
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedServiceURLBuilder;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockServiceURLBuilder;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils.constructFullURLWithEndpoint;
 
 public class WSO2CredentialEventPayloadBuilderTest {
 
@@ -165,6 +165,8 @@ public class WSO2CredentialEventPayloadBuilderTest {
         params.put(IdentityEventConstants.EventProperty.USER_NAME, USER_NAME);
 
         when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
+
         mockUserStoreManager();
         try {
             when(userStoreManagerMock.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
@@ -192,7 +194,7 @@ public class WSO2CredentialEventPayloadBuilderTest {
         assertNotNull(userCredentialUpdateEventPayload.getUser());
         assertEquals(userCredentialUpdateEventPayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userCredentialUpdateEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + DELETED_USER_ID);
+                constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + DELETED_USER_ID);
         assertNotNull(userCredentialUpdateEventPayload.getUser().getClaims());
         assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().size(), 1);
         assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getUri(),

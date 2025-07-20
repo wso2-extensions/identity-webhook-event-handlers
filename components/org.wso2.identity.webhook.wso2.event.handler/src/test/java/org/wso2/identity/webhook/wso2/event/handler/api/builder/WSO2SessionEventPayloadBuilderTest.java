@@ -20,6 +20,8 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -33,9 +35,11 @@ import org.wso2.carbon.identity.application.authentication.framework.model.Appli
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedIdPData;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -47,6 +51,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2Event
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionCreatedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionRevokedEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.util.CommonTestUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.Mockito.mockStatic;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
@@ -72,7 +78,7 @@ public class WSO2SessionEventPayloadBuilderTest {
     private static final String SAMPLE_IDP = "LOCAL";
     private static final String SAMPLE_AUTHENTICATOR = "sms-otp-authenticator";
     private static final String SAMPLE_SP_ID = "f27178f9-984b-41df-aee5-372de8ef327f";
-    private static final String SAMPLE_TENANT_ID = "100";
+    private static final int SAMPLE_TENANT_ID = 100;
     private static final String SAMPLE_ERROR_CODE = "SMS-65020";
 
     @Mock
@@ -93,23 +99,37 @@ public class WSO2SessionEventPayloadBuilderTest {
     @Mock
     private SessionContext mockSessionContext;
 
+    @Mock
+    private ClaimMetadataManagementService claimMetadataManagementService;
+
+    private MockedStatic<FrameworkUtils> frameworkUtilsMockedStatic;
+
     @BeforeClass
-    public void setup() {
+    public void setup() throws Exception {
 
         MockitoAnnotations.openMocks(this);
         WSO2EventHookHandlerDataHolder.getInstance().setOrganizationManager(mockOrganizationManager);
+        WSO2EventHookHandlerDataHolder.getInstance().setClaimMetadataManagementService(claimMetadataManagementService);
+
         mockAuthenticationContext = createMockAuthenticationContext();
         mockAuthenticatedUser = createMockAuthenticatedUser();
         mockSessionContext = createMockSessionContext();
+
+        frameworkUtilsMockedStatic = mockStatic(FrameworkUtils.class);
+        frameworkUtilsMockedStatic.when(() -> FrameworkUtils.getMultiAttributeSeparator()).thenReturn(",");
         mockServiceURLBuilder();
         mockIdentityTenantUtil();
+        CommonTestUtils.initPrivilegedCarbonContext(SAMPLE_TENANT_DOMAIN, SAMPLE_TENANT_ID, SAMPLE_USER_NAME);
     }
 
     @AfterClass
     public void teardown() {
 
+        frameworkUtilsMockedStatic.close();
         closeMockedServiceURLBuilder();
         closeMockedIdentityTenantUtil();
+
+        Mockito.reset(claimMetadataManagementService);
     }
 
     @Test
@@ -154,17 +174,15 @@ public class WSO2SessionEventPayloadBuilderTest {
         Map<String, Object> params = new HashMap<>();
         params.put("sessions", sessions);
         params.put("eventTimeStamp", System.currentTimeMillis());
-        Flow flow = new Flow.Builder()
-                .name(Flow.Name.SESSION_REVOKE)
-                .initiatingPersona(initiatingEntity)
-                .build();
+
         EventData eventData = new EventData.Builder()
-                .eventName(IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name())
+                .eventName(IdentityEventConstants.Event.SESSION_TERMINATE_V2)
                 .authenticatedUser(mockAuthenticatedUser)
                 .authenticationContext(null)
                 .sessionContext(null)
                 .eventParams(params)
-                .flow(flow)
+                .tenantDomain(SAMPLE_TENANT_DOMAIN)
+                .userId(SAMPLE_USER_ID)
                 .build();
 
         EventPayload payload = payloadBuilder.buildSessionTerminateEvent(eventData);
@@ -175,7 +193,7 @@ public class WSO2SessionEventPayloadBuilderTest {
 
         assertEquals(sessionRevokedPayload.getUser().getId(), SAMPLE_USER_ID);
         assertEquals(sessionRevokedPayload.getUserStore().getName(), SAMPLE_USERSTORE_NAME);
-        assertEquals(sessionRevokedPayload.getTenant().getId(), SAMPLE_TENANT_ID);
+        assertEquals(sessionRevokedPayload.getTenant().getId(), String.valueOf(SAMPLE_TENANT_ID));
         assertEquals(sessionRevokedPayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
     }
 
@@ -191,6 +209,7 @@ public class WSO2SessionEventPayloadBuilderTest {
                 .authenticatedUser(mockAuthenticatedUser)
                 .authenticationContext(mockAuthenticationContext)
                 .sessionContext(mockSessionContext)
+                .tenantDomain(SAMPLE_TENANT_DOMAIN)
                 .eventParams(params)
                 .build();
 
@@ -202,7 +221,7 @@ public class WSO2SessionEventPayloadBuilderTest {
 
         assertEquals(sessionCreatePayload.getUser().getId(), SAMPLE_USER_ID);
         assertEquals(sessionCreatePayload.getUserStore().getName(), SAMPLE_USERSTORE_NAME);
-        assertEquals(sessionCreatePayload.getTenant().getId(), SAMPLE_TENANT_ID);
+        assertEquals(sessionCreatePayload.getTenant().getId(), String.valueOf(SAMPLE_TENANT_ID));
         assertEquals(sessionCreatePayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
     }
 
@@ -295,4 +314,3 @@ public class WSO2SessionEventPayloadBuilderTest {
         return userAttributes;
     }
 }
-

@@ -163,9 +163,7 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                     continue;
                 }
                 EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
-                String tenantDomain =
-                        String.valueOf(
-                                eventData.getEventParams().get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+                String tenantDomain = eventData.getTenantDomain();
 
                 EventPayload eventPayload;
                 String eventUri;

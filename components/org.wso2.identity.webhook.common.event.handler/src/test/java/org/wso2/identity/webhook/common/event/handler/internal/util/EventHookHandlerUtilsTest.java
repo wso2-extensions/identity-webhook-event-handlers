@@ -76,9 +76,10 @@ public class EventHookHandlerUtilsTest {
     private EventPublisherService mockedEventPublisherService;
 
     @BeforeMethod
-    public void setup() {
+    public void setup() throws Exception {
 
         MockitoAnnotations.openMocks(this);
+        CommonTestUtils.initPrivilegedCarbonContext();
     }
        //TODO Uncomment the below test once the MDC is set in the EventHookHandlerUtils class.
 //    /**
@@ -209,7 +210,6 @@ public class EventHookHandlerUtilsTest {
     public Object[][] extractSubjectDataProvider() {
 
         return new Object[][]{
-                {IdentityEventConstants.EventName.USER_SESSION_TERMINATE.name()},
                 {IdentityEventConstants.EventName.SESSION_CREATE.name()},
         };
     }

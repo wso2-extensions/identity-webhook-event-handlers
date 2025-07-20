@@ -42,7 +42,7 @@ public class CAEPPayloadUtils {
             event = Constants.Event.SESSION_REVOKED_EVENT;
         } else if (IdentityEventConstants.Event.SESSION_CREATE.equals(eventName)) {
             channel = Constants.Channel.SESSION_CHANNEL;
-            event = Constants.Event.SESSION_ESTABLISHED_EVENT;
+            event = Constants.Event.SESSION_CREATED_EVENT;
         } else if (IdentityEventConstants.Event.SESSION_EXTEND.equals(eventName) ||
                 IdentityEventConstants.Event.SESSION_UPDATE.equals(eventName)) {
             channel = Constants.Channel.SESSION_CHANNEL;

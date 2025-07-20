@@ -40,7 +40,6 @@ import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.config.RealmConfiguration;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2RegistrationFailureEventPayload;
@@ -59,12 +58,13 @@ import static org.testng.Assert.assertNotNull;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.FIRST_NAME_CLAIM_URI;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LAST_NAME_CLAIM_URI;
-import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LOCATION_CLAIM;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedServiceURLBuilder;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockServiceURLBuilder;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils.constructFullURLWithEndpoint;
 
 public class WSO2RegistrationEventPayloadBuilderTest {
 
@@ -148,6 +148,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         params.put(IdentityEventConstants.EventProperty.USER_CLAIMS, claims);
 
         when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
                 .name(Flow.Name.USER_REGISTRATION)
@@ -163,7 +164,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertNotNull(userAccountEventPayload.getUser());
         assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userAccountEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
+                constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getAction());
         assertEquals(userAccountEventPayload.getAction(),
                 WSO2RegistrationEventPayloadBuilder.RegistrationAction.REGISTER.name());
@@ -222,8 +223,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         claims.put(FrameworkConstants.EMAIL_ADDRESS_CLAIM, TEST_USER_EMAIL);
         claims.put(FIRST_NAME_CLAIM_URI, FIRST_NAME);
         claims.put(LAST_NAME_CLAIM_URI, LAST_NAME);
-        claims.put(LOCATION_CLAIM,
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
+        claims.put(LOCATION_CLAIM, constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
 
         params.put(IdentityEventConstants.EventProperty.USER_CLAIMS, claims);
 
@@ -243,7 +243,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertNotNull(userRegistrationFailurePayload.getUser());
         assertEquals(userRegistrationFailurePayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userRegistrationFailurePayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
+                constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userRegistrationFailurePayload.getAction());
         assertEquals(userRegistrationFailurePayload.getAction(),
                 WSO2RegistrationEventPayloadBuilder.RegistrationAction.REGISTER.name());
@@ -271,5 +271,4 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         IdentityContext.destroyCurrentContext();
     }
-
 }

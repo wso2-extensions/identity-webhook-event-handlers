@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.internal.component;
 
+import org.wso2.carbon.identity.application.authentication.framework.UserSessionManagementService;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -31,6 +32,8 @@ public class WSO2EventHookHandlerDataHolder {
     private OrganizationManager organizationManager;
     private RealmService realmService;
     private ClaimMetadataManagementService claimMetadataManagementService;
+
+    private UserSessionManagementService userSessionManagementService;
 
     private WSO2EventHookHandlerDataHolder() {
 
@@ -100,5 +103,26 @@ public class WSO2EventHookHandlerDataHolder {
             ClaimMetadataManagementService claimMetadataManagementService) {
 
         this.claimMetadataManagementService = claimMetadataManagementService;
+    }
+
+    /**
+     * Get the user session management service.
+     *
+     * @return UserSessionManagementService instance.
+     */
+    public UserSessionManagementService getUserSessionManagementService() {
+
+        return userSessionManagementService;
+    }
+
+    /**
+     * Set the user session management service.
+     *
+     * @param userSessionManagementService UserSessionManagementService instance.
+     */
+    public void setUserSessionManagementService(
+            UserSessionManagementService userSessionManagementService) {
+
+        this.userSessionManagementService = userSessionManagementService;
     }
 }

@@ -133,7 +133,6 @@ public class CAEPSessionEventPayloadBuilderTest {
         when(mockEventData.getAuthenticatedUser()).thenReturn(mockAuthenticatedUser);
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("eventTimestamp", System.currentTimeMillis());
-        when(mockEventData.getFlow()).thenReturn(flow);
         when(mockEventData.getEventParams()).thenReturn(paramMap);
 
         CAEPSessionRevokedEventPayload eventPayload = (CAEPSessionRevokedEventPayload)

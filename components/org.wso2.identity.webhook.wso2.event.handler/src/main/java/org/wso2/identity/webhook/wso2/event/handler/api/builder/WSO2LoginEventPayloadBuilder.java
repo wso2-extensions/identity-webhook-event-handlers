@@ -54,7 +54,6 @@ import static org.wso2.carbon.identity.application.authentication.framework.util
  */
 public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
-    private static final Log log = LogFactory.getLog(WSO2LoginEventPayloadBuilder.class);
     private static final String USER = "user";
 
     @Override
@@ -68,9 +67,8 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         }
 
         User user = new User();
-        WSO2PayloadUtils.populateUserClaims(user, authenticatedUser);
+        WSO2PayloadUtils.populateUserClaims(user, authenticatedUser, eventData.getTenantDomain());
         WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
-        addInitialClaims(user, authenticatedUser);
 
         Organization tenant = new Organization(
                 String.valueOf(IdentityTenantUtil.getTenantId(authenticationContext.getTenantDomain())),
@@ -192,19 +190,5 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
             return dataMap.get(Constants.AUTHENTICATION_ERROR_MESSAGE);
         }
         return null;
-    }
-
-    private void addInitialClaims(User user, AuthenticatedUser authenticatedUser) {
-
-        if (user == null || authenticatedUser == null) {
-            return;
-        }
-
-        if (StringUtils.isNotBlank(authenticatedUser.getUserName())) {
-            Optional<UserClaim> userNameClaimOptional =
-                    WSO2PayloadUtils.generateUserClaim(USERNAME_CLAIM, authenticatedUser.getUserName(),
-                            authenticatedUser.getTenantDomain());
-            userNameClaimOptional.ifPresent(user::addClaim);
-        }
     }
 }
