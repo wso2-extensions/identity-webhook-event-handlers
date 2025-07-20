@@ -160,9 +160,7 @@ public class WSO2EventHookHandlerServiceComponent {
             unbind = "unsetUserSessionManagementService")
     protected void setUserSessionManagementService(UserSessionManagementService userSessionManagementService) {
 
-        if (log.isDebugEnabled()) {
-            log.debug("Setting the User Session Management Service");
-        }
+        log.debug("Setting the User Session Management Service");
         WSO2EventHookHandlerDataHolder.getInstance().setUserSessionManagementService(userSessionManagementService);
     }
 
