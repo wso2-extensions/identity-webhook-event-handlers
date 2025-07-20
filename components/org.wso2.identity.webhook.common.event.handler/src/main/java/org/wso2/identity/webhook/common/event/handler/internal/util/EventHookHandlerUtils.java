@@ -84,7 +84,7 @@ public class EventHookHandlerUtils {
         String tenantDomain = resolveTenantDomain(context, params, properties);
 
         AuthenticatedUser authenticatedUser = extractAuthenticatedUser(params, context);
-        String userId = resolveUserId(authenticatedUser, params, properties);
+        String userId = resolveUserId(authenticatedUser, properties);
 
         SessionContext sessionContext = extractSessionContext(properties);
 
@@ -340,8 +340,7 @@ public class EventHookHandlerUtils {
         return null;
     }
 
-    private static String resolveUserId(AuthenticatedUser authenticatedUser, Map<String, Object> params,
-                                        Map<String, Object> properties) {
+    private static String resolveUserId(AuthenticatedUser authenticatedUser, Map<String, Object> properties) {
 
         if (authenticatedUser != null) {
             try {

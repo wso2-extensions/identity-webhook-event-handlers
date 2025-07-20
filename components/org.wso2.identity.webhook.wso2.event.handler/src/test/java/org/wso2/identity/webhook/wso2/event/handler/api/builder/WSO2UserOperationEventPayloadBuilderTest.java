@@ -41,7 +41,6 @@ import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.config.RealmConfiguration;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2BaseEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserAccountEventPayload;
@@ -72,6 +71,7 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUti
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedServiceURLBuilder;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockServiceURLBuilder;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils.constructFullURLWithEndpoint;
 
 /**
  * Test class for WSO2UserOperationEventPayloadBuilder.
@@ -173,6 +173,11 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         params.put(IdentityEventConstants.EventProperty.DELETED_USERS, deletedUsers);
 
         when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
+
+        when(userStoreManager.getRealmConfiguration()).thenReturn(realmConfiguration);
+        when(realmConfiguration.getUserStoreProperty(
+                UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME)).thenReturn(DEFAULT);
 
         org.wso2.carbon.user.core.common.Group addedGroup = new org.wso2.carbon.user.core.common.Group();
         addedGroup.setGroupID(ADDED_GROUP_ID);
@@ -248,6 +253,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_DELETED_USER_NAME);
 
         when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_DELETED_USER_NAME),
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any()))
                 .thenReturn(DELETED_USER_EMAIL);
@@ -264,7 +270,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userAccountEventPayload.getUser());
         assertEquals(userAccountEventPayload.getUser().getId(), DELETED_USER_ID);
         assertEquals(userAccountEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + DELETED_USER_ID);
+                constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + DELETED_USER_ID);
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 1);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
@@ -285,6 +291,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
         when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
+
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
@@ -309,7 +317,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userAccountEventPayload.getUser());
         assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userAccountEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
+                constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 1);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
@@ -329,6 +337,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
         when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
+
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
@@ -353,7 +363,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userAccountEventPayload.getUser());
         assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userAccountEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
+                constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 1);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
@@ -406,7 +416,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userAccountEventPayload.getUser());
         assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userAccountEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
+                constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 1);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
@@ -444,7 +454,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userAccountEventPayload.getUser());
         assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userAccountEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
+                constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 1);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
@@ -487,7 +497,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertNotNull(userAccountEventPayload.getUser());
         assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
         assertEquals(userAccountEventPayload.getUser().getRef(),
-                EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
+                constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getAction());
         assertEquals(userAccountEventPayload.getAction(),
                 WSO2RegistrationEventPayloadBuilder.RegistrationAction.INVITE.name());

@@ -155,7 +155,7 @@ public class WSO2PayloadUtils {
     public static void populateUserClaims(User user, String userId, String tenantDomain) {
 
         UserStoreManager userStoreManager = getUserStoreManagerByTenantDomain(tenantDomain);
-        if (userStoreManager == null || !(userStoreManager instanceof AbstractUserStoreManager)) {
+        if (!(userStoreManager instanceof AbstractUserStoreManager)) {
             return;
         }
 

@@ -27,7 +27,6 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
 
     private String sessionId;
     private String currentAcr;
-    private Application application;
 
     public String getSessionId() {
 
@@ -37,12 +36,6 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
     public String getCurrentAcr() {
 
         return currentAcr;
-    }
-
-    @Override
-    public Application getApplication() {
-
-        return application;
     }
 
     private WSO2SessionCreatedEventPayload(Builder builder) {

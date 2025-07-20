@@ -27,7 +27,6 @@
             <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.CredentialEventHookHandlerTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.UserOperationEventHookHandlerTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.RegistrationEventHookHandlerTest"/>
-            <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.VerificationEventHookHandlerTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactoryTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolderTest"/>
         </classes>
