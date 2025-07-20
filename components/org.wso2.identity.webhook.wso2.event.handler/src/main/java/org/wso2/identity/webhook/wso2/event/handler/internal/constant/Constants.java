@@ -40,5 +40,8 @@ public class Constants {
     public static final String MODIFIED_CLAIM = "http://wso2.org/claims/modified";
     public static final String RESOURCE_TYPE_CLAIM = "http://wso2.org/claims/resourceType";
     public static final String LOCATION_CLAIM = "http://wso2.org/claims/location";
+    public static final String USERNAME_CLAIM_URI = "http://wso2.org/claims/username";
+    public static final String EMAIL_CLAIM_URI = "http://wso2.org/claims/emailaddress";
+    public static final String WSO2_CLAIM_URI_PREFIX = "http://wso2.org/claims/";
 
 }

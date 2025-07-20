@@ -21,180 +21,69 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
-import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
+import org.wso2.carbon.identity.application.authentication.framework.exception.session.mgt.SessionManagementException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
-import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionCreatedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionRevokedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Session;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils.getUserResidentOrganization;
+import java.util.Optional;
 
 public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilder {
 
-    Log log = LogFactory.getLog(WSO2SessionEventPayloadBuilder.class);
+    private static final Log LOG = LogFactory.getLog(WSO2SessionEventPayloadBuilder.class);
 
     @Override
     public EventPayload buildSessionTerminateEvent(EventData eventData) throws IdentityEventException {
-        AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
-        String tenantDomain = authenticatedUser.getTenantDomain();
-        Map<String, Object> params = eventData.getEventParams();
 
-        User user = new User();
-        WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
+        User user = buildUser(eventData);
+        Organization tenant = buildTenant(eventData);
+        UserStore userStore = buildUserStore(eventData);
+        List<Session> sessions = getSessions(eventData);
 
-        Organization tenant = new Organization(
-                String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain)),
-                tenantDomain);
-        UserStore userStore = null;
-        if (authenticatedUser.getUserStoreDomain() != null) {
-            userStore = new UserStore(authenticatedUser.getUserStoreDomain());
-        }
-        Organization b2bUserResidentOrganization = null;
-        if (authenticatedUser.getUserResidentOrganization() != null) {
-            b2bUserResidentOrganization = getUserResidentOrganization(
-                    authenticatedUser.getUserResidentOrganization());
-        }
-
-        List<Application> applications = new ArrayList<>();
-        List<UserSession> sessions;
-        try {
-            sessions = params.containsKey("sessions") ?
-                    (List<UserSession>) params.get("sessions") : null;
-            if (sessions != null) {
-                for (UserSession session : sessions) {
-                    for (org.wso2.carbon.identity.application.authentication.framework.model.Application
-                            sessionApplication : session.getApplications()) {
-                        Application application = new Application(sessionApplication.getAppName(),
-                                sessionApplication.getAppId());
-                        applications.add(application);
-                    }
-                }
-            } else {
-                log.debug("Sessions list is null.");
-            }
-        } catch (ClassCastException e) {
-            log.error("Error while casting sessions to List<UserSession>", e);
-            throw new IdentityEventException("Error while casting sessions to List<UserSession>", e);
-        }
-
-        String initiatorType = null;
-
-        Flow flow = eventData.getFlow();
-        if (flow != null) {
-            switch (flow.getInitiatingPersona()) {
-                case ADMIN:
-                    initiatorType = "admin";
-                    break;
-                case USER:
-                    initiatorType = "user";
-                    break;
-                case APPLICATION:
-                    initiatorType = "application";
-                    break;
-                case SYSTEM:
-                    initiatorType = "system";
-                    break;
-            }
-        }
-        if (sessions != null && sessions.size() == 1) {
-            return new WSO2SessionRevokedEventPayload.Builder()
-                    .user(user)
-                    .tenant(tenant)
-                    .organization(b2bUserResidentOrganization)
-                    .sessionId(sessions.get(0).getSessionId())
-                    .userStore(userStore)
-                    .initiatorType(initiatorType)
-                    .applications(applications)
-                    .build();
-        }
         return new WSO2SessionRevokedEventPayload.Builder()
                 .user(user)
                 .tenant(tenant)
-                .organization(b2bUserResidentOrganization)
                 .userStore(userStore)
-                .initiatorType(initiatorType)
-                .applications(applications)
+                .sessions(sessions)
                 .build();
     }
 
     @Override
     public EventPayload buildSessionCreateEvent(EventData eventData) throws IdentityEventException {
-        AuthenticationContext authenticationContext = eventData.getAuthenticationContext();
-        AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
-        SessionContext sessionContext = eventData.getSessionContext();
 
-        if (authenticatedUser == null) {
-            throw new IdentityEventException("Authenticated user cannot be null.");
-        }
+        validateEventData(eventData);
 
-        if (sessionContext == null) {
-            throw new IdentityEventException("Session context cannot be null.");
-        }
-
-        User user = new User();
-        WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
-
-        Organization tenant = new Organization(
-                String.valueOf(IdentityTenantUtil.getTenantId(authenticationContext.getTenantDomain())),
-                authenticationContext.getTenantDomain());
-        UserStore userStore = null;
-        if (authenticatedUser.getUserStoreDomain() != null) {
-            userStore = new UserStore(authenticatedUser.getUserStoreDomain());
-        }
-        Organization b2bUserResidentOrganization = null;
-        if (authenticatedUser.getUserResidentOrganization() != null) {
-            b2bUserResidentOrganization = getUserResidentOrganization(
-                    authenticatedUser.getUserResidentOrganization());
-        }
-
-        String sessionId;
-
-        Map<String, Object> params = eventData.getEventParams();
-        if (params.containsKey(Constants.EventDataProperties.SESSION_ID) &&
-                params.get(Constants.EventDataProperties.SESSION_ID) != null) {
-            sessionId =  params.get(Constants.EventDataProperties.SESSION_ID).toString();
-        } else {
-            sessionId = authenticationContext.getSessionIdentifier();
-        }
-
-        List<Application> applications = new ArrayList<>();
-        List<org.wso2.carbon.identity.application.authentication.framework.model.Application> sessionApplications =
-                params.containsKey("applications") ?
-                        (List<org.wso2.carbon.identity.application.authentication.framework.model.Application>)
-                        params.get("applications") : Collections.emptyList();
-        for (org.wso2.carbon.identity.application.authentication.framework.model.Application sessionApplication :
-                sessionApplications) {
-            Application application = new Application(
-                    sessionApplication.getAppId(),
-                    sessionApplication.getAppName());
-            applications.add(application);
-        }
+        User user = buildUser(eventData);
+        Organization tenant = buildTenant(eventData);
+        UserStore userStore = buildUserStore(eventData);
+        String sessionId = getSessionId(eventData);
+        Application application = buildApplication(eventData.getAuthenticationContext());
 
         return new WSO2SessionCreatedEventPayload.Builder()
                 .sessionId(sessionId)
-                .currentAcr(authenticationContext.getSelectedAcr())
+                .currentAcr(eventData.getAuthenticationContext().getSelectedAcr())
                 .user(user)
                 .tenant(tenant)
-                .organization(b2bUserResidentOrganization)
                 .userStore(userStore)
-                .applications(applications)
+                .application(application)
                 .build();
     }
 
@@ -220,5 +109,118 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     public org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema getEventSchemaType() {
 
         return org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
+    }
+
+    private void validateEventData(EventData eventData) throws IdentityEventException {
+
+        if (eventData.getAuthenticatedUser() == null || eventData.getAuthenticationContext() == null) {
+            throw new IdentityEventException(
+                    "Authenticated user or authentication context cannot be null in event data.");
+        }
+    }
+
+    private User buildUser(EventData eventData) {
+
+        User user = null;
+        AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
+        if (authenticatedUser != null) {
+            user = new User();
+            WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
+            WSO2PayloadUtils.populateUserClaims(user, authenticatedUser, eventData.getTenantDomain());
+        } else if (eventData.getUserId() != null) {
+            user = new User();
+            String userId = eventData.getUserId();
+            WSO2PayloadUtils.populateUserIdAndRef(user, userId);
+            WSO2PayloadUtils.populateUserClaims(user, userId, eventData.getTenantDomain());
+        }
+
+        return user;
+    }
+
+    private Organization buildTenant(EventData eventData) {
+
+        String tenantDomain = eventData.getTenantDomain();
+        return new Organization(String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain)), tenantDomain);
+    }
+
+    private UserStore buildUserStore(EventData eventData) {
+
+        AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
+        if (authenticatedUser != null && authenticatedUser.getUserStoreDomain() != null) {
+            return new UserStore(authenticatedUser.getUserStoreDomain());
+        }
+        return null;
+    }
+
+    private String getSessionId(EventData eventData) {
+
+        Map<String, Object> params = eventData.getEventParams();
+        if (params.containsKey(Constants.EventDataProperties.SESSION_ID) &&
+                params.get(Constants.EventDataProperties.SESSION_ID) != null) {
+            return params.get(Constants.EventDataProperties.SESSION_ID).toString();
+        }
+        return eventData.getAuthenticationContext().getSessionIdentifier();
+    }
+
+    private List<Session> getSessions(EventData eventData) throws IdentityEventException {
+
+        Map<String, Object> params = eventData.getEventParams();
+        if (params.containsKey(Constants.EventDataProperties.SESSION_ID)) {
+            String sessionId = params.get(Constants.EventDataProperties.SESSION_ID).toString();
+            return retrieveSessionsById(sessionId);
+        } else if (params.containsKey(IdentityEventConstants.EventProperty.SESSION_IDS)) {
+            List<String> sessionIds = params.get(IdentityEventConstants.EventProperty.SESSION_IDS) instanceof List ?
+                    (List<String>) params.get(IdentityEventConstants.EventProperty.SESSION_IDS) : null;
+            if (sessionIds == null || sessionIds.isEmpty()) {
+                LOG.debug("Session IDs are not provided in the event data.");
+                return new ArrayList<>();
+            }
+            return retrieveSessionsByIds(sessionIds);
+        }
+        return new ArrayList<>();
+    }
+
+    private List<Session> retrieveSessionsById(String sessionId) throws IdentityEventException {
+
+        try {
+            Optional<UserSession> userSession = WSO2EventHookHandlerDataHolder.getInstance()
+                    .getUserSessionManagementService().getUserSessionBySessionId(sessionId);
+            return userSession.map(this::buildSessionList).orElseGet(ArrayList::new);
+        } catch (SessionManagementException e) {
+            throw new IdentityEventException(
+                    "Error while retrieving session information from User Session Management Service", e);
+        }
+    }
+
+    private List<Session> retrieveSessionsByIds(List<String> sessionIds) throws IdentityEventException {
+
+        List<Session> sessions = new ArrayList<>();
+        // todo: This call retrieves session data per session and can be optimized to retrieve all sessions
+        //  in a single call. However, the UserSessionManagementService currently does not provide a method
+        //  to retrieve multiple sessions by IDs. Should evaluate impact and optimize accordingly.
+        for (String sessionId : sessionIds) {
+            sessions.addAll(retrieveSessionsById(sessionId));
+        }
+        return sessions;
+    }
+
+    private List<Session> buildSessionList(UserSession userSession) {
+
+        List<Session> sessions = new ArrayList<>();
+        List<Application> applications = new ArrayList<>();
+        userSession.getApplications().forEach(app -> {
+            Application application = new Application(app.getAppName(), app.getAppId());
+            applications.add(application);
+        });
+        Session sessionModel = new Session(userSession.getSessionId(), applications);
+        sessions.add(sessionModel);
+        return sessions;
+    }
+
+    private Application buildApplication(AuthenticationContext authenticationContext) {
+
+        return new Application(
+                authenticationContext.getServiceProviderResourceId(),
+                authenticationContext.getServiceProviderName());
     }
 }

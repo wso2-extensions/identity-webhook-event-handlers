@@ -23,13 +23,11 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organi
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
-import java.util.List;
-
 public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
 
     private String sessionId;
     private String currentAcr;
-    private List<Application> applications;
+    private Application application;
 
     public String getSessionId() {
 
@@ -41,9 +39,10 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         return currentAcr;
     }
 
-    public List<Application> getApplications() {
+    @Override
+    public Application getApplication() {
 
-        return applications;
+        return application;
     }
 
     private WSO2SessionCreatedEventPayload(Builder builder) {
@@ -52,7 +51,7 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         this.tenant = builder.tenant;
         this.organization = builder.organization;
         this.userStore = builder.userStore;
-        this.applications = builder.applications;
+        this.application = builder.application;
         this.sessionId = builder.sessionId;
         this.currentAcr = builder.currentAcr;
     }
@@ -69,7 +68,7 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         private Organization tenant;
         private Organization organization;
         private UserStore userStore;
-        private List<Application> applications;
+        private Application application;
 
         public Builder sessionId(String sessionId) {
 
@@ -107,9 +106,9 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public Builder applications(List<Application> applications) {
+        public Builder application(Application application) {
 
-            this.applications = applications;
+            this.application = application;
             return this;
         }
 

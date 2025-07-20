@@ -20,6 +20,7 @@ package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Session;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
@@ -29,7 +30,7 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
 
     private String initiatorType;
     private String sessionId;
-    private List<Application> applications;
+    private List<Session> sessions;
 
     private WSO2SessionRevokedEventPayload(Builder builder) {
 
@@ -37,9 +38,9 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
         this.tenant = builder.tenant;
         this.organization = builder.organization;
         this.userStore = builder.userStore;
-        this.applications = builder.applications;
         this.initiatorType = builder.initiatorType;
         this.sessionId = builder.sessionId;
+        this.sessions = builder.sessions;
     }
 
     public String getInitiatorType() {
@@ -52,9 +53,9 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
         return sessionId;
     }
 
-    public List<Application> getApplications() {
+    public List<Session> getSessions() {
 
-        return applications;
+        return sessions;
     }
 
     private WSO2SessionRevokedEventPayload() {
@@ -67,9 +68,9 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
         private Organization tenant;
         private Organization organization;
         private UserStore userStore;
-        private List<Application> applications;
         private String initiatorType;
         private String sessionId;
+        private List<Session> sessions;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -107,9 +108,9 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public Builder applications(List<Application> applications) {
+        public Builder sessions(List<Session> sessions) {
 
-            this.applications = applications;
+            this.sessions = sessions;
             return this;
         }
 

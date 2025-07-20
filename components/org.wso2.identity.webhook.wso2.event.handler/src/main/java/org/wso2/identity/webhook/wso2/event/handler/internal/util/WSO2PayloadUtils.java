@@ -30,6 +30,8 @@ import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementServic
 import org.wso2.carbon.identity.claim.metadata.mgt.exception.ClaimMetadataException;
 import org.wso2.carbon.identity.claim.metadata.mgt.model.LocalClaim;
 import org.wso2.carbon.identity.claim.metadata.mgt.util.ClaimConstants;
+import org.wso2.carbon.identity.core.ServiceURLBuilder;
+import org.wso2.carbon.identity.core.URLBuilderException;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
@@ -44,7 +46,6 @@ import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
-import org.wso2.identity.webhook.common.event.handler.api.util.EventPayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
@@ -59,6 +60,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.USERNAME_CLAIM;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CREDENTIAL_CHANGE_CHANNEL;
@@ -82,11 +84,14 @@ import static org.wso2.identity.webhook.common.event.handler.api.constants.Const
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_REVOKED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_UPDATED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
-import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.CREATED_CLAIM;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.EMAIL_CLAIM_URI;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LOCATION_CLAIM;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.MODIFIED_CLAIM;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.RESOURCE_TYPE_CLAIM;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.USERNAME_CLAIM_URI;
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.WSO2_CLAIM_URI_PREFIX;
 
 public class WSO2PayloadUtils {
 
@@ -108,38 +113,100 @@ public class WSO2PayloadUtils {
         return null;
     }
 
-    public static void populateUserClaims(User user, AuthenticatedUser authenticatedUser) {
+    public static void populateUserClaims(User user, AuthenticatedUser authenticatedUser, String tenantDomain) {
 
-        if (authenticatedUser == null || authenticatedUser.getUserAttributes() == null) {
+        if (authenticatedUser == null) {
             return;
         }
 
-        for (Map.Entry<ClaimMapping, String> entry : authenticatedUser.getUserAttributes().entrySet()) {
-            ClaimMapping claimMapping = entry.getKey();
-            String claimUri = claimMapping.getLocalClaim().getClaimUri();
-            String claimValue = entry.getValue();
-
-            if (claimUri != null && claimValue != null) {
-                switch (claimUri) {
-                    case Constants.GROUPS_CLAIM:
-                        user.addGroup(claimValue);
-                        break;
-                    case Constants.MULTI_ATTRIBUTE_SEPARATOR:
-                        // Not adding the multi attribute separator to the user claims
-                        break;
-                    case Constants.IDENTITY_PROVIDER_MAPPED_USER_ROLES:
-                        // Not adding the identity provider mapped user roles to the user claims for federated users
-                        break;
-                    case Constants.USER_ORGANIZATION:
-                        // Not adding the user resident organization to the user claims for b2b users
-                        break;
-                    default:
-                        Optional<UserClaim> userClaimOptional =
-                                generateUserClaim(claimUri, claimValue, authenticatedUser.getTenantDomain());
-                        userClaimOptional.ifPresent(user::addClaim);
-                        break;
+        Map<ClaimMapping, String> userAttributes = authenticatedUser.getUserAttributes();
+        if (userAttributes != null) {
+            userAttributes.forEach((claimMapping, claimValue) -> {
+                if (isValidClaim(claimMapping, claimValue)) {
+                    String claimUri = claimMapping.getLocalClaim().getClaimUri();
+                    handleClaim(user, claimUri, claimValue, tenantDomain);
                 }
+            });
+        }
+
+        if (shouldAddUsernameClaim(user, authenticatedUser)) {
+            Optional<UserClaim> userNameClaimOptional = generateUserClaim(
+                    USERNAME_CLAIM, authenticatedUser.getUserName(), authenticatedUser.getTenantDomain());
+            userNameClaimOptional.ifPresent(user::addClaim);
+        }
+    }
+
+    private static boolean isValidClaim(ClaimMapping claimMapping, String claimValue) {
+
+        return claimMapping != null &&
+                claimMapping.getLocalClaim() != null &&
+                StringUtils.isNotBlank(claimMapping.getLocalClaim().getClaimUri()) &&
+                StringUtils.isNotBlank(claimValue) &&
+                claimMapping.getLocalClaim().getClaimUri().startsWith(WSO2_CLAIM_URI_PREFIX);
+    }
+
+    private static boolean shouldAddUsernameClaim(User user, AuthenticatedUser authenticatedUser) {
+
+        return StringUtils.isNotBlank(authenticatedUser.getUserName()) &&
+                (user.getClaims() == null ||
+                        user.getClaims().stream().noneMatch(claim -> USERNAME_CLAIM_URI.equals(claim.getUri())));
+    }
+
+    public static void populateUserClaims(User user, String userId, String tenantDomain) {
+
+        UserStoreManager userStoreManager = getUserStoreManagerByTenantDomain(tenantDomain);
+        if (userStoreManager == null || !(userStoreManager instanceof AbstractUserStoreManager)) {
+            return;
+        }
+
+        Map<String, String> claimValues;
+        try {
+            claimValues = ((AbstractUserStoreManager) userStoreManager).getUserClaimValuesWithID(
+                    userId, new String[]{USERNAME_CLAIM_URI, EMAIL_CLAIM_URI}, null);
+        } catch (org.wso2.carbon.user.core.UserStoreException e) {
+            log.error("Error while retrieving user claims for user: " + userId + " in tenant: " + tenantDomain, e);
+            return;
+        }
+
+        if (claimValues == null || claimValues.isEmpty()) {
+            return;
+        }
+
+        claimValues.forEach((claimUri, claimValue) -> {
+            if (isValidClaim(claimUri, claimValue)) {
+                handleClaim(user, claimUri, claimValue, tenantDomain);
             }
+        });
+    }
+
+    private static boolean isValidClaim(String claimUri, String claimValue) {
+
+        return StringUtils.isNotBlank(claimUri) &&
+                StringUtils.isNotBlank(claimValue) &&
+                claimUri.startsWith(WSO2_CLAIM_URI_PREFIX);
+    }
+
+    public static void populateUserIdAndRef(User user, String userId) {
+
+        user.setId(userId);
+        user.setRef(constructFullURLWithEndpoint(Constants.SCIM2_USERS_ENDPOINT) + "/" + userId);
+    }
+
+    private static void handleClaim(User user, String claimUri, String claimValue, String tenantDomain) {
+
+        switch (claimUri) {
+            case Constants.GROUPS_CLAIM:
+                user.addGroup(claimValue);
+                break;
+            case Constants.MULTI_ATTRIBUTE_SEPARATOR:
+            case Constants.IDENTITY_PROVIDER_MAPPED_USER_ROLES:
+            case Constants.USER_ORGANIZATION:
+                // Skip these claims
+                break;
+            default:
+                Optional<UserClaim> userClaimOptional = generateUserClaim(claimUri, claimValue, tenantDomain);
+                userClaimOptional.ifPresent(user::addClaim);
+                break;
         }
     }
 
@@ -147,7 +214,7 @@ public class WSO2PayloadUtils {
 
         try {
             user.setId(authenticatedUser.getUserId());
-            user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(Constants.SCIM2_USERS_ENDPOINT) +
+            user.setRef(constructFullURLWithEndpoint(Constants.SCIM2_USERS_ENDPOINT) +
                     "/" + authenticatedUser.getUserId());
         } catch (UserIdNotFoundException e) {
             //TODO: Need to verify when this exception is thrown and handle it accordingly
@@ -252,7 +319,7 @@ public class WSO2PayloadUtils {
             } else if (IdentityEventConstants.Event.AUTHENTICATION_STEP_FAILURE.equals(eventName)) {
                 channel = LOGIN_CHANNEL;
                 event = LOGIN_FAILURE_EVENT;
-            } else if (IdentityEventConstants.Event.USER_SESSION_TERMINATE.equals(eventName)) {
+            } else if (IdentityEventConstants.Event.SESSION_TERMINATE_V2.equals(eventName)) {
                 channel = SESSION_CHANNEL;
                 event = SESSION_REVOKED_EVENT;
             } else if (IdentityEventConstants.Event.SESSION_EXPIRE.equals(eventName)) {
@@ -404,7 +471,7 @@ public class WSO2PayloadUtils {
         if (userStoreManager != null) {
             String domainQualifiedUserName = userStoreDomain + "/" + userName;
             WSO2PayloadUtils.enrichUser(userStoreManager, domainQualifiedUserName, user, tenantDomain);
-            user.setRef(EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+            user.setRef(constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
         }
         return user;
     }
@@ -459,8 +526,7 @@ public class WSO2PayloadUtils {
 
             if (claims.containsKey(FrameworkConstants.USER_ID_CLAIM)) {
                 user.setId(claims.get(FrameworkConstants.USER_ID_CLAIM));
-                user.setRef(
-                        EventPayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+                user.setRef(constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
             } else if (claims.containsKey(LOCATION_CLAIM)) {
                 user.setRef(claims.get(LOCATION_CLAIM));
                 // If the user ID is not set, try to extract it from the ref.
@@ -483,5 +549,25 @@ public class WSO2PayloadUtils {
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
 
         return Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName);
+    }
+
+    public static String constructFullURLWithEndpoint(String endpoint) {
+
+        if (endpoint == null) {
+            throw new IllegalArgumentException("Endpoint cannot be null.");
+        }
+        endpoint = constructBaseURL() + endpoint;
+        return endpoint;
+    }
+
+    private static String constructBaseURL() {
+
+        try {
+            ServiceURLBuilder builder = ServiceURLBuilder.create();
+            return builder.build().getAbsolutePublicURL();
+        } catch (URLBuilderException e) {
+            log.debug("Error occurred while building the tenant qualified URL.", e);
+        }
+        return null;
     }
 }

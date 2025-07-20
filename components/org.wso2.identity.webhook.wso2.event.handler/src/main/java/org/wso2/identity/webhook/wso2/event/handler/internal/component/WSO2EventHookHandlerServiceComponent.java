@@ -27,6 +27,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.wso2.carbon.identity.application.authentication.framework.UserSessionManagementService;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -146,4 +147,33 @@ public class WSO2EventHookHandlerServiceComponent {
         WSO2EventHookHandlerDataHolder.getInstance().setClaimMetadataManagementService(null);
     }
 
+    /**
+     * Set user session management service implementation.
+     *
+     * @param userSessionManagementService UserSessionManagementService instance
+     */
+    @Reference(
+            name = "userSessionManagementService",
+            service = UserSessionManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetUserSessionManagementService")
+    protected void setUserSessionManagementService(UserSessionManagementService userSessionManagementService) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Setting the User Session Management Service");
+        }
+        WSO2EventHookHandlerDataHolder.getInstance().setUserSessionManagementService(userSessionManagementService);
+    }
+
+    /**
+     * Unset user session management service implementation.
+     *
+     * @param userSessionManagementService UserSessionManagementService instance
+     */
+    protected void unsetUserSessionManagementService(UserSessionManagementService userSessionManagementService) {
+
+        log.debug("Unsetting the User Session Management Service");
+        WSO2EventHookHandlerDataHolder.getInstance().setUserSessionManagementService(null);
+    }
 }
