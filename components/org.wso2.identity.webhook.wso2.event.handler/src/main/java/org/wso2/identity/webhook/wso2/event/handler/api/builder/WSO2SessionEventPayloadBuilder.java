@@ -42,6 +42,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -74,12 +75,11 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         User user = buildUser(eventData);
         Organization tenant = buildTenant(eventData);
         UserStore userStore = buildUserStore(eventData);
-        String sessionId = getSessionId(eventData);
+        List<Session> sessions = getSessions(eventData);
         Application application = buildApplication(eventData.getAuthenticationContext());
 
         return new WSO2SessionCreatedEventPayload.Builder()
-                .sessionId(sessionId)
-                .currentAcr(eventData.getAuthenticationContext().getSelectedAcr())
+                .session(sessions != null && !sessions.isEmpty() ? sessions.get(0) : null)
                 .user(user)
                 .tenant(tenant)
                 .userStore(userStore)
@@ -152,16 +152,6 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         return null;
     }
 
-    private String getSessionId(EventData eventData) {
-
-        Map<String, Object> params = eventData.getEventParams();
-        if (params.containsKey(Constants.EventDataProperties.SESSION_ID) &&
-                params.get(Constants.EventDataProperties.SESSION_ID) != null) {
-            return params.get(Constants.EventDataProperties.SESSION_ID).toString();
-        }
-        return eventData.getAuthenticationContext().getSessionIdentifier();
-    }
-
     private List<Session> getSessions(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> params = eventData.getEventParams();
@@ -209,10 +199,14 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         List<Session> sessions = new ArrayList<>();
         List<Application> applications = new ArrayList<>();
         userSession.getApplications().forEach(app -> {
-            Application application = new Application(app.getAppName(), app.getAppId());
+            Application application = new Application(app.getAppId(), app.getAppName());
             applications.add(application);
         });
-        Session sessionModel = new Session(userSession.getSessionId(), applications);
+        Session sessionModel = new Session.Builder()
+                .id(userSession.getSessionId())
+                .loginTime(userSession.getLoginTime() != null ? new Date(Long.parseLong(userSession.getLoginTime())) :
+                        null)
+                .applications(applications).build();
         sessions.add(sessionModel);
         return sessions;
     }
