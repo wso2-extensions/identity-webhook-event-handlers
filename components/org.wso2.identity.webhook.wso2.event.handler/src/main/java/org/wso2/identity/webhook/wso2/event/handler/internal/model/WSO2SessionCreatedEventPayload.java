@@ -20,22 +20,17 @@ package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Session;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
 public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
 
-    private String sessionId;
-    private String currentAcr;
+    private Session session;
 
-    public String getSessionId() {
+    public Session getSession() {
 
-        return sessionId;
-    }
-
-    public String getCurrentAcr() {
-
-        return currentAcr;
+        return session;
     }
 
     private WSO2SessionCreatedEventPayload(Builder builder) {
@@ -45,8 +40,7 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         this.organization = builder.organization;
         this.userStore = builder.userStore;
         this.application = builder.application;
-        this.sessionId = builder.sessionId;
-        this.currentAcr = builder.currentAcr;
+        this.session = builder.session;
     }
 
     private WSO2SessionCreatedEventPayload() {
@@ -55,25 +49,12 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
 
     public static class Builder {
 
-        private String sessionId;
-        private String currentAcr;
         private User user;
         private Organization tenant;
         private Organization organization;
         private UserStore userStore;
         private Application application;
-
-        public Builder sessionId(String sessionId) {
-
-            this.sessionId = sessionId;
-            return this;
-        }
-
-        public Builder currentAcr(String currentAcr) {
-
-            this.currentAcr = currentAcr;
-            return this;
-        }
+        private Session session;
 
         public Builder user(User user) {
 
@@ -102,6 +83,12 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         public Builder application(Application application) {
 
             this.application = application;
+            return this;
+        }
+
+        public Builder session(Session session) {
+
+            this.session = session;
             return this;
         }
 

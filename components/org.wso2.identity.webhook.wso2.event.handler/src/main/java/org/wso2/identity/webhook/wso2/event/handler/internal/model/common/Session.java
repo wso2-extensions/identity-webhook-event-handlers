@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.internal.model.common;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,22 +26,57 @@ import java.util.List;
  */
 public class Session {
 
-    private final String sessionId;
+    private final String id;
+    private final Date loginTime;
     private final List<Application> applications;
 
-    public Session(String sessionId, List<Application> applications) {
+    private Session(Builder builder) {
 
-        this.sessionId = sessionId;
-        this.applications = applications;
+        this.id = builder.id;
+        this.loginTime = builder.loginTime;
+        this.applications = builder.applications;
     }
 
-    public String getSessionId() {
+    public String getId() {
+        return id;
+    }
 
-        return sessionId;
+    public Date getLoginTime() {
+
+        return loginTime;
     }
 
     public List<Application> getApplications() {
-
         return applications;
+    }
+
+    public static class Builder {
+
+        private String id;
+        private Date loginTime;
+        private List<Application> applications;
+
+        public Builder id(String id) {
+
+            this.id = id;
+            return this;
+        }
+
+        public Builder loginTime(Date loginTime) {
+
+            this.loginTime = loginTime;
+            return this;
+        }
+
+        public Builder applications(List<Application> applications) {
+
+            this.applications = applications;
+            return this;
+        }
+
+        public Session build() {
+
+            return new Session(this);
+        }
     }
 }

@@ -27,6 +27,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.carbon.identity.application.authentication.framework.UserSessionManagementService;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.ExternalIdPConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
@@ -102,6 +103,9 @@ public class WSO2SessionEventPayloadBuilderTest {
     @Mock
     private ClaimMetadataManagementService claimMetadataManagementService;
 
+    @Mock
+    private UserSessionManagementService userSessionManagementService;
+
     private MockedStatic<FrameworkUtils> frameworkUtilsMockedStatic;
 
     @BeforeClass
@@ -110,6 +114,7 @@ public class WSO2SessionEventPayloadBuilderTest {
         MockitoAnnotations.openMocks(this);
         WSO2EventHookHandlerDataHolder.getInstance().setOrganizationManager(mockOrganizationManager);
         WSO2EventHookHandlerDataHolder.getInstance().setClaimMetadataManagementService(claimMetadataManagementService);
+        WSO2EventHookHandlerDataHolder.getInstance().setUserSessionManagementService(userSessionManagementService);
 
         mockAuthenticationContext = createMockAuthenticationContext();
         mockAuthenticatedUser = createMockAuthenticatedUser();
