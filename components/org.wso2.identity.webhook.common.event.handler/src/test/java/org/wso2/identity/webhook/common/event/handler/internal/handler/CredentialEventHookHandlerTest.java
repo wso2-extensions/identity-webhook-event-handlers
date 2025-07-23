@@ -189,10 +189,10 @@ public class CredentialEventHookHandlerTest {
 
                 // Mock EventData to return correct tenant domain
                 EventData eventData = mock(EventData.class);
-                HashMap<String, Object> params = new HashMap<>();
-                params.put(org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.TENANT_DOMAIN,
+                HashMap<String, Object> properties = new HashMap<>();
+                properties.put(org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.TENANT_DOMAIN,
                         CARBON_SUPER);
-                when(eventData.getEventParams()).thenReturn(params);
+                when(eventData.getProperties()).thenReturn(properties);
                 utilsMocked.when(() -> EventHookHandlerUtils.buildEventDataProvider(any(Event.class)))
                         .thenReturn(eventData);
 

@@ -114,7 +114,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
                         PayloadBuilderFactory.getCredentialEventPayloadBuilder(schema);
 
                 String tenantDomain = String.valueOf(
-                        eventData.getEventParams().get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+                        eventData.getProperties().get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
                 if (payloadBuilder == null) {
                     log.debug("Skipping credential change event handling for profile " + eventProfile.getProfile());

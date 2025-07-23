@@ -591,14 +591,14 @@ public class WSO2PayloadUtils {
     public static void enrichMandatoryUserClaims(EventData eventData, String tenantDomain, User user) {
 
         List<UserClaim> userClaims = new ArrayList<>();
-        String userName = (String) eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME);
+        String userName = (String) eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_NAME);
         Optional<UserClaim>
                 userNameOptional = generateUserClaim(USERNAME_CLAIM, userName,
                 tenantDomain);
         userNameOptional.ifPresent(userClaims::add);
 
-        if (eventData.getEventParams().get("EMAIL_ADDRESS") != null) {
-            String emailAddress = (String) eventData.getEventParams().get("EMAIL_ADDRESS");
+        if (eventData.getProperties().get("EMAIL_ADDRESS") != null) {
+            String emailAddress = (String) eventData.getProperties().get("EMAIL_ADDRESS");
             Optional<UserClaim> emailAddressOptional =
                     generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
                             tenantDomain);

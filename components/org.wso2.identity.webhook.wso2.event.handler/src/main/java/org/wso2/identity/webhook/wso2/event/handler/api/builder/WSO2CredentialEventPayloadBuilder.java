@@ -45,7 +45,7 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
     @Override
     public EventPayload buildCredentialUpdateEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
         String tenantId = String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain));
         String userName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_NAME));

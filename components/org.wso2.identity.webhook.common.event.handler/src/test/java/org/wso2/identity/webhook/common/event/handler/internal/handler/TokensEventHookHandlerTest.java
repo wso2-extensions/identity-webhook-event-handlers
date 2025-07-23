@@ -166,7 +166,7 @@ public class TokensEventHookHandlerTest {
                 SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
 
                 // Set up eventDataProvider to return the correct tenant domain
-                when(eventDataProvider.getEventParams()).thenReturn(
+                when(eventDataProvider.getProperties()).thenReturn(
                         new HashMap<String, Object>() {{
                             put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, CARBON_SUPER);
                         }}

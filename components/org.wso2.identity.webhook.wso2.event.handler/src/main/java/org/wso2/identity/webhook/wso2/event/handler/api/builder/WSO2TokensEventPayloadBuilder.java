@@ -46,7 +46,7 @@ public class WSO2TokensEventPayloadBuilder implements TokensEventPayloadBuilder 
     @Override
     public EventPayload buildAccessTokenIssueEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantDomain = eventData.getTenantDomain();
 
         String userStoreDomainName = WSO2PayloadUtils.resolveUserStoreDomain(properties);

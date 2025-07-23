@@ -50,7 +50,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
     @Override
     public EventPayload buildRegistrationSuccessEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
         String userStoreDomainName = WSO2PayloadUtils.resolveUserStoreDomain(properties);
@@ -116,7 +116,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
     @Override
     public EventPayload buildRegistrationFailureEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 

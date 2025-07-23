@@ -61,7 +61,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     @Override
     public EventPayload buildUserGroupUpdateEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
         String tenantDomain = eventData.getTenantDomain();
 
@@ -92,7 +92,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     @Override
     public EventPayload buildUserDeleteEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantDomain = eventData.getTenantDomain();
         String tenantId = String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain));
 
@@ -105,13 +105,13 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         List<UserClaim> userClaims = new ArrayList<>();
 
         String userName =
-                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
+                String.valueOf(eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_NAME));
         Optional<UserClaim> userNameOptional = WSO2PayloadUtils.generateUserClaim(FrameworkConstants.USERNAME_CLAIM, userName,
                 tenantDomain);
         userNameOptional.ifPresent(userClaims::add);
 
-        if (eventData.getEventParams().get("EMAIL_ADDRESS") != null) {
-            String emailAddress = String.valueOf(eventData.getEventParams().get("EMAIL_ADDRESS"));
+        if (eventData.getProperties().get("EMAIL_ADDRESS") != null) {
+            String emailAddress = String.valueOf(eventData.getProperties().get("EMAIL_ADDRESS"));
             Optional<UserClaim> emailAddressOptional =
                     WSO2PayloadUtils.generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
                             tenantDomain);
@@ -154,7 +154,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
     private EventPayload buildUserAccountEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantDomain = eventData.getTenantDomain();
         String tenantId = String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain));
 
@@ -165,7 +165,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         UserStore userStore = new UserStore(userStoreDomainName);
 
         String userName =
-                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
+                String.valueOf(eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_NAME));
 
         User user = new User();
         enrichUser(userStoreManager, userName, user, tenantDomain);
@@ -188,15 +188,15 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
     private EventPayload buildUserEnableEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
         String userStoreDomainName =
-                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
+                String.valueOf(eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
         UserStore userStore = new UserStore(userStoreDomainName);
 
-        String userId = String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_ID));
+        String userId = String.valueOf(eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_ID));
         User user = new User();
         user.setId(userId);
 
@@ -206,7 +206,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
         }
         String userName =
-                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
+                String.valueOf(eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_NAME));
         enrichUser(userStoreManager, userName, user, tenantDomain);
 
         user.setRef(
@@ -236,7 +236,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     @Override
     public EventPayload buildUserProfileUpdateEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
         String userStoreDomainName =
@@ -298,7 +298,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     @Override
     public EventPayload buildUserCreatedEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
         String userStoreDomainName = WSO2PayloadUtils.resolveUserStoreDomain(properties);

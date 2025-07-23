@@ -47,6 +47,7 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -92,6 +93,7 @@ public class EventHookHandlerUtils {
                 .eventName(event.getEventName())
                 .request(request)
                 .eventParams(params)
+                .properties(properties)
                 .authenticationContext(context)
                 .authenticatorStatus(status)
                 .authenticatedUser(authenticatedUser)
@@ -287,7 +289,7 @@ public class EventHookHandlerUtils {
         //  Introduce a separate method to return all properties if event specific properties needs to be handled.
 
         return properties.containsKey(Constants.EventDataProperties.PARAMS) ?
-                (Map<String, Object>) properties.get(Constants.EventDataProperties.PARAMS) : properties;
+                (Map<String, Object>) properties.get(Constants.EventDataProperties.PARAMS) : Collections.emptyMap();
     }
 
     private static AuthenticationContext extractAuthenticationContext(Map<String, Object> properties) {

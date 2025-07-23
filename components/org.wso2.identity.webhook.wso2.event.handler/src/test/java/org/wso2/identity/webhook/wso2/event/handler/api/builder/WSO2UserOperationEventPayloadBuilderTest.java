@@ -161,18 +161,18 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
-        Map<String, Object> params = new HashMap<>();
-        params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
-        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        params.put(USER_STORE_MANAGER, userStoreManager);
-        params.put(IdentityEventConstants.EventProperty.ROLE_NAME, ROLE_NAME);
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
+        properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.ROLE_NAME, ROLE_NAME);
 
         String[] addedUsers = new String[]{DOMAIN_QUALIFIED_ADDED_USER_NAME};
-        params.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
+        properties.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
         String[] deletedUsers = new String[]{DOMAIN_QUALIFIED_DELETED_USER_NAME};
-        params.put(IdentityEventConstants.EventProperty.DELETED_USERS, deletedUsers);
+        properties.put(IdentityEventConstants.EventProperty.DELETED_USERS, deletedUsers);
 
-        when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getProperties()).thenReturn(properties);
         when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
 
         when(userStoreManager.getRealmConfiguration()).thenReturn(realmConfiguration);
@@ -246,13 +246,13 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
-        Map<String, Object> params = new HashMap<>();
-        params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
-        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        params.put(USER_STORE_MANAGER, userStoreManager);
-        params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_DELETED_USER_NAME);
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
+        properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_DELETED_USER_NAME);
 
-        when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getProperties()).thenReturn(properties);
         when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_DELETED_USER_NAME),
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any()))
@@ -284,13 +284,13 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     @Test
     public void testBuildUserUnlockAccountEvent() throws IdentityEventException, UserStoreException {
 
-        Map<String, Object> params = new HashMap<>();
-        params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
-        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        params.put(USER_STORE_MANAGER, userStoreManager);
-        params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
+        properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
-        when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getProperties()).thenReturn(properties);
         when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
 
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
@@ -330,13 +330,13 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     @Test
     public void testBuildUserLockAccountEvent() throws IdentityEventException, UserStoreException {
 
-        Map<String, Object> params = new HashMap<>();
-        params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
-        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        params.put(USER_STORE_MANAGER, userStoreManager);
-        params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
+        properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
-        when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getProperties()).thenReturn(properties);
         when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
 
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
@@ -391,15 +391,15 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     @Test
     public void testBuildUserAccountEnableEvent() throws UserStoreException, IdentityEventException {
 
-        Map<String, Object> params = new HashMap<>();
-        params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
-        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        params.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT);
-        params.put(IdentityEventConstants.EventProperty.USER_ID, TEST_USER_ID);
-        params.put(USER_STORE_MANAGER, userStoreManager);
-        params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
+        properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT);
+        properties.put(IdentityEventConstants.EventProperty.USER_ID, TEST_USER_ID);
+        properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
-        when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getProperties()).thenReturn(properties);
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
 
@@ -429,15 +429,15 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     @Test
     public void testBuildUserAccountDisableEvent() throws IdentityEventException, UserStoreException {
 
-        Map<String, Object> params = new HashMap<>();
-        params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
-        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        params.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT);
-        params.put(IdentityEventConstants.EventProperty.USER_ID, TEST_USER_ID);
-        params.put(USER_STORE_MANAGER, userStoreManager);
-        params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
+        properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT);
+        properties.put(IdentityEventConstants.EventProperty.USER_ID, TEST_USER_ID);
+        properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
-        when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getProperties()).thenReturn(properties);
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
 
@@ -467,11 +467,11 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     @Test
     public void testBuildUserCreatedEvent() throws IdentityEventException {
 
-        Map<String, Object> params = new HashMap<>();
-        params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
-        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        params.put(USER_STORE_MANAGER, userStoreManager);
-        params.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
+        properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
         Map<String, String> claims = new HashMap<>();
         claims.put(FrameworkConstants.EMAIL_ADDRESS_CLAIM, TEST_USER_EMAIL);
@@ -479,9 +479,9 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         claims.put(FIRST_NAME_CLAIM_URI, FIRST_NAME);
         claims.put(LAST_NAME_CLAIM_URI, LAST_NAME);
 
-        params.put(IdentityEventConstants.EventProperty.USER_CLAIMS, claims);
+        properties.put(IdentityEventConstants.EventProperty.USER_CLAIMS, claims);
 
-        when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getProperties()).thenReturn(properties);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
                 .name(Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD)
