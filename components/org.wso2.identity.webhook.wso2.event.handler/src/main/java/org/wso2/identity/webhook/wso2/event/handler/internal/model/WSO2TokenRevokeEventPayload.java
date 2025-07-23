@@ -1,18 +1,20 @@
 package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 
-import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.AccessTokenId;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.AccessToken;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
+import java.util.List;
+
 public class WSO2TokenRevokeEventPayload extends WSO2BaseEventPayload {
 
-    private AccessTokenId accessTokenId;
+    private List<AccessToken> accessTokens;
 
-    public AccessTokenId getAccessTokenId() {
+    public List<AccessToken> getAccessTokens() {
 
-        return accessTokenId;
+        return accessTokens;
     }
 
     private WSO2TokenRevokeEventPayload(Builder builder) {
@@ -21,7 +23,7 @@ public class WSO2TokenRevokeEventPayload extends WSO2BaseEventPayload {
         this.tenant = builder.tenant;
         this.userStore = builder.userStore;
         this.user = builder.user;
-        this.accessTokenId = builder.accessTokenId;
+        this.accessTokens = builder.accessTokens;
         this.application = builder.application;
     }
 
@@ -31,7 +33,7 @@ public class WSO2TokenRevokeEventPayload extends WSO2BaseEventPayload {
         private Organization tenant;
         private UserStore userStore;
         private User user;
-        private AccessTokenId accessTokenId;
+        private List<AccessToken> accessTokens;
         private Application application;
 
         public Builder initiatorType(String initiatorType) {
@@ -58,9 +60,9 @@ public class WSO2TokenRevokeEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public Builder accessTokenId(AccessTokenId accessTokenId) {
+        public Builder accessTokens(List<AccessToken> accessTokens) {
 
-            this.accessTokenId = accessTokenId;
+            this.accessTokens = accessTokens;
             return this;
         }
 

@@ -45,6 +45,7 @@ import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
@@ -66,6 +67,7 @@ import static org.wso2.carbon.identity.organization.management.service.constant.
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CREDENTIAL_CHANGE_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.LOGIN_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.TOKEN_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.LOGIN_FAILURE_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.LOGIN_SUCCESS_EVENT;
@@ -83,6 +85,8 @@ import static org.wso2.identity.webhook.common.event.handler.api.constants.Const
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_EXTENDED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_REVOKED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_UPDATED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.TOKEN_ISSUED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.TOKEN_REVOKED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.CREATED_CLAIM;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.EMAIL_CLAIM_URI;
@@ -366,6 +370,12 @@ public class WSO2PayloadUtils {
                  */
                 channel = USER_OPERATION_CHANNEL;
                 event = POST_USER_CREATED_EVENT;
+            } else if (IdentityEventConstants.Event.TOKEN_ISSUED.equals(eventName)) {
+                channel = TOKEN_CHANNEL;
+                event = TOKEN_ISSUED_EVENT;
+            } else if (IdentityEventConstants.Event.TOKEN_REVOKED.equals(eventName)) {
+                channel = TOKEN_CHANNEL;
+                event = TOKEN_REVOKED_EVENT;
             }
         }
         return EventMetadata.builder()
@@ -569,5 +579,24 @@ public class WSO2PayloadUtils {
             log.debug("Error occurred while building the tenant qualified URL.", e);
         }
         return null;
+    }
+
+    public static void enrichMandatoryUserClaims(EventData eventData, String tenantDomain, User user) {
+
+        List<UserClaim> userClaims = new ArrayList<>();
+        String userName = (String) eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME);
+        Optional<UserClaim>
+                userNameOptional = generateUserClaim(USERNAME_CLAIM, userName,
+                tenantDomain);
+        userNameOptional.ifPresent(userClaims::add);
+
+        if (eventData.getEventParams().get("EMAIL_ADDRESS") != null) {
+            String emailAddress =  (String) eventData.getEventParams().get("EMAIL_ADDRESS");
+            Optional<UserClaim> emailAddressOptional =
+                    generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
+                            tenantDomain);
+            emailAddressOptional.ifPresent(userClaims::add);
+        }
+        user.setClaims(userClaims);
     }
 }

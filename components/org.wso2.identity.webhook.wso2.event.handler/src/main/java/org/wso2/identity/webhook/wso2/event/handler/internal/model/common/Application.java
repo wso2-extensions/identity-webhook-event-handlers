@@ -25,6 +25,7 @@ public class Application {
 
     private String id;
     private String name;
+    private String consumerKey;
 
     public Application(String id, String name) {
 
@@ -50,5 +51,15 @@ public class Application {
     public void setName(String name) {
 
         this.name = name;
+    }
+
+    public String getConsumerKey() {
+
+        return consumerKey;
+    }
+
+    public void setConsumerKey(String consumerKey) {
+
+        this.consumerKey = consumerKey;
     }
 }

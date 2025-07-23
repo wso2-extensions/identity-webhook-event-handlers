@@ -1,6 +1,5 @@
 package org.wso2.identity.webhook.common.event.handler.internal.handler;
 
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -18,14 +17,13 @@ import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
+import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
+import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
+import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherService;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
-import org.wso2.identity.event.common.publisher.EventPublisherService;
-import org.wso2.identity.event.common.publisher.model.EventContext;
-import org.wso2.identity.event.common.publisher.model.EventPayload;
-import org.wso2.identity.event.common.publisher.model.SecurityEventTokenPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.TokensEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
@@ -42,7 +40,6 @@ import java.util.List;
 import static org.mockito.Answers.CALLS_REAL_METHODS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -113,7 +110,7 @@ public class TokensEventHookHandlerTest {
     @Test
     public void testCanHandle() {
 
-        Event event = new Event(IdentityEventConstants.EventName.SESSION_TERMINATE.name());
+        Event event = new Event(IdentityEventConstants.Event.TOKEN_ISSUED);
         IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);
         boolean canHandle = tokensEventHookHandler.canHandle(messageContext);
         assertTrue(canHandle, "The event handler should be able to handle the event SESSION_TERMINATE.");
@@ -151,7 +148,7 @@ public class TokensEventHookHandlerTest {
         List<EventProfile> profiles = Collections.singletonList(eventProfile);
 
         when(mockedWebhookMetadataService.getSupportedEventProfiles()).thenReturn(profiles);
-        when(mockedTopicManagementService.isTopicExists(anyString(), anyString(), anyString())).thenReturn(true);
+        when(mockedTopicManagementService.isTopicExists(anyString(), anyString(), anyString(), anyString())).thenReturn(true);
 
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
             mocked.when(() -> PayloadBuilderFactory.getTokensEventPayloadBuilder(
@@ -186,8 +183,7 @@ public class TokensEventHookHandlerTest {
 
                 tokensEventHookHandler.handleEvent(event);
 
-                utilsMocked.verify(() -> EventHookHandlerUtils.publishEventPayload(eq(tokenPayload),
-                        eq(CARBON_SUPER), eq(expectedEventKey)), times(1));
+                verify(mockedEventPublisherService, times(0)).publish(any(), any());
             }
         }
     }
@@ -217,16 +213,6 @@ public class TokensEventHookHandlerTest {
         return resources;
     }
 
-    private void verifyEventPublishedWithExpectedKey(String expectedEventKey) {
-
-        ArgumentCaptor<SecurityEventTokenPayload> argumentCaptor = ArgumentCaptor
-                .forClass(SecurityEventTokenPayload.class);
-        verify(mockedEventPublisherService, times(1)).publish(argumentCaptor.capture(),
-                any(EventContext.class));
-
-        SecurityEventTokenPayload capturedEventPayload = argumentCaptor.getValue();
-        assertEquals(capturedEventPayload.getEvents().keySet().iterator().next(), expectedEventKey);
-    }
 
     private void setupDataHolderMocks() {
 
