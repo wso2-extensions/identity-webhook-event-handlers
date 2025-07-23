@@ -67,18 +67,18 @@ public class WSO2TokensEventPayloadBuilder implements TokensEventPayloadBuilder 
         }
 
         String applicationId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.APPLICATION_ID));
-        String applicationName =  (String) properties.get(IdentityEventConstants.EventProperty.APPLICATION_NAME);
-        String consumerKey =  (String) properties.get("CONSUMER_KEY");
+        String applicationName = (String) properties.get(IdentityEventConstants.EventProperty.APPLICATION_NAME);
+        String consumerKey = (String) properties.get("CONSUMER_KEY");
 
-        Application application =null;
+        Application application = null;
         if (StringUtils.isNotBlank(applicationId)) {
             application = new Application(applicationId, applicationName);
             application.setConsumerKey(consumerKey);
         }
 
         String iat = String.valueOf(properties.get("IAT"));
-        String tokenType =  (String) properties.get("TOKEN_TYPE");
-        String grantType =  (String) properties.get("GRANT_TYPE");
+        String tokenType = (String) properties.get("TOKEN_TYPE");
+        String grantType = (String) properties.get("GRANT_TYPE");
 
         AccessToken accessToken = null;
         if (StringUtils.isNotBlank(iat) && StringUtils.isNotBlank(tokenType)) {

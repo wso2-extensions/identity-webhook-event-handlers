@@ -581,6 +581,13 @@ public class WSO2PayloadUtils {
         return null;
     }
 
+    /**
+     * Enriches the mandatory user claims for the user based on the event data.
+     *
+     * @param eventData The event data containing user information.
+     * @param tenantDomain The tenant domain of the user.
+     * @param user The user object to be enriched with claims.
+     */
     public static void enrichMandatoryUserClaims(EventData eventData, String tenantDomain, User user) {
 
         List<UserClaim> userClaims = new ArrayList<>();
@@ -591,7 +598,7 @@ public class WSO2PayloadUtils {
         userNameOptional.ifPresent(userClaims::add);
 
         if (eventData.getEventParams().get("EMAIL_ADDRESS") != null) {
-            String emailAddress =  (String) eventData.getEventParams().get("EMAIL_ADDRESS");
+            String emailAddress = (String) eventData.getEventParams().get("EMAIL_ADDRESS");
             Optional<UserClaim> emailAddressOptional =
                     generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
                             tenantDomain);

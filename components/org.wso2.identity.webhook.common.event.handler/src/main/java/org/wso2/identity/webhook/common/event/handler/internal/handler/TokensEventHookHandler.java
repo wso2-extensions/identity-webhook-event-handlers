@@ -101,13 +101,15 @@ public class TokensEventHookHandler extends AbstractEventHandler {
                 boolean publisherCanHandleEvent = EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                         .canHandleEvent(eventContext);
 
-                if ((IdentityEventConstants.Event.TOKEN_REVOKED.equals(event.getEventName())) && publisherCanHandleEvent) {
+                if ((IdentityEventConstants.Event.TOKEN_REVOKED.equals(event.getEventName())) &&
+                        publisherCanHandleEvent) {
                     eventPayload = payloadBuilder.buildAccessTokenRevokeEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload =
                             EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
                     EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                             .publish(securityEventTokenPayload, eventContext);
-                } else if (IdentityEventConstants.Event.TOKEN_ISSUED.equals(event.getEventName()) && publisherCanHandleEvent) {
+                } else if (IdentityEventConstants.Event.TOKEN_ISSUED.equals(event.getEventName()) &&
+                        publisherCanHandleEvent) {
                     eventPayload = payloadBuilder.buildAccessTokenIssueEvent(eventData);
                     SecurityEventTokenPayload securityEventTokenPayload =
                             EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
@@ -144,6 +146,6 @@ public class TokensEventHookHandler extends AbstractEventHandler {
     private boolean isSupportedEvent(String eventName) {
 
         return IdentityEventConstants.Event.TOKEN_REVOKED.equals(eventName) ||
-               IdentityEventConstants.Event.TOKEN_ISSUED.equals(eventName);
+                IdentityEventConstants.Event.TOKEN_ISSUED.equals(eventName);
     }
 }

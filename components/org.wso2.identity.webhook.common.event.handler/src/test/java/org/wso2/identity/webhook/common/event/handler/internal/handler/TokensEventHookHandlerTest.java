@@ -148,7 +148,8 @@ public class TokensEventHookHandlerTest {
         List<EventProfile> profiles = Collections.singletonList(eventProfile);
 
         when(mockedWebhookMetadataService.getSupportedEventProfiles()).thenReturn(profiles);
-        when(mockedTopicManagementService.isTopicExists(anyString(), anyString(), anyString(), anyString())).thenReturn(true);
+        when(mockedTopicManagementService.isTopicExists(anyString(), anyString(), anyString(), anyString())).thenReturn(
+                true);
 
         try (MockedStatic<PayloadBuilderFactory> mocked = mockStatic(PayloadBuilderFactory.class)) {
             mocked.when(() -> PayloadBuilderFactory.getTokensEventPayloadBuilder(
@@ -212,7 +213,6 @@ public class TokensEventHookHandlerTest {
         resources.setResources(resourceList);
         return resources;
     }
-
 
     private void setupDataHolderMocks() {
 

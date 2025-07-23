@@ -15,6 +15,7 @@ public interface TokensEventPayloadBuilder {
     Constants.EventSchema getEventSchemaType();
 
     EventPayload buildAccessTokenRevokeEvent(EventData eventData) throws IdentityEventException;
+
     EventPayload buildAccessTokenIssueEvent(EventData eventData) throws IdentityEventException;
 
 }
