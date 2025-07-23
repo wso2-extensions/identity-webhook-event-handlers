@@ -79,10 +79,11 @@ public class WSO2TokensEventPayloadBuilder implements TokensEventPayloadBuilder 
         String iat = String.valueOf(properties.get("IAT"));
         String tokenType = (String) properties.get("TOKEN_TYPE");
         String grantType = (String) properties.get("GRANT_TYPE");
+        String jti = (String) properties.get("JTI");
 
         AccessToken accessToken = null;
         if (StringUtils.isNotBlank(iat) && StringUtils.isNotBlank(tokenType)) {
-            accessToken = new AccessToken(iat, tokenType);
+            accessToken = new AccessToken(iat, jti, tokenType);
             accessToken.setGrantType(grantType);
         }
 
