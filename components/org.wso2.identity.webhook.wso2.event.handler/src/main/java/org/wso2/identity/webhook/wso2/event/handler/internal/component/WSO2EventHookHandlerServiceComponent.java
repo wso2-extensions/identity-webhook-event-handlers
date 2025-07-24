@@ -36,14 +36,14 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEven
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.builder.TokensEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.WSO2EventProfileManager;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2SessionEventPayloadBuilder;
-import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2TokensEventPayloadBuilder;
+import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2UserOperationEventPayloadBuilder;
 
 /**
@@ -75,8 +75,8 @@ public class WSO2EventHookHandlerServiceComponent {
                     new WSO2CredentialEventPayloadBuilder(), null);
             context.getBundleContext().registerService(RegistrationEventPayloadBuilder.class.getName(),
                     new WSO2RegistrationEventPayloadBuilder(), null);
-            context.getBundleContext().registerService(TokensEventPayloadBuilder.class.getName(),
-                    new WSO2TokensEventPayloadBuilder(), null);
+            context.getBundleContext().registerService(TokenEventPayloadBuilder.class.getName(),
+                    new WSO2TokenEventPayloadBuilder(), null);
         } catch (Exception e) {
             log.error("Error while activating event handler.", e);
         }

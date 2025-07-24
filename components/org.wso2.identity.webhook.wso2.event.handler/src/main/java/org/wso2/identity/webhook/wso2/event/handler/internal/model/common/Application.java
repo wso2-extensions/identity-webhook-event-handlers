@@ -27,20 +27,9 @@ public class Application {
     private String name;
     private String consumerKey;
 
-    public Application(String id, String name) {
-
-        this.id = id;
-        this.name = name;
-    }
-
     public String getId() {
 
         return id;
-    }
-
-    public void setId(String id) {
-
-        this.id = id;
     }
 
     public String getName() {
@@ -48,18 +37,45 @@ public class Application {
         return name;
     }
 
-    public void setName(String name) {
-
-        this.name = name;
-    }
-
     public String getConsumerKey() {
 
         return consumerKey;
     }
 
-    public void setConsumerKey(String consumerKey) {
+    private Application(Builder builder) {
 
-        this.consumerKey = consumerKey;
+        this.id = builder.id;
+        this.name = builder.name;
+        this.consumerKey = builder.consumerKey;
+    }
+
+    public static class Builder {
+
+        private String id;
+        private String name;
+        private String consumerKey;
+
+        public Builder id(String id) {
+
+            this.id = id;
+            return this;
+        }
+
+        public Builder name(String name) {
+
+            this.name = name;
+            return this;
+        }
+
+        public Builder consumerKey(String consumerKey) {
+
+            this.consumerKey = consumerKey;
+            return this;
+        }
+
+        public Application build() {
+
+            return new Application(this);
+        }
     }
 }

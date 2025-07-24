@@ -43,6 +43,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEven
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
@@ -50,7 +51,7 @@ import org.wso2.identity.webhook.common.event.handler.internal.handler.Credentia
 import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.RegistrationEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.SessionEventHookHandler;
-import org.wso2.identity.webhook.common.event.handler.internal.handler.TokensEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.TokenEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.UserOperationEventHookHandler;
 
 /**
@@ -76,9 +77,9 @@ public class EventHookHandlerServiceComponent {
             String isRegistrationEventHandlerEnabled =
                     getIdentityEventProperty(Constants.REGISTRATION_EVENT_HOOK_NAME,
                             Constants.REGISTRATION_EVENT_HOOK_ENABLED);
-            String isTokensEventHandlerEnabled =
-                    getIdentityEventProperty(Constants.TOKENS_EVENT_HOOK_NAME,
-                            Constants.TOKENS_EVENT_HOOK_ENABLED);
+            String isTokenEventHandlerEnabled =
+                    getIdentityEventProperty(Constants.TOKEN_EVENT_HOOK_NAME,
+                            Constants.TOKEN_EVENT_HOOK_ENABLED);
             BundleContext bundleContext = context.getBundleContext();
 
             if (isLoginEventHandlerEnabled != null && isLoginEventHandlerEnabled
@@ -96,10 +97,10 @@ public class EventHookHandlerServiceComponent {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
                         new RegistrationEventHookHandler(), null);
             }
-            if (isTokensEventHandlerEnabled != null && isTokensEventHandlerEnabled
+            if (isTokenEventHandlerEnabled != null && isTokenEventHandlerEnabled
                     .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
-                        new TokensEventHookHandler(), null);
+                        new TokenEventHookHandler(), null);
             }
 
             String isSessionEventHandlerEnabled = getIdentityEventProperty(Constants.SESSION_EVENT_HOOK_NAME,
@@ -192,26 +193,26 @@ public class EventHookHandlerServiceComponent {
     }
 
     @Reference(
-            name = "tokens.event.payload.builder",
-            service = org.wso2.identity.webhook.common.event.handler.api.builder.TokensEventPayloadBuilder.class,
+            name = "token.event.payload.builder",
+            service = TokenEventPayloadBuilder.class,
             cardinality = ReferenceCardinality.MULTIPLE,
             policy = ReferencePolicy.DYNAMIC,
-            unbind = "removeTokensEventPayloadBuilder"
+            unbind = "removeTokenEventPayloadBuilder"
     )
-    protected void addTokensEventPayloadBuilder(
-            org.wso2.identity.webhook.common.event.handler.api.builder.TokensEventPayloadBuilder tokensEventPayloadBuilder) {
+    protected void addTokenEventPayloadBuilder(
+            TokenEventPayloadBuilder tokenEventPayloadBuilder) {
 
-        log.debug("Add Tokens Event Payload Builder service " +
-                tokensEventPayloadBuilder.getEventSchemaType());
-        EventHookHandlerDataHolder.getInstance().addTokensEventPayloadBuilder(tokensEventPayloadBuilder);
+        log.debug("Add Token Event Payload Builder service " +
+                tokenEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().addTokenEventPayloadBuilder(tokenEventPayloadBuilder);
     }
 
-    protected void removeTokensEventPayloadBuilder(
-            org.wso2.identity.webhook.common.event.handler.api.builder.TokensEventPayloadBuilder tokensEventPayloadBuilder) {
+    protected void removeTokenEventPayloadBuilder(
+            TokenEventPayloadBuilder tokenEventPayloadBuilder) {
 
-        log.debug("Remove Tokens Event Payload Builder service " +
-                tokensEventPayloadBuilder.getEventSchemaType());
-        EventHookHandlerDataHolder.getInstance().removeTokensEventPayloadBuilder(tokensEventPayloadBuilder);
+        log.debug("Remove Token Event Payload Builder service " +
+                tokenEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().removeTokenEventPayloadBuilder(tokenEventPayloadBuilder);
     }
 
     @Reference(

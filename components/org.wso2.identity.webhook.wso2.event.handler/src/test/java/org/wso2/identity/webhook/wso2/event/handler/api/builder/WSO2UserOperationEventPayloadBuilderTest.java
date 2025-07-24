@@ -35,10 +35,12 @@ import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
+import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.config.RealmConfiguration;
+import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
@@ -56,12 +58,14 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.FIRST_NAME_CLAIM_URI;
@@ -97,6 +101,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     private static final String DOMAIN_QUALIFIED_DELETED_USER_NAME = "DEFAULT/pearl";
     private static final String DOMAIN_QUALIFIED_TEST_USER_NAME = "DEFAULT/tom";
     private static final String DEFAULT = "DEFAULT";
+    private static final String DEFAULT_USER_STORE = "DEFAULT";
 
     @Mock
     private EventData mockEventData;
@@ -106,6 +111,12 @@ public class WSO2UserOperationEventPayloadBuilderTest {
 
     @Mock
     private AbstractUserStoreManager userStoreManager;
+
+    @Mock
+    private RealmService realmService;
+
+    @Mock
+    private UserRealm userRealm;
 
     @InjectMocks
     private WSO2UserOperationEventPayloadBuilder payloadBuilder;
@@ -135,6 +146,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         threadLocalMap.put(PRE_DELETE_USER_ID, DELETED_USER_ID);
         IdentityUtil.threadLocalProperties.set(threadLocalMap);
         CommonTestUtils.initPrivilegedCarbonContext();
+
+        mockUserStoreManager();
     }
 
     @AfterClass
@@ -154,7 +167,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     }
 
     @Test
-    public void testBuildUserGroupUpdateEvent() throws IdentityEventException, UserStoreException {
+    public void testBuildUserGroupUpdateEvent()
+            throws IdentityEventException, org.wso2.carbon.user.api.UserStoreException {
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
                 .name(Flow.Name.USER_GROUP_UPDATE)
@@ -162,9 +176,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .build());
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT_USER_STORE);
         properties.put(IdentityEventConstants.EventProperty.ROLE_NAME, ROLE_NAME);
 
         String[] addedUsers = new String[]{DOMAIN_QUALIFIED_ADDED_USER_NAME};
@@ -247,9 +260,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .build());
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT_USER_STORE);
         properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_DELETED_USER_NAME);
 
         when(mockEventData.getProperties()).thenReturn(properties);
@@ -285,8 +297,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     public void testBuildUserUnlockAccountEvent() throws IdentityEventException, UserStoreException {
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT);
         properties.put(USER_STORE_MANAGER, userStoreManager);
         properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
@@ -331,9 +343,9 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     public void testBuildUserLockAccountEvent() throws IdentityEventException, UserStoreException {
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT);
         properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
         when(mockEventData.getProperties()).thenReturn(properties);
@@ -392,7 +404,6 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     public void testBuildUserAccountEnableEvent() throws UserStoreException, IdentityEventException {
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT);
         properties.put(IdentityEventConstants.EventProperty.USER_ID, TEST_USER_ID);
@@ -400,6 +411,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
         when(mockEventData.getProperties()).thenReturn(properties);
+        when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
 
@@ -430,7 +442,6 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     public void testBuildUserAccountDisableEvent() throws IdentityEventException, UserStoreException {
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT);
         properties.put(IdentityEventConstants.EventProperty.USER_ID, TEST_USER_ID);
@@ -438,6 +449,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
         when(mockEventData.getProperties()).thenReturn(properties);
+        when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
 
@@ -468,9 +480,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     public void testBuildUserCreatedEvent() throws IdentityEventException {
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT_USER_STORE);
         properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
         Map<String, String> claims = new HashMap<>();
@@ -482,6 +493,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         properties.put(IdentityEventConstants.EventProperty.USER_CLAIMS, claims);
 
         when(mockEventData.getProperties()).thenReturn(properties);
+        when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
                 .name(Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD)
@@ -518,5 +530,13 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertEquals(userClaimsMap.get(LAST_NAME_CLAIM_URI), LAST_NAME);
 
         IdentityContext.destroyCurrentContext();
+    }
+
+    private void mockUserStoreManager() throws org.wso2.carbon.user.api.UserStoreException {
+
+        when(realmService.getTenantUserRealm(anyInt())).thenReturn(userRealm);
+        when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
+
+        WSO2EventHookHandlerDataHolder.getInstance().setRealmService(realmService);
     }
 }

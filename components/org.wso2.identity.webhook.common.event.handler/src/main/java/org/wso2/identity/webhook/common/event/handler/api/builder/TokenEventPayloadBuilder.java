@@ -5,7 +5,7 @@ import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
-public interface TokensEventPayloadBuilder {
+public interface TokenEventPayloadBuilder {
 
     /**
      * Get the event schema type.

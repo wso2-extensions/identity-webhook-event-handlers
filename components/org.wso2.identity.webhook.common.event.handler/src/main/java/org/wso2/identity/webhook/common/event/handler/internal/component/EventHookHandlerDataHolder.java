@@ -28,7 +28,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEven
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.builder.TokensEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 
@@ -53,7 +53,7 @@ public class EventHookHandlerDataHolder {
     private final List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
     private final List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders = new ArrayList<>();
     private final List<RegistrationEventPayloadBuilder> registrationEventPayloadBuilders = new ArrayList<>();
-    private final List<TokensEventPayloadBuilder> tokensEventPayloadBuilders = new ArrayList<>();
+    private final List<TokenEventPayloadBuilder> tokenEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
 
@@ -345,18 +345,18 @@ public class EventHookHandlerDataHolder {
         this.applicationManagementService = applicationManagementService;
     }
 
-    public List<TokensEventPayloadBuilder> getTokensEventPayloadBuilders() {
+    public List<TokenEventPayloadBuilder> getTokenEventPayloadBuilders() {
 
-        return tokensEventPayloadBuilders;
+        return tokenEventPayloadBuilders;
     }
 
-    public void addTokensEventPayloadBuilder(TokensEventPayloadBuilder tokensEventPayloadBuilder) {
+    public void addTokenEventPayloadBuilder(TokenEventPayloadBuilder tokenEventPayloadBuilder) {
 
-        tokensEventPayloadBuilders.add(tokensEventPayloadBuilder);
+        tokenEventPayloadBuilders.add(tokenEventPayloadBuilder);
     }
 
-    public void removeTokensEventPayloadBuilder(TokensEventPayloadBuilder tokensEventPayloadBuilder) {
+    public void removeTokenEventPayloadBuilder(TokenEventPayloadBuilder tokenEventPayloadBuilder) {
 
-        tokensEventPayloadBuilders.remove(tokensEventPayloadBuilder);
+        tokenEventPayloadBuilders.remove(tokenEventPayloadBuilder);
     }
 }

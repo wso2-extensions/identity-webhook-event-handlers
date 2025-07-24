@@ -196,7 +196,7 @@ public class WSO2CredentialEventPayloadBuilderTest {
         assertEquals(userCredentialUpdateEventPayload.getUser().getRef(),
                 constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + DELETED_USER_ID);
         assertNotNull(userCredentialUpdateEventPayload.getUser().getClaims());
-        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().size(), 1);
+        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().size(), 2);
         assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getUri(),
                 FrameworkConstants.EMAIL_ADDRESS_CLAIM);
         assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getValue(), TEST_USER_EMAIL);

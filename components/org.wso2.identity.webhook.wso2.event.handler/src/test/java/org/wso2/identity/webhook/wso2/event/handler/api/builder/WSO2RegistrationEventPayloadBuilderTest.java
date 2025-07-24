@@ -76,7 +76,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     private static final String LAST_NAME = "Hanks";
     private static final String DOMAIN_QUALIFIED_TEST_USER_NAME = "DEFAULT/tom";
     private static final String FAILURE_MESSAGE = "InvalidOperation Invalid operation. User store is read only";
-    public static final String DEFAULT_USER_STORE = "DEFAULT";
+    private static final String DEFAULT_USER_STORE = "DEFAULT";
 
     @Mock
     private EventData mockEventData;
@@ -134,9 +134,8 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     public void testBuildRegistrationSuccessEvent() throws IdentityEventException {
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        properties.put(USER_STORE_MANAGER, userStoreManager);
+        properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT_USER_STORE);
         properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
         Map<String, String> claims = new HashMap<>();
@@ -212,11 +211,9 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     public void testBuildRegistrationFailureEvent() throws IdentityEventException {
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
         properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         properties.put(IdentityEventConstants.EventProperty.ERROR_MESSAGE, FAILURE_MESSAGE);
         properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, DEFAULT_USER_STORE);
-        properties.put(USER_STORE_MANAGER, userStoreManager);
         properties.put(IdentityEventConstants.EventProperty.USER_NAME, DOMAIN_QUALIFIED_TEST_USER_NAME);
 
         Map<String, String> claims = new HashMap<>();
@@ -228,6 +225,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         properties.put(IdentityEventConstants.EventProperty.USER_CLAIMS, claims);
 
         when(mockEventData.getProperties()).thenReturn(properties);
+        when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
                 .name(Flow.Name.USER_REGISTRATION)

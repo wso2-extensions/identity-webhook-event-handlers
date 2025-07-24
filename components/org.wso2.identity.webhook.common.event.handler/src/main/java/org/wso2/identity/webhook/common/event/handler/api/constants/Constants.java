@@ -75,7 +75,7 @@ public class Constants {
         public static final String SESSION_EXTENDED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionExtended";
         public static final String SESSION_PRESENTED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionPresented";
         public static final String TOKEN_ISSUED_EVENT = "https://schemas.identity.wso2.org/events/token/event-type/accessTokenIssued";
-        public static final String TOKEN_REVOKED_EVENT = "https://schemas.identity.wso2.org/events/token/event-type/accessTokensRevoked";
+        public static final String TOKEN_REVOKED_EVENT = "https://schemas.identity.wso2.org/events/token/event-type/accessTokenRevoked";
         public static final String VERIFICATION_EVENT = "https://schemas.identity.wso2.org/events/user/event-type/verification";
     }
 }

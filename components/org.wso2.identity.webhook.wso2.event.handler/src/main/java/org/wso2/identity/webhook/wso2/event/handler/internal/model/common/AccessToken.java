@@ -25,27 +25,9 @@ public class AccessToken {
     private String jti;
     private String grantType;
 
-    public AccessToken(String tokenType, String jti, String iat) {
-
-        this.tokenType = tokenType;
-        this.jti = jti;
-        this.iat = iat;
-    }
-
-    public AccessToken(String tokenType, String iat) {
-
-        this.tokenType = tokenType;
-        this.iat = iat;
-    }
-
     public String getTokenType() {
 
         return tokenType;
-    }
-
-    public void setTokenType(String tokenType) {
-
-        this.tokenType = tokenType;
     }
 
     public String getIat() {
@@ -53,19 +35,9 @@ public class AccessToken {
         return iat;
     }
 
-    public void setIat(String iat) {
-
-        this.iat = iat;
-    }
-
     public String getJti() {
 
         return jti;
-    }
-
-    public void setJti(String jti) {
-
-        this.jti = jti;
     }
 
     public String getGrantType() {
@@ -73,8 +45,48 @@ public class AccessToken {
         return grantType;
     }
 
-    public void setGrantType(String grantType) {
+    private AccessToken(Builder builder) {
 
-        this.grantType = grantType;
+        this.tokenType = builder.tokenType;
+        this.iat = builder.iat;
+        this.jti = builder.jti;
+        this.grantType = builder.grantType;
+    }
+
+    public static class Builder {
+
+        private String tokenType;
+        private String iat;
+        private String jti;
+        private String grantType;
+
+        public Builder tokenType(String tokenType) {
+
+            this.tokenType = tokenType;
+            return this;
+        }
+
+        public Builder iat(String iat) {
+
+            this.iat = iat;
+            return this;
+        }
+
+        public Builder jti(String jti) {
+
+            this.jti = jti;
+            return this;
+        }
+
+        public Builder grantType(String grantType) {
+
+            this.grantType = grantType;
+            return this;
+        }
+
+        public AccessToken build() {
+
+            return new AccessToken(this);
+        }
     }
 }

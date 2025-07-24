@@ -8,7 +8,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 
 import java.util.List;
 
-public class WSO2TokenRevokeEventPayload extends WSO2BaseEventPayload {
+public class WSO2TokenRevokedEventPayload extends WSO2BaseEventPayload {
 
     private List<AccessToken> accessTokens;
 
@@ -17,7 +17,7 @@ public class WSO2TokenRevokeEventPayload extends WSO2BaseEventPayload {
         return accessTokens;
     }
 
-    private WSO2TokenRevokeEventPayload(Builder builder) {
+    private WSO2TokenRevokedEventPayload(Builder builder) {
 
         this.initiatorType = builder.initiatorType;
         this.tenant = builder.tenant;
@@ -72,9 +72,9 @@ public class WSO2TokenRevokeEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public WSO2TokenRevokeEventPayload build() {
+        public WSO2TokenRevokedEventPayload build() {
 
-            return new WSO2TokenRevokeEventPayload(this);
+            return new WSO2TokenRevokedEventPayload(this);
         }
     }
 }

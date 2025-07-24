@@ -51,31 +51,19 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
     public EventPayload buildRegistrationSuccessEvent(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> properties = eventData.getProperties();
-        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
-        String userStoreDomainName = WSO2PayloadUtils.resolveUserStoreDomain(properties);
-        UserStore userStore = new UserStore(userStoreDomainName);
+        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+        UserStore userStore = WSO2PayloadUtils.buildUserStore(eventData);
+        Organization tenant = WSO2PayloadUtils.buildTenant(eventData);
 
         User newUser = new User();
         WSO2PayloadUtils.enrichUser(properties, newUser, tenantDomain);
 
         if (StringUtils.isBlank(newUser.getId())) {
-
-            String userName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_NAME));
             // User set password flow for email invitation by admin.
-            newUser = WSO2PayloadUtils.buildUser(userStoreDomainName, userName, tenantDomain);
+            newUser = WSO2PayloadUtils.buildUser(eventData);
         }
 
-        String tenantId = null;
-        if (properties.get(IdentityEventConstants.EventProperty.TENANT_ID) != null) {
-            tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
-        } else {
-            RealmConfiguration realmConfiguration = WSO2PayloadUtils.getRealmConfigurationByTenantDomain(tenantDomain);
-            if (realmConfiguration != null)
-                tenantId = String.valueOf(realmConfiguration.getTenantId());
-        }
-
-        Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         String initiatorType = null;
         String action = null;
@@ -90,7 +78,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                 .initiatorType(initiatorType)
                 .action(action)
                 .user(newUser)
-                .tenant(organization)
+                .tenant(tenant)
                 .userStore(userStore)
                 .build();
     }
@@ -117,20 +105,14 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
     public EventPayload buildRegistrationFailureEvent(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> properties = eventData.getProperties();
-        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
-        String userStoreDomainName = WSO2PayloadUtils.resolveUserStoreDomain(properties);
-        UserStore userStore = null;
-
-        if (StringUtils.isNotBlank(userStoreDomainName)) {
-            userStore = new UserStore(userStoreDomainName);
-        }
+        UserStore userStore = WSO2PayloadUtils.buildUserStore(eventData);
+        Organization tenant = WSO2PayloadUtils.buildTenant(eventData);
 
         User newUser = new User();
         WSO2PayloadUtils.enrichUser(properties, newUser, tenantDomain);
 
-        Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         String initiatorType = null;
         String action = null;
@@ -162,7 +144,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                 .initiatorType(initiatorType)
                 .action(action)
                 .user(newUser)
-                .tenant(organization)
+                .tenant(tenant)
                 .userStore(userStore)
                 .reason(reason)
                 .build();

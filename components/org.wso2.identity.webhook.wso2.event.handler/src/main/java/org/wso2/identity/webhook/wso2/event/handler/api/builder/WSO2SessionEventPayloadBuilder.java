@@ -24,7 +24,6 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.exception.session.mgt.SessionManagementException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
-import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
@@ -55,7 +54,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     public EventPayload buildSessionTerminateEvent(EventData eventData) throws IdentityEventException {
 
         User user = buildUser(eventData);
-        Organization tenant = buildTenant(eventData);
+        Organization tenant = WSO2PayloadUtils.buildTenant(eventData);
         UserStore userStore = buildUserStore(eventData);
         List<Session> sessions = getSessions(eventData);
 
@@ -73,7 +72,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         validateEventData(eventData);
 
         User user = buildUser(eventData);
-        Organization tenant = buildTenant(eventData);
+        Organization tenant = WSO2PayloadUtils.buildTenant(eventData);
         UserStore userStore = buildUserStore(eventData);
         List<Session> sessions = getSessions(eventData);
         Application application = buildApplication(eventData.getAuthenticationContext());
@@ -137,12 +136,6 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         return user;
     }
 
-    private Organization buildTenant(EventData eventData) {
-
-        String tenantDomain = eventData.getTenantDomain();
-        return new Organization(String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain)), tenantDomain);
-    }
-
     private UserStore buildUserStore(EventData eventData) {
 
         AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
@@ -199,7 +192,11 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         List<Session> sessions = new ArrayList<>();
         List<Application> applications = new ArrayList<>();
         userSession.getApplications().forEach(app -> {
-            Application application = new Application(app.getAppId(), app.getAppName());
+            Application application = new Application.Builder()
+                    .id(app.getAppId())
+                    .name(app.getAppName())
+                    .build();
+
             applications.add(application);
         });
         Session sessionModel = new Session.Builder()
@@ -213,8 +210,9 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
 
     private Application buildApplication(AuthenticationContext authenticationContext) {
 
-        return new Application(
-                authenticationContext.getServiceProviderResourceId(),
-                authenticationContext.getServiceProviderName());
+        return new Application.Builder()
+                .id(authenticationContext.getServiceProviderResourceId())
+                .name(authenticationContext.getServiceProviderName())
+                .build();
     }
 }

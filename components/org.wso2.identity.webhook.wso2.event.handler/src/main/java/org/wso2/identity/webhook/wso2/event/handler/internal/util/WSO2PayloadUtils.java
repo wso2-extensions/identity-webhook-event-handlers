@@ -52,6 +52,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +63,6 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.USERNAME_CLAIM;
-import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CREDENTIAL_CHANGE_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.LOGIN_CHANNEL;
@@ -193,7 +193,7 @@ public class WSO2PayloadUtils {
     public static void populateUserIdAndRef(User user, String userId) {
 
         user.setId(userId);
-        user.setRef(constructFullURLWithEndpoint(Constants.SCIM2_USERS_ENDPOINT) + "/" + userId);
+        user.setRef(constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + userId);
     }
 
     private static void handleClaim(User user, String claimUri, String claimValue, String tenantDomain) {
@@ -218,7 +218,7 @@ public class WSO2PayloadUtils {
 
         try {
             user.setId(authenticatedUser.getUserId());
-            user.setRef(constructFullURLWithEndpoint(Constants.SCIM2_USERS_ENDPOINT) +
+            user.setRef(constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) +
                     "/" + authenticatedUser.getUserId());
         } catch (UserIdNotFoundException e) {
             //TODO: Need to verify when this exception is thrown and handle it accordingly
@@ -232,7 +232,7 @@ public class WSO2PayloadUtils {
      * @param tenantDomain The tenant domain.
      * @return The UserStoreManager for the specified tenant domain, or null if not found.
      */
-    private static UserStoreManager getUserStoreManagerByTenantDomain(String tenantDomain) {
+    public static UserStoreManager getUserStoreManagerByTenantDomain(String tenantDomain) {
 
         try {
             UserRealm userRealm = getUserRealm(tenantDomain);
@@ -473,37 +473,90 @@ public class WSO2PayloadUtils {
         }
     }
 
-    public static User buildUser(String userStoreDomain, String userName, String tenantDomain)
-            throws IdentityEventException {
+    public static User buildUser(EventData eventData) {
 
-        UserStoreManager userStoreManager = getUserStoreManagerByTenantDomain(tenantDomain);
-        User user = new User();
-        if (userStoreManager != null) {
-            String domainQualifiedUserName = userStoreDomain + "/" + userName;
-            WSO2PayloadUtils.enrichUser(userStoreManager, domainQualifiedUserName, user, tenantDomain);
-            user.setRef(constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+        if (eventData == null || eventData.getProperties() == null) {
+            return null;
         }
+
+        String userStoreDomain = resolveUserStoreDomain(eventData);
+        UserStoreManager userStoreManager = getUserStoreManagerByTenantDomain(eventData.getTenantDomain());
+        String userName = (String) eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_NAME);
+
+        if (userName == null || userStoreDomain == null || userStoreManager == null) {
+            return null;
+        }
+
+        User user = new User();
+        String userId = eventData.getUserId();
+        try {
+
+            String domainQualifiedUserName = userStoreDomain + "/" + userName;
+
+            if (StringUtils.isBlank(userId)) {
+                userId = userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.USER_ID_CLAIM,
+                        UserCoreConstants.DEFAULT_PROFILE);
+            }
+            user.setId(userId);
+
+            String emailAddress =
+                    userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
+                            UserCoreConstants.DEFAULT_PROFILE);
+
+            Optional<UserClaim> emailAddressUserClaimOptional =
+                    generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
+                            eventData.getTenantDomain());
+            emailAddressUserClaimOptional.ifPresent(user::addClaim);
+
+            Optional<UserClaim>
+                    userNameOptional = generateUserClaim(USERNAME_CLAIM, userName,
+                    eventData.getTenantDomain());
+            userNameOptional.ifPresent(user::addClaim);
+
+        } catch (UserStoreException e) {
+            log.warn("Error while extracting user claims for the user : " + user.getId(), e);
+        }
+        user.setRef(constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+
         return user;
     }
 
-    public static String resolveUserStoreDomain(Map<String, Object> properties) {
+    /**
+     * Builds a UserStore object based on the event data.
+     *
+     * @param eventData The event data containing user store information.
+     * @return UserStore object or null if the user store domain is not found.
+     */
+    public static UserStore buildUserStore(EventData eventData) {
 
-        String userStoreDomainName = null;
-        if (properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN) != null) {
-            userStoreDomainName =
-                    String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
+        String userStoreDomainName = resolveUserStoreDomain(eventData);
+        if (userStoreDomainName == null) return null;
+
+        if (StringUtils.isNotBlank(userStoreDomainName)) {
+            return new UserStore(userStoreDomainName);
         }
-        if (StringUtils.isBlank(userStoreDomainName) &&
-                properties.get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER) != null) {
 
-            Object userStoreManagerObj = properties.get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
-            if (userStoreManagerObj instanceof AbstractUserStoreManager) {
-                AbstractUserStoreManager userStoreManager =
-                        (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
+        return null;
+    }
 
-                userStoreDomainName = userStoreManager.getRealmConfiguration()
-                        .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+    public static String resolveUserStoreDomain(EventData eventData) {
+
+        if (eventData == null || eventData.getProperties() == null) {
+            return null;
+        }
+
+        Map<String, Object> properties = eventData.getProperties();
+        Object userStoreDomainObj = properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN);
+        String userStoreDomainName = (userStoreDomainObj instanceof String) ? (String) userStoreDomainObj : null;
+
+        if (StringUtils.isBlank(userStoreDomainName)) {
+            RealmConfiguration realmConfiguration =
+                    getRealmConfigurationByTenantDomain(eventData.getTenantDomain());
+            if (realmConfiguration == null) {
+                return null;
             }
+            userStoreDomainName = realmConfiguration.getUserStoreProperty(
+                    UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
         }
         return userStoreDomainName;
     }
@@ -581,29 +634,9 @@ public class WSO2PayloadUtils {
         return null;
     }
 
-    /**
-     * Enriches the mandatory user claims for the user based on the event data.
-     *
-     * @param eventData The event data containing user information.
-     * @param tenantDomain The tenant domain of the user.
-     * @param user The user object to be enriched with claims.
-     */
-    public static void enrichMandatoryUserClaims(EventData eventData, String tenantDomain, User user) {
+    public static Organization buildTenant(EventData eventData) {
 
-        List<UserClaim> userClaims = new ArrayList<>();
-        String userName = (String) eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_NAME);
-        Optional<UserClaim>
-                userNameOptional = generateUserClaim(USERNAME_CLAIM, userName,
-                tenantDomain);
-        userNameOptional.ifPresent(userClaims::add);
-
-        if (eventData.getProperties().get("EMAIL_ADDRESS") != null) {
-            String emailAddress = (String) eventData.getProperties().get("EMAIL_ADDRESS");
-            Optional<UserClaim> emailAddressOptional =
-                    generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
-                            tenantDomain);
-            emailAddressOptional.ifPresent(userClaims::add);
-        }
-        user.setClaims(userClaims);
+        String tenantDomain = eventData.getTenantDomain();
+        return new Organization(String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain)), tenantDomain);
     }
 }

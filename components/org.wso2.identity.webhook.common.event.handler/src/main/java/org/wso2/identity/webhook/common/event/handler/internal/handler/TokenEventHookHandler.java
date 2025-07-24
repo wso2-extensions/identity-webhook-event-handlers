@@ -14,7 +14,7 @@ import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
-import org.wso2.identity.webhook.common.event.handler.api.builder.TokensEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
@@ -27,9 +27,9 @@ import java.util.Objects;
 
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.EVENT_PROFILE_VERSION;
 
-public class TokensEventHookHandler extends AbstractEventHandler {
+public class TokenEventHookHandler extends AbstractEventHandler {
 
-    private static final Log log = LogFactory.getLog(TokensEventHookHandler.class);
+    private static final Log log = LogFactory.getLog(TokenEventHookHandler.class);
 
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
@@ -40,7 +40,7 @@ public class TokensEventHookHandler extends AbstractEventHandler {
 
             if (eventProfileList.isEmpty()) {
                 log.warn("No event profiles found in the webhook metadata service. " +
-                        "Skipping registration event handling.");
+                        "Skipping token event handling.");
                 return;
             }
             for (EventProfile eventProfile : eventProfileList) {
@@ -53,11 +53,11 @@ public class TokensEventHookHandler extends AbstractEventHandler {
 
                 EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
 
-                TokensEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                        .getTokensEventPayloadBuilder(schema);
+                TokenEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
+                        .getTokenEventPayloadBuilder(schema);
 
                 if (payloadBuilder == null) {
-                    log.debug("Skipping registration event handling for event " +
+                    log.debug("Skipping token event handling for event " +
                             eventProfile.getProfile());
                     continue;
                 }
@@ -75,16 +75,16 @@ public class TokensEventHookHandler extends AbstractEventHandler {
                 String eventUri;
 
                 List<Channel> channels = eventProfile.getChannels();
-                Channel tokensChannel = channels.stream()
+                Channel tokenChannel = channels.stream()
                         .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
                         .findFirst()
                         .orElse(null);
-                if (tokensChannel == null) {
-                    log.debug("No channel found for tokens event profile: " + eventProfile.getProfile());
+                if (tokenChannel == null) {
+                    log.debug("No channel found for token event profile: " + eventProfile.getProfile());
                     continue;
                 }
 
-                eventUri = tokensChannel.getEvents().stream()
+                eventUri = tokenChannel.getEvents().stream()
                         .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
                                 channelEvent.getEventUri()))
                         .findFirst()
@@ -93,7 +93,7 @@ public class TokensEventHookHandler extends AbstractEventHandler {
 
                 EventContext eventContext = EventContext.builder()
                         .tenantDomain(tenantDomain)
-                        .eventUri(tokensChannel.getUri())
+                        .eventUri(tokenChannel.getUri())
                         .eventProfileName(eventProfile.getProfile())
                         .eventProfileVersion(EVENT_PROFILE_VERSION)
                         .build();
@@ -118,14 +118,14 @@ public class TokensEventHookHandler extends AbstractEventHandler {
                 }
             }
         } catch (Exception e) {
-            log.warn("Error while retrieving token event publisher configuration for tenant.", e);
+            log.warn("Error while executing token event webhook handler.", e);
         }
     }
 
     @Override
     public String getName() {
 
-        return Constants.TOKENS_EVENT_HOOK_NAME;
+        return Constants.TOKEN_EVENT_HOOK_NAME;
     }
 
     @Override
