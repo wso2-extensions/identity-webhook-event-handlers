@@ -128,24 +128,4 @@ public class TokenEventHookHandler extends AbstractEventHandler {
         return Constants.TOKEN_EVENT_HOOK_NAME;
     }
 
-    @Override
-    public boolean canHandle(MessageContext messageContext) throws IdentityRuntimeException {
-
-        IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
-        String eventName = identityContext.getEvent().getEventName();
-
-        boolean canHandle = isSupportedEvent(eventName);
-        if (canHandle) {
-            log.debug(eventName + " event can be handled.");
-        } else {
-            log.debug(eventName + " event cannot be handled.");
-        }
-        return canHandle;
-    }
-
-    private boolean isSupportedEvent(String eventName) {
-
-        return IdentityEventConstants.Event.TOKEN_REVOKED.equals(eventName) ||
-                IdentityEventConstants.Event.TOKEN_ISSUED.equals(eventName);
-    }
 }

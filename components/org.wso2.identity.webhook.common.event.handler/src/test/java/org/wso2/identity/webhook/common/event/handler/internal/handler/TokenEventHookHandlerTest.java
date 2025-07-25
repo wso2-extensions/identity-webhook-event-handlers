@@ -107,24 +107,6 @@ public class TokenEventHookHandlerTest {
         assertEquals(name, Constants.TOKEN_EVENT_HOOK_NAME);
     }
 
-    @Test
-    public void testCanHandle() {
-
-        Event event = new Event(IdentityEventConstants.Event.TOKEN_ISSUED);
-        IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);
-        boolean canHandle = tokenEventHookHandler.canHandle(messageContext);
-        assertTrue(canHandle, "The event handler should be able to handle the event " + IdentityEventConstants.Event.TOKEN_ISSUED);
-    }
-
-    @Test
-    public void testCanNotHandle() {
-
-        Event event = new Event(IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT);
-        IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);
-        boolean canHandle = tokenEventHookHandler.canHandle(messageContext);
-        assertFalse(canHandle, "The event handler should not be able to handle the event POST_UNLOCK_ACCOUNT.");
-    }
-
     @DataProvider(name = "eventDataProvider")
     public Object[][] eventDataProvider() {
 
