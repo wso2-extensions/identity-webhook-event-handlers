@@ -21,7 +21,6 @@ import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
-import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -61,20 +60,13 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     @Override
     public EventPayload buildUserGroupUpdateEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
-        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
-        String tenantDomain = eventData.getTenantDomain();
+        Organization tenant = WSO2PayloadUtils.buildTenant(eventData);
+        UserStore userStore = WSO2PayloadUtils.buildUserStore(eventData);
 
         // todo: should remove retrieving user store manager as a property.
         //  Rather load user store managed from realm service.
-        AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration()
-                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+        Group group = buildGroup(eventData);
 
-        Group group = buildGroup(properties, userStoreManager, tenantDomain);
-        UserStore userStore = new UserStore(userStoreDomainName);
-
-        Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         String initiatorType = null;
         if (flow != null) {
@@ -84,7 +76,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return new WSO2UserGroupUpdateEventPayload.Builder()
                 .initiatorType(initiatorType)
                 .group(group)
-                .tenant(organization)
+                .tenant(tenant)
                 .userStore(userStore)
                 .build();
     }
@@ -92,29 +84,23 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     @Override
     public EventPayload buildUserDeleteEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
-        String tenantDomain = eventData.getTenantDomain();
-        String tenantId = String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain));
-
-        AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration()
-                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
-
-        UserStore userStore = new UserStore(userStoreDomainName);
+        Organization tenant = WSO2PayloadUtils.buildTenant(eventData);
+        UserStore userStore = WSO2PayloadUtils.buildUserStore(eventData);
 
         List<UserClaim> userClaims = new ArrayList<>();
 
         String userName =
-                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
-        Optional<UserClaim> userNameOptional = WSO2PayloadUtils.generateUserClaim(FrameworkConstants.USERNAME_CLAIM, userName,
-                tenantDomain);
+                String.valueOf(eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_NAME));
+        Optional<UserClaim> userNameOptional =
+                WSO2PayloadUtils.generateUserClaim(FrameworkConstants.USERNAME_CLAIM, userName,
+                        eventData.getTenantDomain());
         userNameOptional.ifPresent(userClaims::add);
 
-        if (eventData.getEventParams().get("EMAIL_ADDRESS") != null) {
-            String emailAddress = String.valueOf(eventData.getEventParams().get("EMAIL_ADDRESS"));
+        if (eventData.getProperties().get("EMAIL_ADDRESS") != null) {
+            String emailAddress = String.valueOf(eventData.getProperties().get("EMAIL_ADDRESS"));
             Optional<UserClaim> emailAddressOptional =
                     WSO2PayloadUtils.generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
-                            tenantDomain);
+                            eventData.getTenantDomain());
             emailAddressOptional.ifPresent(userClaims::add);
         }
 
@@ -128,7 +114,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             deletedUser.setRef(WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + userId);
             deletedUser.setClaims(userClaims);
 
-            Organization organization = new Organization(tenantId, tenantDomain);
             Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
             String initiatorType = null;
             if (flow != null) {
@@ -138,7 +123,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             return new WSO2UserAccountEventPayload.Builder()
                     .initiatorType(initiatorType)
                     .user(deletedUser)
-                    .tenant(organization)
+                    .tenant(tenant)
                     .userStore(userStore)
                     .build();
         } finally {
@@ -154,25 +139,21 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
     private EventPayload buildUserAccountEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantDomain = eventData.getTenantDomain();
-        String tenantId = String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain));
+
+        Organization tenant = WSO2PayloadUtils.buildTenant(eventData);
+        UserStore userStore = WSO2PayloadUtils.buildUserStore(eventData);
 
         AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
-        String userStoreDomainName = userStoreManager.getRealmConfiguration()
-                .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
-
-        UserStore userStore = new UserStore(userStoreDomainName);
-
-        String userName =
-                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
 
         User user = new User();
+        String userName =
+                String.valueOf(eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_NAME));
         enrichUser(userStoreManager, userName, user, tenantDomain);
         user.setRef(
                 WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
-        Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         String initiatorType = null;
         if (flow != null) {
@@ -181,22 +162,20 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         return new WSO2UserAccountEventPayload.Builder()
                 .user(user)
-                .tenant(organization)
+                .tenant(tenant)
                 .userStore(userStore)
                 .build();
     }
 
     private EventPayload buildUserEnableEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
-        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
+        Map<String, Object> properties = eventData.getProperties();
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
-        String userStoreDomainName =
-                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
-        UserStore userStore = new UserStore(userStoreDomainName);
+        Organization tenant = WSO2PayloadUtils.buildTenant(eventData);
+        UserStore userStore = WSO2PayloadUtils.buildUserStore(eventData);
 
-        String userId = String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_ID));
+        String userId = String.valueOf(eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_ID));
         User user = new User();
         user.setId(userId);
 
@@ -206,13 +185,12 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             userStoreManager = (AbstractUserStoreManager) properties.get(USER_STORE_MANAGER);
         }
         String userName =
-                String.valueOf(eventData.getEventParams().get(IdentityEventConstants.EventProperty.USER_NAME));
+                String.valueOf(eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_NAME));
         enrichUser(userStoreManager, userName, user, tenantDomain);
 
         user.setRef(
                 WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
-        Organization organization = new Organization(tenantId, tenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         String initiatorType = null;
         if (flow != null) {
@@ -222,7 +200,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return new WSO2UserAccountEventPayload.Builder()
                 .initiatorType(initiatorType)
                 .user(user)
-                .tenant(organization)
+                .tenant(tenant)
                 .userStore(userStore)
                 .build();
     }
@@ -236,14 +214,12 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     @Override
     public EventPayload buildUserProfileUpdateEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
-        String tenantId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_ID));
+        Map<String, Object> properties = eventData.getProperties();
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
-        String userStoreDomainName =
-                String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
         String userId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_ID));
 
-        UserStore userStore = new UserStore(userStoreDomainName);
+        Organization tenant = WSO2PayloadUtils.buildTenant(eventData);
+        UserStore userStore = WSO2PayloadUtils.buildUserStore(eventData);
 
         List<UserClaim> addedClaims =
                 populateClaims(properties, IdentityEventConstants.EventProperty.USER_CLAIMS_ADDED, tenantDomain);
@@ -262,8 +238,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         user.setUpdatedClaims(modifiedClaims);
         user.setRemovedClaims(deletedClaims);
 
-        Organization organization = new Organization(tenantId, tenantDomain);
-
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         String initiatorType = null;
         String action = null;
@@ -278,7 +252,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .initiatorType(initiatorType)
                 .action(action)
                 .user(user)
-                .tenant(organization)
+                .tenant(tenant)
                 .userStore(userStore)
                 .build();
     }
@@ -298,20 +272,17 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     @Override
     public EventPayload buildUserCreatedEvent(EventData eventData) throws IdentityEventException {
 
-        Map<String, Object> properties = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
-        String userStoreDomainName = WSO2PayloadUtils.resolveUserStoreDomain(properties);
-        UserStore userStore = new UserStore(userStoreDomainName);
+        UserStore userStore = WSO2PayloadUtils.buildUserStore(eventData);
 
         User newUser = new User();
         WSO2PayloadUtils.enrichUser(properties, newUser, tenantDomain);
 
         if (StringUtils.isBlank(newUser.getId())) {
-
-            String userName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_NAME));
             // User set password flow for email invitation by admin.
-            newUser = WSO2PayloadUtils.buildUser(userStoreDomainName, userName, tenantDomain);
+            newUser = WSO2PayloadUtils.buildUser(eventData);
         }
 
         String tenantId = null;
@@ -407,15 +378,23 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         return Constants.EventSchema.WSO2;
     }
 
-    private Group buildGroup(Map<String, Object> properties, AbstractUserStoreManager userStoreManager,
-                             String tenantDomain)
-            throws IdentityEventException {
+    private Group buildGroup(EventData eventData) throws IdentityEventException {
 
-        String groupName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.ROLE_NAME));
+        if (eventData == null || eventData.getProperties() == null) {
+            return null;
+        }
+
+        Map<String, Object> properties = eventData.getProperties();
+
         org.wso2.carbon.user.core.common.Group groupFromUserStore;
+        String groupName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.ROLE_NAME));
+
+        AbstractUserStoreManager userStoreManager =
+                (AbstractUserStoreManager) WSO2PayloadUtils.getUserStoreManagerByTenantDomain(
+                        eventData.getTenantDomain());
         try {
             groupFromUserStore = userStoreManager.getGroupByGroupName(groupName, null);
-        } catch (org.wso2.carbon.user.core.UserStoreException e) {
+        } catch (UserStoreException e) {
             throw new IdentityEventException("Error while extracting group Id for the group Name: " + groupName, e);
         }
         String groupId = groupFromUserStore.getGroupID();
@@ -423,10 +402,10 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         List<User> deletedUsers =
                 buildUserList(userStoreManager, properties, IdentityEventConstants.EventProperty.DELETED_USERS,
-                        tenantDomain);
+                        eventData.getTenantDomain());
         List<User> addedUsers =
                 buildUserList(userStoreManager, properties, IdentityEventConstants.EventProperty.NEW_USERS,
-                        tenantDomain);
+                        eventData.getTenantDomain());
 
         Group group = new Group();
         group.setName(groupName);

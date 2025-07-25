@@ -29,6 +29,7 @@
             <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.RegistrationEventHookHandlerTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactoryTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolderTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.TokenEventHookHandlerTest"/>
         </classes>
     </test>
 </suite>

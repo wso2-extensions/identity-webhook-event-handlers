@@ -191,7 +191,7 @@ public class SessionEventHookHandlerTest {
                 when(mockUser.getTenantDomain()).thenReturn(SAMPLE_TENANT_DOMAIN);
                 when(eventDataProvider.getAuthenticatedUser()).thenReturn(mockUser);
 
-                when(eventDataProvider.getEventParams()).thenReturn(
+                when(eventDataProvider.getProperties()).thenReturn(
                         new HashMap<String, Object>() {{
                             put(org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.TENANT_DOMAIN,
                                     SAMPLE_TENANT_DOMAIN);

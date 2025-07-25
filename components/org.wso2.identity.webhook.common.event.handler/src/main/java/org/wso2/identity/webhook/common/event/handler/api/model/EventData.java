@@ -35,6 +35,7 @@ public class EventData {
     private final String eventName;
     private final HttpServletRequest request;
     private final Map<String, Object> eventParams;
+    private final Map<String, Object> properties;
     private final AuthenticationContext authenticationContext;
     private final AuthenticatorStatus authenticatorStatus;
     private final AuthenticatedUser authenticatedUser;
@@ -47,6 +48,7 @@ public class EventData {
         this.eventName = builder.eventName;
         this.request = builder.request;
         this.eventParams = builder.eventParams;
+        this.properties = builder.properties;
         this.authenticationContext = builder.authenticationContext;
         this.authenticatorStatus = builder.authenticatorStatus;
         this.authenticatedUser = builder.authenticatedUser;
@@ -100,6 +102,11 @@ public class EventData {
         return tenantDomain;
     }
 
+    public Map<String, Object> getProperties() {
+
+        return properties;
+    }
+
     public static Builder builder() {
 
         return new Builder();
@@ -113,6 +120,7 @@ public class EventData {
         private String eventName;
         private HttpServletRequest request;
         private Map<String, Object> eventParams;
+        private Map<String, Object> properties;
         private AuthenticationContext authenticationContext;
         private AuthenticatorStatus authenticatorStatus;
         private AuthenticatedUser authenticatedUser;
@@ -171,6 +179,12 @@ public class EventData {
         public Builder tenantDomain(String tenantDomain) {
 
             this.tenantDomain = tenantDomain;
+            return this;
+        }
+
+        public Builder properties(Map<String, Object> properties) {
+
+            this.properties = properties;
             return this;
         }
 

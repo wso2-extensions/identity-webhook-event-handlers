@@ -18,8 +18,6 @@
 package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
@@ -46,8 +44,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-
-import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.USERNAME_CLAIM;
 
 /**
  * WSO2 Login Event Payload Builder.
@@ -82,9 +78,11 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
             b2bUserResidentOrganization = WSO2PayloadUtils.getUserResidentOrganization(
                     authenticatedUser.getUserResidentOrganization());
         }
-        Application application = new Application(
-                authenticationContext.getServiceProviderResourceId(),
-                authenticationContext.getServiceProviderName());
+        Application application = new Application.Builder()
+                .id(authenticationContext.getServiceProviderResourceId())
+                .name(authenticationContext.getServiceProviderName())
+                .build();
+
         return new WSO2AuthenticationSuccessEventPayload.Builder()
                 .user(user)
                 .tenant(tenant)
@@ -129,9 +127,10 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         Organization tenant = new Organization(
                 String.valueOf(IdentityTenantUtil.getTenantId(authenticationContext.getTenantDomain())),
                 authenticationContext.getTenantDomain());
-        Application application = new Application(
-                authenticationContext.getServiceProviderResourceId(),
-                authenticationContext.getServiceProviderName());
+        Application application = new Application.Builder()
+                .id(authenticationContext.getServiceProviderResourceId())
+                .name(authenticationContext.getServiceProviderName())
+                .build();
         return new WSO2AuthenticationFailedEventPayload.Builder()
                 .user(user)
                 .tenant(tenant)

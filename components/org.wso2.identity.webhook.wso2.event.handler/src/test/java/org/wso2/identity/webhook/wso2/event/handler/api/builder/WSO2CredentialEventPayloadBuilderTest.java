@@ -159,12 +159,12 @@ public class WSO2CredentialEventPayloadBuilderTest {
     @Test(dataProvider = "actionDataProvider")
     public void testBuildCredentialUpdateEvent(Flow.Name flowName) throws IdentityEventException {
 
-        Map<String, Object> params = new HashMap<>();
-        params.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        params.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, "DEFAULT");
-        params.put(IdentityEventConstants.EventProperty.USER_NAME, USER_NAME);
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, "DEFAULT");
+        properties.put(IdentityEventConstants.EventProperty.USER_NAME, USER_NAME);
 
-        when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getProperties()).thenReturn(properties);
         when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
 
         mockUserStoreManager();
@@ -196,7 +196,7 @@ public class WSO2CredentialEventPayloadBuilderTest {
         assertEquals(userCredentialUpdateEventPayload.getUser().getRef(),
                 constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + DELETED_USER_ID);
         assertNotNull(userCredentialUpdateEventPayload.getUser().getClaims());
-        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().size(), 1);
+        assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().size(), 2);
         assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getUri(),
                 FrameworkConstants.EMAIL_ADDRESS_CLAIM);
         assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getValue(), TEST_USER_EMAIL);
