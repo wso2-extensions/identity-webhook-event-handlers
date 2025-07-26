@@ -16,18 +16,29 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.api;
+package org.wso2.identity.webhook.wso2.event.handler.internal.model.common;
 
-import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
-import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
+/**
+ * Tenant class representing a tenant in the system.
+ */
+public class Tenant {
 
-import static org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils.resolveEventHandlerKey;
+    private final String id;
+    private final String name;
 
-public class WSO2EventProfileManager implements EventProfileManager {
+    public Tenant(String id, String name) {
 
-    @Override
-    public EventMetadata resolveEventMetadata(String event) {
+        this.id = id;
+        this.name = name;
+    }
 
-        return resolveEventHandlerKey(event);
+    public String getId() {
+
+        return id;
+    }
+
+    public String getName() {
+
+        return name;
     }
 }

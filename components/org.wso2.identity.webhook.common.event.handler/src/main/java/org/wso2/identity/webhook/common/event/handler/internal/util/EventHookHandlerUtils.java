@@ -28,6 +28,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
@@ -41,9 +42,9 @@ import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayl
 import org.wso2.carbon.identity.event.publisher.api.model.common.ComplexSubject;
 import org.wso2.carbon.identity.event.publisher.api.model.common.SimpleSubject;
 import org.wso2.carbon.identity.event.publisher.api.model.common.Subject;
-import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
+import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.internal.component.EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 
@@ -77,27 +78,27 @@ public class EventHookHandlerUtils {
         Map<String, Object> properties = validateAndGetProperties(event);
 
         Map<String, Object> params = extractParams(properties);
-        AuthenticationContext context = extractAuthenticationContext(properties);
+        AuthenticationContext authenticationContext = extractAuthenticationContext(properties);
+        SessionContext sessionContext = extractSessionContext(properties);
         AuthenticatorStatus status = extractAuthenticatorStatus(properties);
         HttpServletRequest request = extractRequest(params);
 
-        String tenantDomain = resolveTenantDomain(context, params, properties);
+        String tenantDomain = resolveTenantDomain(authenticationContext, params, properties);
 
-        AuthenticatedUser authenticatedUser = extractAuthenticatedUser(params, context);
+        AuthenticatedUser authenticatedUser = extractAuthenticatedUser(params, authenticationContext, sessionContext);
         String userId = resolveUserId(authenticatedUser, properties);
-
-        SessionContext sessionContext = extractSessionContext(properties);
 
         return EventData.builder()
                 .eventName(event.getEventName())
                 .request(request)
                 .eventParams(params)
-                .authenticationContext(context)
+                .authenticationContext(authenticationContext)
                 .authenticatorStatus(status)
                 .authenticatedUser(authenticatedUser)
                 .sessionContext(sessionContext)
                 .userId(userId)
                 .tenantDomain(tenantDomain)
+                .properties(properties)
                 .build();
     }
 
@@ -322,21 +323,30 @@ public class EventHookHandlerUtils {
     }
 
     private static AuthenticatedUser extractAuthenticatedUser(Map<String, Object> params,
-                                                              AuthenticationContext context) {
+                                                              AuthenticationContext authenticationContext,
+                                                              SessionContext sessionContext) {
 
         if (params != null) {
             Object user = params.get(Constants.EventDataProperties.USER);
             if (user instanceof AuthenticatedUser) {
                 AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
-                if (context != null) {
+                if (authenticationContext != null) {
                      /* todo: it's not a good practice to modify the authenticated user object.
                       Should remove this code and missing claims should be populated for the user
                       in event in a different way.*/
-                    setLocalUserClaimsToAuthenticatedUser(authenticatedUser, context);
+                    setLocalUserClaimsToAuthenticatedUser(authenticatedUser, authenticationContext);
                 }
                 return authenticatedUser;
             }
         }
+
+        if (sessionContext != null && sessionContext.getProperties() != null) {
+            Object user = sessionContext.getProperties().get(FrameworkConstants.AUTHENTICATED_USER);
+            if (user instanceof AuthenticatedUser) {
+                return (AuthenticatedUser) user;
+            }
+        }
+
         return null;
     }
 

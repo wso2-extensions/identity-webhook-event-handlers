@@ -33,6 +33,7 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionCreatedEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionPresentedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionRevokedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
@@ -52,25 +53,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     private static final Log LOG = LogFactory.getLog(WSO2SessionEventPayloadBuilder.class);
 
     @Override
-    public EventPayload buildSessionTerminateEvent(EventData eventData) throws IdentityEventException {
-
-        User user = buildUser(eventData);
-        Organization tenant = buildTenant(eventData);
-        UserStore userStore = buildUserStore(eventData);
-        List<Session> sessions = getSessions(eventData);
-
-        return new WSO2SessionRevokedEventPayload.Builder()
-                .user(user)
-                .tenant(tenant)
-                .userStore(userStore)
-                .sessions(sessions)
-                .build();
-    }
-
-    @Override
     public EventPayload buildSessionCreateEvent(EventData eventData) throws IdentityEventException {
-
-        validateEventData(eventData);
 
         User user = buildUser(eventData);
         Organization tenant = buildTenant(eventData);
@@ -90,33 +73,41 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     @Override
     public EventPayload buildSessionUpdateEvent(EventData eventData) throws IdentityEventException {
 
-        return null;
+        User user = buildUser(eventData);
+        Organization tenant = buildTenant(eventData);
+        UserStore userStore = buildUserStore(eventData);
+        List<Session> sessions = getSessions(eventData);
+        Application application = buildApplication(eventData.getAuthenticationContext());
+
+        return new WSO2SessionPresentedEventPayload.Builder()
+                .session(sessions != null && !sessions.isEmpty() ? sessions.get(0) : null)
+                .user(user)
+                .tenant(tenant)
+                .userStore(userStore)
+                .application(application)
+                .build();
     }
 
     @Override
-    public EventPayload buildSessionExpireEvent(EventData eventData) throws IdentityEventException {
+    public EventPayload buildSessionTerminateEvent(EventData eventData) throws IdentityEventException {
 
-        return null;
-    }
+        User user = buildUser(eventData);
+        Organization tenant = buildTenant(eventData);
+        UserStore userStore = buildUserStore(eventData);
+        List<Session> sessions = getSessions(eventData);
 
-    @Override
-    public EventPayload buildSessionExtendEvent(EventData eventData) throws IdentityEventException {
-
-        return null;
+        return new WSO2SessionRevokedEventPayload.Builder()
+                .user(user)
+                .tenant(tenant)
+                .userStore(userStore)
+                .sessions(sessions)
+                .build();
     }
 
     @Override
     public org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema getEventSchemaType() {
 
         return org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
-    }
-
-    private void validateEventData(EventData eventData) throws IdentityEventException {
-
-        if (eventData.getAuthenticatedUser() == null || eventData.getAuthenticationContext() == null) {
-            throw new IdentityEventException(
-                    "Authenticated user or authentication context cannot be null in event data.");
-        }
     }
 
     private User buildUser(EventData eventData) {
@@ -155,8 +146,13 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     private List<Session> getSessions(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> params = eventData.getEventParams();
+        Map<String, Object> properties = eventData.getProperties();
         if (params.containsKey(Constants.EventDataProperties.SESSION_ID)) {
             String sessionId = params.get(Constants.EventDataProperties.SESSION_ID).toString();
+            return retrieveSessionsById(sessionId);
+        } else if (properties.containsKey(IdentityEventConstants.EventProperty.SESSION_CONTEXT_ID) &&
+                properties.get(IdentityEventConstants.EventProperty.SESSION_CONTEXT_ID) instanceof String) {
+            String sessionId = (String) properties.get(IdentityEventConstants.EventProperty.SESSION_CONTEXT_ID);
             return retrieveSessionsById(sessionId);
         } else if (params.containsKey(IdentityEventConstants.EventProperty.SESSION_IDS)) {
             List<String> sessionIds = params.get(IdentityEventConstants.EventProperty.SESSION_IDS) instanceof List ?
@@ -204,7 +200,8 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         });
         Session sessionModel = new Session.Builder()
                 .id(userSession.getSessionId())
-                .loginTime(userSession.getLoginTime() != null ? new Date(Long.parseLong(userSession.getLoginTime())) :
+                .loginTime(userSession.getLastAccessTime() != null ?
+                        new Date(Long.parseLong(userSession.getLastAccessTime())) :
                         null)
                 .applications(applications).build();
         sessions.add(sessionModel);
@@ -212,6 +209,10 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     }
 
     private Application buildApplication(AuthenticationContext authenticationContext) {
+
+        if (authenticationContext == null) {
+            return null;
+        }
 
         return new Application(
                 authenticationContext.getServiceProviderResourceId(),
