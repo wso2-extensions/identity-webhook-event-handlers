@@ -29,28 +29,28 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 public interface SessionEventPayloadBuilder {
 
     /**
-     * Build the Session Terminate event.
+     * Build the session revoked event.
      *
      * @param eventData Event data.
      * @return Event payload.
      */
-    EventPayload buildSessionTerminateEvent(EventData eventData) throws IdentityEventException;
+    EventPayload buildSessionRevokedEvent(EventData eventData) throws IdentityEventException;
 
     /**
-     * Build the Session Create event.
+     * Build the session established event.
      *
      * @param eventData Event data.
      * @return Event payload.
      */
-    EventPayload buildSessionCreateEvent(EventData eventData) throws IdentityEventException;
+    EventPayload buildSessionEstablishedEvent(EventData eventData) throws IdentityEventException;
 
     /**
-     * Build the Session Update event.
+     * Build the session presented event.
      *
      * @param eventData Event data.
      * @return Event payload.
      */
-    EventPayload buildSessionUpdateEvent(EventData eventData) throws IdentityEventException;
+    EventPayload buildSessionPresentedEvent(EventData eventData) throws IdentityEventException;
 
     /**
      * Get the event schema type.

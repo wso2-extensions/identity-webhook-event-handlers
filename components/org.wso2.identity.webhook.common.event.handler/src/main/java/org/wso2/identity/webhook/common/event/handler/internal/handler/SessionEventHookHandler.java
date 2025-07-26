@@ -181,12 +181,12 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
         switch (event.getEventName()) {
             case SESSION_TERMINATE_V2:
-                return payloadBuilder.buildSessionTerminateEvent(eventData);
+                return payloadBuilder.buildSessionRevokedEvent(eventData);
             case SESSION_CREATE:
-                return payloadBuilder.buildSessionCreateEvent(eventData);
+                return payloadBuilder.buildSessionEstablishedEvent(eventData);
             case SESSION_UPDATE:
             case SESSION_EXTENSION:
-                return payloadBuilder.buildSessionUpdateEvent(eventData);
+                return payloadBuilder.buildSessionPresentedEvent(eventData);
             default:
                 return null;
         }

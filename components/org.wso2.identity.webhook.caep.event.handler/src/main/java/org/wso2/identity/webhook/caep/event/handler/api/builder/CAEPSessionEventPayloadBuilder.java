@@ -55,7 +55,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
     }
 
     @Override
-    public EventPayload buildSessionTerminateEvent(EventData eventData) throws IdentityEventException {
+    public EventPayload buildSessionRevokedEvent(EventData eventData) throws IdentityEventException {
 
         final Map<String, Object> params = eventData.getEventParams();
         long eventTimeStamp = extractEventTimeStamp(params);
@@ -128,7 +128,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
      * @return Event payload.
      */
     @Override
-    public EventPayload buildSessionCreateEvent(EventData eventData) throws IdentityEventException {
+    public EventPayload buildSessionEstablishedEvent(EventData eventData) throws IdentityEventException {
 
         SessionContext sessionContext = eventData.getSessionContext();
         final Map<String, Object> params = eventData.getEventParams();
@@ -184,7 +184,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
      * @return Event payload.
      */
     @Override
-    public EventPayload buildSessionUpdateEvent(EventData eventData) throws IdentityEventException {
+    public EventPayload buildSessionPresentedEvent(EventData eventData) throws IdentityEventException {
 
         final Map<String, Object> params = eventData.getEventParams();
         SessionContext sessionContext = eventData.getSessionContext();

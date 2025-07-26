@@ -33,7 +33,6 @@ import org.wso2.carbon.identity.application.authentication.framework.model.Authe
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPSessionEventPayloadBuilder;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionEstablishedEventPayload;
 import org.wso2.identity.webhook.caep.event.handler.internal.model.CAEPSessionPresentedEventPayload;
@@ -136,7 +135,7 @@ public class CAEPSessionEventPayloadBuilderTest {
         when(mockEventData.getEventParams()).thenReturn(paramMap);
 
         CAEPSessionRevokedEventPayload eventPayload = (CAEPSessionRevokedEventPayload)
-                caepSessionEventPayloadBuilder.buildSessionTerminateEvent(mockEventData);
+                caepSessionEventPayloadBuilder.buildSessionRevokedEvent(mockEventData);
 
         assertNotNull(eventPayload, "Event payload should not be null");
         assertTrue(eventPayload.getEventTimeStamp() > 0, "Event timestamp should be greater than 0");
@@ -154,7 +153,7 @@ public class CAEPSessionEventPayloadBuilderTest {
 
         CAEPSessionPresentedEventPayload eventPayload =
                 (CAEPSessionPresentedEventPayload) caepSessionEventPayloadBuilder
-                        .buildSessionUpdateEvent(mockEventData);
+                        .buildSessionPresentedEvent(mockEventData);
 
         assertNotNull(eventPayload, "Event payload should not be null");
         assertEquals(eventPayload.getEventTimeStamp(), systemTime, "Event timestamp should match");
@@ -172,7 +171,7 @@ public class CAEPSessionEventPayloadBuilderTest {
 
         CAEPSessionEstablishedEventPayload eventPayload =
                 (CAEPSessionEstablishedEventPayload) caepSessionEventPayloadBuilder
-                        .buildSessionCreateEvent(mockEventData);
+                        .buildSessionEstablishedEvent(mockEventData);
 
         assertNotNull(eventPayload, "Event payload should not be null");
         assertEquals(eventPayload.getEventTimeStamp(), systemTime, "Event timestamp should match");

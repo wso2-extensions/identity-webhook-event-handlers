@@ -53,7 +53,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     private static final Log LOG = LogFactory.getLog(WSO2SessionEventPayloadBuilder.class);
 
     @Override
-    public EventPayload buildSessionCreateEvent(EventData eventData) throws IdentityEventException {
+    public EventPayload buildSessionEstablishedEvent(EventData eventData) throws IdentityEventException {
 
         User user = buildUser(eventData);
         Organization tenant = buildTenant(eventData);
@@ -71,7 +71,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     }
 
     @Override
-    public EventPayload buildSessionUpdateEvent(EventData eventData) throws IdentityEventException {
+    public EventPayload buildSessionPresentedEvent(EventData eventData) throws IdentityEventException {
 
         User user = buildUser(eventData);
         Organization tenant = buildTenant(eventData);
@@ -89,7 +89,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     }
 
     @Override
-    public EventPayload buildSessionTerminateEvent(EventData eventData) throws IdentityEventException {
+    public EventPayload buildSessionRevokedEvent(EventData eventData) throws IdentityEventException {
 
         User user = buildUser(eventData);
         Organization tenant = buildTenant(eventData);
