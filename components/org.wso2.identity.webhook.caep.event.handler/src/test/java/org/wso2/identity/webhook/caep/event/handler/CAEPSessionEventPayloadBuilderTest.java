@@ -143,21 +143,6 @@ public class CAEPSessionEventPayloadBuilderTest {
     }
 
     @Test
-    public void testBuildSessionExpireEvent() throws IdentityEventException {
-
-        EventPayload eventPayload = caepSessionEventPayloadBuilder.buildSessionExpireEvent(mockEventData);
-
-        assertNull(eventPayload, "Event payload should be null");
-    }
-
-    @Test
-    public void testBuildSessionExtendEvent() throws IdentityEventException {
-
-        EventPayload eventPayload = caepSessionEventPayloadBuilder.buildSessionExtendEvent(mockEventData);
-        assertNull(eventPayload, "Event payload should be null");
-    }
-
-    @Test
     public void testBuildSessionUpdateEvent() throws IdentityEventException {
 
         long systemTime = System.currentTimeMillis();

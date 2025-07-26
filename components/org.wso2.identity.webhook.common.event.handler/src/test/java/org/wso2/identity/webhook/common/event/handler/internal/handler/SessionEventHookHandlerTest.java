@@ -177,8 +177,6 @@ public class SessionEventHookHandlerTest {
                     .thenReturn(mockedEventPayload);
             when(mockedSessionEventPayloadBuilder.buildSessionUpdateEvent(any(EventData.class)))
                     .thenReturn(mockedEventPayload);
-            when(mockedSessionEventPayloadBuilder.buildSessionExtendEvent(any(EventData.class)))
-                    .thenReturn(mockedEventPayload);
 
             try (MockedStatic<EventHookHandlerUtils> utilsMocked = mockStatic(EventHookHandlerUtils.class)) {
                 EventData eventDataProvider = mock(EventData.class);
@@ -253,8 +251,6 @@ public class SessionEventHookHandlerTest {
         when(mockedSessionEventPayloadBuilder.getEventSchemaType()).thenReturn(
                 org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.CAEP);
         when(mockedSessionEventPayloadBuilder.buildSessionUpdateEvent(any(EventData.class)))
-                .thenReturn(mockedEventPayload);
-        when(mockedSessionEventPayloadBuilder.buildSessionExtendEvent(any(EventData.class)))
                 .thenReturn(mockedEventPayload);
         when(mockedSessionEventPayloadBuilder.buildSessionTerminateEvent(any(EventData.class)))
                 .thenReturn(mockedEventPayload);

@@ -19,8 +19,8 @@
 package org.wso2.identity.webhook.caep.event.handler.internal.util;
 
 import org.wso2.carbon.identity.event.IdentityEventConstants;
-import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 
 import java.util.Objects;
 
@@ -47,10 +47,8 @@ public class CAEPPayloadUtils {
                 IdentityEventConstants.Event.SESSION_UPDATE.equals(eventName)) {
             channel = Constants.Channel.SESSION_CHANNEL;
             event = Constants.Event.SESSION_PRESENTED_EVENT;
-        } else if (IdentityEventConstants.Event.VERIFICATION.equals(eventName)) {
-            channel = Constants.Channel.VERIFICATION_CHANNEL;
-            event = Constants.Event.VERIFICATION_EVENT;
         }
+
         return EventMetadata.builder()
                 .event(String.valueOf(event))
                 .channel(String.valueOf(channel))

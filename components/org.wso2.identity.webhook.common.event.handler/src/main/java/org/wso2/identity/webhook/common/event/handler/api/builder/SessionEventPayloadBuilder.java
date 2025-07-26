@@ -53,22 +53,6 @@ public interface SessionEventPayloadBuilder {
     EventPayload buildSessionUpdateEvent(EventData eventData) throws IdentityEventException;
 
     /**
-     * Build the Session Expire event.
-     *
-     * @param eventData Event data.
-     * @return Event payload.
-     */
-    EventPayload buildSessionExpireEvent(EventData eventData) throws IdentityEventException;
-
-    /**
-     * Build the Session Extend event.
-     *
-     * @param eventData Event data.
-     * @return Event payload.
-     */
-    EventPayload buildSessionExtendEvent(EventData eventData) throws IdentityEventException;
-
-    /**
      * Get the event schema type.
      *
      * @return Event schema type.

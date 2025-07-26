@@ -18,7 +18,7 @@
 
 package org.wso2.identity.webhook.caep.event.handler.api;
 
-import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
+import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 
 import static org.wso2.identity.webhook.caep.event.handler.internal.util.CAEPPayloadUtils.resolveEventHandlerKey;

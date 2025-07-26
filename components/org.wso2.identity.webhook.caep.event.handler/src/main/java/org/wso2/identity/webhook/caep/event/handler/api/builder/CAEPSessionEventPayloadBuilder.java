@@ -221,30 +221,6 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 .build();
     }
 
-    /**
-     * Build the Session Expire event.
-     *
-     * @param eventData Event data.
-     * @return Event payload.
-     */
-    @Override
-    public EventPayload buildSessionExpireEvent(EventData eventData) throws IdentityEventException {
-
-        return null;
-    }
-
-    /**
-     * Build the Session Extend event.
-     *
-     * @param eventData Event data.
-     * @return Event payload.
-     */
-    @Override
-    public EventPayload buildSessionExtendEvent(EventData eventData) throws IdentityEventException {
-
-        return null;
-    }
-
     @Override
     public Constants.EventSchema getEventSchemaType() {
 

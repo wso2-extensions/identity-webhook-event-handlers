@@ -32,8 +32,6 @@ import org.wso2.carbon.identity.claim.metadata.mgt.model.LocalClaim;
 import org.wso2.carbon.identity.claim.metadata.mgt.util.ClaimConstants;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
-import org.wso2.carbon.identity.core.context.IdentityContext;
-import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -42,10 +40,10 @@ import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
+import org.wso2.carbon.user.core.UniqueIDUserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
-import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
@@ -56,34 +54,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.USERNAME_CLAIM;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CREDENTIAL_CHANGE_CHANNEL;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.LOGIN_CHANNEL;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.LOGIN_FAILURE_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.LOGIN_SUCCESS_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ACCOUNT_DISABLE_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ACCOUNT_ENABLE_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_DELETE_USER_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_LOCK_ACCOUNT_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UNLOCK_ACCOUNT_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_CREDENTIAL;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_LIST_OF_ROLE_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_USER_CREATED_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_USER_PROFILE_UPDATED_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_CREATED_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_EXPIRED_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_EXTENDED_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_REVOKED_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_UPDATED_EVENT;
-import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.CREATED_CLAIM;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.EMAIL_CLAIM_URI;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LOCATION_CLAIM;
@@ -155,13 +131,13 @@ public class WSO2PayloadUtils {
     public static void populateUserClaims(User user, String userId, String tenantDomain) {
 
         UserStoreManager userStoreManager = getUserStoreManagerByTenantDomain(tenantDomain);
-        if (!(userStoreManager instanceof AbstractUserStoreManager)) {
+        if (!(userStoreManager instanceof UniqueIDUserStoreManager)) {
             return;
         }
 
         Map<String, String> claimValues;
         try {
-            claimValues = ((AbstractUserStoreManager) userStoreManager).getUserClaimValuesWithID(
+            claimValues = ((UniqueIDUserStoreManager) userStoreManager).getUserClaimValuesWithID(
                     userId, new String[]{USERNAME_CLAIM_URI, EMAIL_CLAIM_URI}, null);
         } catch (org.wso2.carbon.user.core.UserStoreException e) {
             log.error("Error while retrieving user claims for user: " + userId + " in tenant: " + tenantDomain, e);
@@ -300,104 +276,6 @@ public class WSO2PayloadUtils {
         return userRealm;
     }
 
-    /**
-     * Resolve the event metadata based on the event name.
-     *
-     * @param eventName Event name.
-     * @return Event metadata containing event and channel information.
-     */
-    public static EventMetadata resolveEventHandlerKey(String eventName) {
-
-        String event = null;
-        String channel = null;
-
-        if (!isBulkOperation()) {
-            if (Objects.requireNonNull(eventName).equals(
-                    IdentityEventConstants.Event.AUTHENTICATION_SUCCESS)) {
-                channel = LOGIN_CHANNEL;
-                event = LOGIN_SUCCESS_EVENT;
-            } else if (IdentityEventConstants.Event.AUTHENTICATION_STEP_FAILURE.equals(eventName)) {
-                channel = LOGIN_CHANNEL;
-                event = LOGIN_FAILURE_EVENT;
-            } else if (IdentityEventConstants.Event.SESSION_TERMINATE_V2.equals(eventName)) {
-                channel = SESSION_CHANNEL;
-                event = SESSION_REVOKED_EVENT;
-            } else if (IdentityEventConstants.Event.SESSION_EXPIRE.equals(eventName)) {
-                channel = SESSION_CHANNEL;
-                event = SESSION_EXPIRED_EVENT;
-            } else if (IdentityEventConstants.Event.SESSION_UPDATE.equals(eventName)) {
-                channel = SESSION_CHANNEL;
-                event = SESSION_UPDATED_EVENT;
-            } else if (IdentityEventConstants.Event.SESSION_EXTEND.equals(eventName)) {
-                channel = SESSION_CHANNEL;
-                event = SESSION_EXTENDED_EVENT;
-            } else if (IdentityEventConstants.Event.SESSION_CREATE.equals(eventName)) {
-                channel = SESSION_CHANNEL;
-                event = SESSION_CREATED_EVENT;
-            } else if (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(eventName)) {
-                channel = USER_OPERATION_CHANNEL;
-                event = POST_UPDATE_USER_LIST_OF_ROLE_EVENT;
-            } else if (IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName)) {
-                channel = USER_OPERATION_CHANNEL;
-                event = POST_DELETE_USER_EVENT;
-            } else if (IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName)) {
-                channel = USER_OPERATION_CHANNEL;
-                event = POST_UNLOCK_ACCOUNT_EVENT;
-            } else if (IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName)) {
-                channel = USER_OPERATION_CHANNEL;
-                event = POST_LOCK_ACCOUNT_EVENT;
-            } else if (IdentityEventConstants.Event.POST_USER_PROFILE_UPDATE.equals(eventName)) {
-                channel = USER_OPERATION_CHANNEL;
-                event = POST_USER_PROFILE_UPDATED_EVENT;
-            } else if (IdentityEventConstants.Event.POST_ENABLE_ACCOUNT.equals(eventName)) {
-                channel = USER_OPERATION_CHANNEL;
-                event = POST_ACCOUNT_ENABLE_EVENT;
-            } else if (IdentityEventConstants.Event.POST_DISABLE_ACCOUNT.equals(eventName)) {
-                channel = USER_OPERATION_CHANNEL;
-                event = POST_ACCOUNT_DISABLE_EVENT;
-            } else if (isCredentialUpdateFlow(eventName)) {
-                channel = CREDENTIAL_CHANGE_CHANNEL;
-                event = POST_UPDATE_USER_CREDENTIAL;
-            } else if (IdentityEventConstants.Event.POST_ADD_USER.equals(eventName)) {
-                /*
-                The user operation check must always precede the registration check, since user creation occurs before
-                registration, and both events are triggered by the same event: POST_ADD_USER.
-                // TODO this issue is due to sequence utility access of metadata.
-                 */
-                channel = USER_OPERATION_CHANNEL;
-                event = POST_USER_CREATED_EVENT;
-            }
-        }
-        return EventMetadata.builder()
-                .event(String.valueOf(event))
-                .channel(String.valueOf(channel))
-                .eventProfile(WSO2.name())
-                .build();
-    }
-
-    private static boolean isCredentialUpdateFlow(String eventName) {
-
-        /*
-        Event.POST_ADD_NEW_PASSWORD + Flow.Name.PASSWORD_RESET:
-            Triggered when a user resets their password, either:
-                After an admin-enforced password reset, or
-                Through the "Forgot Password" flow.
-
-        Event.POST_UPDATE_CREDENTIAL_BY_SCIM:
-            Triggered when:
-                A user resets their password via the My Account portal, or
-                An admin resets the user's password via the Console.
-         */
-        if (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName)) {
-            Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-            Flow.Name flowName = (flow != null) ? flow.getName() : null;
-
-            return Flow.Name.PASSWORD_RESET.equals(flowName);
-        }
-
-        return IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);
-    }
-
     public static Optional<UserClaim> generateUserClaim(String claimKey, String claimValue, String tenantDomain) {
 
         if (StringUtils.isBlank(claimKey) || StringUtils.isBlank(claimValue)) {
@@ -405,6 +283,9 @@ public class WSO2PayloadUtils {
         }
 
         UserClaim.Builder userClaimBuilder = new UserClaim.Builder().uri(claimKey);
+
+        // todo: if the expectation of this method is to build the user name claim for the request payload,
+        //  handling multi attribute values is redundant.
 
         String multiAttributeSeparator = FrameworkUtils.getMultiAttributeSeparator();
         if (multiAttributeSeparator == null) {
@@ -541,14 +422,6 @@ public class WSO2PayloadUtils {
             List<UserClaim> filteredUserClaims = filterUserClaimsForUserAdd(claims, tenantDomain);
             user.setClaims(filteredUserClaims);
         }
-    }
-
-    private static boolean isBulkOperation() {
-
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
-        Flow.Name flowName = (flow != null) ? flow.getName() : null;
-
-        return Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName);
     }
 
     public static String constructFullURLWithEndpoint(String endpoint) {

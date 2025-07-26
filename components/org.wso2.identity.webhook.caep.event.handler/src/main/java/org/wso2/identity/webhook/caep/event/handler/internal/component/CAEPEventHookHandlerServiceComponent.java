@@ -26,7 +26,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.wso2.identity.webhook.caep.event.handler.api.CAEPEventProfileManager;
 import org.wso2.identity.webhook.caep.event.handler.api.builder.CAEPSessionEventPayloadBuilder;
-import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
+import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 
 /**
