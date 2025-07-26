@@ -24,6 +24,9 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Sessio
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
+/**
+ * This class represents the payload for the WSO2 Session Presented event.
+ */
 public class WSO2SessionPresentedEventPayload extends WSO2BaseEventPayload {
 
     private final Session session;
