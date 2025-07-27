@@ -85,9 +85,9 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
         switch (name) {
             case PROFILE_UPDATE:
                 return PasswordUpdateAction.UPDATE;
-            case PASSWORD_RESET:
+            case CREDENTIAL_RESET:
                 return PasswordUpdateAction.RESET;
-            case USER_REGISTRATION_INVITE_WITH_PASSWORD:
+            case INVITE:
                 return PasswordUpdateAction.INVITE;
             default: {
                 log.warn(name + " is not a valid password update action.");

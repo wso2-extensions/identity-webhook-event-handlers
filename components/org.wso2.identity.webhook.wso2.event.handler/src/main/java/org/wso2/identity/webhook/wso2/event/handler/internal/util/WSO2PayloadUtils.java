@@ -392,7 +392,7 @@ public class WSO2PayloadUtils {
             Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
             Flow.Name flowName = (flow != null) ? flow.getName() : null;
 
-            return Flow.Name.PASSWORD_RESET.equals(flowName);
+            return Flow.Name.CREDENTIAL_RESET.equals(flowName);
         }
 
         return IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);

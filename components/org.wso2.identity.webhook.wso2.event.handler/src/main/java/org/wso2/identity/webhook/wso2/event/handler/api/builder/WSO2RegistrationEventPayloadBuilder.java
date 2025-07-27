@@ -41,7 +41,6 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.Map;
-import java.util.Optional;
 
 public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPayloadBuilder {
 
@@ -81,9 +80,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         String action = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
-            action = Optional.ofNullable(resolveAction(flow.getName()))
-                    .map(Enum::name)
-                    .orElse(null);
+            action = flow.getName().name();
         }
 
         return new WSO2RegistrationSuccessEventPayload.Builder()
@@ -136,9 +133,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         String action = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
-            action = Optional.ofNullable(resolveAction(flow.getName()))
-                    .map(Enum::name)
-                    .orElse(null);
+            action = flow.getName().name();
         }
 
         String errorMessage = String.valueOf(properties.get(IdentityEventConstants.EventProperty.ERROR_MESSAGE));
@@ -167,30 +162,4 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                 .reason(reason)
                 .build();
     }
-
-    private RegistrationAction resolveAction(Flow.Name name) {
-
-        if (name == null) {
-            return null;
-        }
-
-        switch (name) {
-            case USER_REGISTRATION:
-                return RegistrationAction.REGISTER;
-            case USER_REGISTRATION_INVITE_WITH_PASSWORD:
-            case INVITED_USER_REGISTRATION:
-                return RegistrationAction.INVITE;
-            case JIT_PROVISION:
-                return RegistrationAction.JUST_IN_TIME;
-            default: {
-                log.warn(name + " is not a valid registration action.");
-                return null;
-            }
-        }
-    }
-
-    public enum RegistrationAction {
-        REGISTER, INVITE, JUST_IN_TIME
-    }
-
 }

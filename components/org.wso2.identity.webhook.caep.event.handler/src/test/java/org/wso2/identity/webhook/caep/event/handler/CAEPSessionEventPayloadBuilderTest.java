@@ -111,13 +111,13 @@ public class CAEPSessionEventPayloadBuilderTest {
     public Object[][] sessionTerminationDataProvider() {
 
         return new Object[][]{
-                {new Flow.Builder().name(Flow.Name.ACCOUNT_DISABLE)
+                {new Flow.Builder().name(Flow.Name.USER_ACCOUNT_DISABLE)
                         .initiatingPersona(Flow.InitiatingPersona.ADMIN).build()},
-                {new Flow.Builder().name(Flow.Name.ACCOUNT_LOCK)
+                {new Flow.Builder().name(Flow.Name.USER_ACCOUNT_LOCK)
                         .initiatingPersona(Flow.InitiatingPersona.SYSTEM).build()},
                 {new Flow.Builder().name(Flow.Name.LOGOUT)
                         .initiatingPersona(Flow.InitiatingPersona.APPLICATION).build()},
-                {new Flow.Builder().name(Flow.Name.USER_DELETE)
+                {new Flow.Builder().name(Flow.Name.USER_ACCOUNT_DELETE)
                         .initiatingPersona(Flow.InitiatingPersona.ADMIN).build()},
                 {new Flow.Builder().name(Flow.Name.SESSION_REVOKE)
                         .initiatingPersona(Flow.InitiatingPersona.USER).build()},
