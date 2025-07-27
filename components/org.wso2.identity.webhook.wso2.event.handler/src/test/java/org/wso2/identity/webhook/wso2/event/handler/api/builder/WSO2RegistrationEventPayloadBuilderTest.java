@@ -151,7 +151,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.USER_REGISTRATION)
+                .name(Flow.Name.REGISTER)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
@@ -166,8 +166,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertEquals(userAccountEventPayload.getUser().getRef(),
                 constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getAction());
-        assertEquals(userAccountEventPayload.getAction(),
-                WSO2RegistrationEventPayloadBuilder.RegistrationAction.REGISTER.name());
+        assertEquals(userAccountEventPayload.getAction(), Flow.Name.REGISTER.name());
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 3);
 
@@ -230,7 +229,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         when(mockEventData.getEventParams()).thenReturn(params);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.USER_REGISTRATION)
+                .name(Flow.Name.REGISTER)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
@@ -245,8 +244,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertEquals(userRegistrationFailurePayload.getUser().getRef(),
                 constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userRegistrationFailurePayload.getAction());
-        assertEquals(userRegistrationFailurePayload.getAction(),
-                WSO2RegistrationEventPayloadBuilder.RegistrationAction.REGISTER.name());
+        assertEquals(userRegistrationFailurePayload.getAction(), Flow.Name.REGISTER.name());
 
         assertNotNull(userRegistrationFailurePayload.getReason());
         assertNotNull(userRegistrationFailurePayload.getReason().getDescription());

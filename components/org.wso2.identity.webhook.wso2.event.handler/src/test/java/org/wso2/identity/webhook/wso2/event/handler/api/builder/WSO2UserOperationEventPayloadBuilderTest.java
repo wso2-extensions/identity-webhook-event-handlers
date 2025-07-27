@@ -242,7 +242,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     public void testBuildUserDeleteEvent() throws IdentityEventException, UserStoreException {
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.USER_DELETE)
+                .name(Flow.Name.USER_ACCOUNT_DELETE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
@@ -299,7 +299,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(TEST_USER_ID);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.ACCOUNT_UNLOCK)
+                .name(Flow.Name.USER_ACCOUNT_UNLOCK)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
@@ -345,7 +345,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(TEST_USER_ID);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.ACCOUNT_LOCK)
+                .name(Flow.Name.USER_ACCOUNT_LOCK)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
@@ -404,7 +404,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.ACCOUNT_DISABLE) //TODO change the flow when introduce ACCOUNT_ENABLE
+                .name(Flow.Name.USER_ACCOUNT_ENABLE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
@@ -442,7 +442,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.ACCOUNT_DISABLE)
+                .name(Flow.Name.USER_ACCOUNT_DISABLE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
@@ -484,7 +484,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         when(mockEventData.getEventParams()).thenReturn(params);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD)
+                .name(Flow.Name.INVITE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
@@ -499,8 +499,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertEquals(userAccountEventPayload.getUser().getRef(),
                 constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
         assertNotNull(userAccountEventPayload.getAction());
-        assertEquals(userAccountEventPayload.getAction(),
-                WSO2RegistrationEventPayloadBuilder.RegistrationAction.INVITE.name());
+        assertEquals(userAccountEventPayload.getAction(), Flow.Name.INVITE.name());
         assertNotNull(userAccountEventPayload.getUser().getClaims());
         assertEquals(userAccountEventPayload.getUser().getClaims().size(), 3);
 

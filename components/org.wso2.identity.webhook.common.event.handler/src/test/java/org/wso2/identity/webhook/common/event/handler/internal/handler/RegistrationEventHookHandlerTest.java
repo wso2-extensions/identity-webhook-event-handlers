@@ -109,7 +109,7 @@ public class RegistrationEventHookHandlerTest {
         setupPayloadBuilderMocks();
         setupUtilities();
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.USER_REGISTRATION)
+                .name(Flow.Name.REGISTER)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
     }
