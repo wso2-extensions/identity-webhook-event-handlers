@@ -151,7 +151,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.USER_REGISTRATION)
+                .name(Flow.Name.REGISTER)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 
@@ -230,7 +230,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         when(mockEventData.getEventParams()).thenReturn(params);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.USER_REGISTRATION)
+                .name(Flow.Name.REGISTER)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 

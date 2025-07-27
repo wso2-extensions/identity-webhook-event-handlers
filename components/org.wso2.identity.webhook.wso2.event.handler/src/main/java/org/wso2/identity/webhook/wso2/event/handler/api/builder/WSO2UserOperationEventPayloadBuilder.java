@@ -447,12 +447,12 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         switch (name) {
             case PROFILE_UPDATE:
                 return UserOperationAction.UPDATE;
-            case USER_REGISTRATION_INVITE_WITH_PASSWORD:
+            case INVITE:
             case INVITED_USER_REGISTRATION:
                 return UserOperationAction.INVITE;
-            case USER_REGISTRATION:
+            case REGISTER:
                 return UserOperationAction.REGISTER;
-            case JIT_PROVISION:
+            case JUST_IN_TIME_PROVISION:
                 return UserOperationAction.JUST_IN_TIME;
             default: {
                 return null;

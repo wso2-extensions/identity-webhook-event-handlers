@@ -175,12 +175,12 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         }
 
         switch (name) {
-            case USER_REGISTRATION:
+            case REGISTER:
                 return RegistrationAction.REGISTER;
-            case USER_REGISTRATION_INVITE_WITH_PASSWORD:
+            case INVITE:
             case INVITED_USER_REGISTRATION:
                 return RegistrationAction.INVITE;
-            case JIT_PROVISION:
+            case JUST_IN_TIME_PROVISION:
                 return RegistrationAction.JUST_IN_TIME;
             default: {
                 log.warn(name + " is not a valid registration action.");
