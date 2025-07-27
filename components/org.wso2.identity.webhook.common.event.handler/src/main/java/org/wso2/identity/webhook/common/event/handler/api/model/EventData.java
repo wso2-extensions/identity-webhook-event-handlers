@@ -23,6 +23,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 
+import java.util.Collections;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,18 +42,22 @@ public class EventData {
     private final SessionContext sessionContext;
     private final String userId;
     private final String tenantDomain;
+    private final Map<String, Object> properties;
 
     private EventData(Builder builder) {
 
         this.eventName = builder.eventName;
         this.request = builder.request;
-        this.eventParams = builder.eventParams;
         this.authenticationContext = builder.authenticationContext;
         this.authenticatorStatus = builder.authenticatorStatus;
         this.authenticatedUser = builder.authenticatedUser;
         this.sessionContext = builder.sessionContext;
         this.userId = builder.userId;
         this.tenantDomain = builder.tenantDomain;
+        this.eventParams =
+                builder.eventParams != null ? Collections.unmodifiableMap(builder.eventParams) : Collections.emptyMap();
+        this.properties =
+                builder.properties != null ? Collections.unmodifiableMap(builder.properties) : Collections.emptyMap();
     }
 
     public String getEventName() {
@@ -100,6 +105,11 @@ public class EventData {
         return tenantDomain;
     }
 
+    public Map<String, Object> getProperties() {
+
+        return properties;
+    }
+
     public static Builder builder() {
 
         return new Builder();
@@ -119,6 +129,8 @@ public class EventData {
         private SessionContext sessionContext;
         private String userId;
         private String tenantDomain;
+
+        private Map<String, Object> properties;
 
         public Builder eventName(String eventName) {
 
@@ -171,6 +183,12 @@ public class EventData {
         public Builder tenantDomain(String tenantDomain) {
 
             this.tenantDomain = tenantDomain;
+            return this;
+        }
+
+        public Builder properties(Map<String, Object> properties) {
+
+            this.properties = properties;
             return this;
         }
 

@@ -171,13 +171,11 @@ public class SessionEventHookHandlerTest {
                             org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.CAEP))
                     .thenReturn(mockedSessionEventPayloadBuilder);
 
-            when(mockedSessionEventPayloadBuilder.buildSessionTerminateEvent(any(EventData.class)))
+            when(mockedSessionEventPayloadBuilder.buildSessionRevokedEvent(any(EventData.class)))
                     .thenReturn(mockedEventPayload);
-            when(mockedSessionEventPayloadBuilder.buildSessionCreateEvent(any(EventData.class)))
+            when(mockedSessionEventPayloadBuilder.buildSessionEstablishedEvent(any(EventData.class)))
                     .thenReturn(mockedEventPayload);
-            when(mockedSessionEventPayloadBuilder.buildSessionUpdateEvent(any(EventData.class)))
-                    .thenReturn(mockedEventPayload);
-            when(mockedSessionEventPayloadBuilder.buildSessionExtendEvent(any(EventData.class)))
+            when(mockedSessionEventPayloadBuilder.buildSessionPresentedEvent(any(EventData.class)))
                     .thenReturn(mockedEventPayload);
 
             try (MockedStatic<EventHookHandlerUtils> utilsMocked = mockStatic(EventHookHandlerUtils.class)) {
@@ -252,13 +250,11 @@ public class SessionEventHookHandlerTest {
 
         when(mockedSessionEventPayloadBuilder.getEventSchemaType()).thenReturn(
                 org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.CAEP);
-        when(mockedSessionEventPayloadBuilder.buildSessionUpdateEvent(any(EventData.class)))
+        when(mockedSessionEventPayloadBuilder.buildSessionPresentedEvent(any(EventData.class)))
                 .thenReturn(mockedEventPayload);
-        when(mockedSessionEventPayloadBuilder.buildSessionExtendEvent(any(EventData.class)))
+        when(mockedSessionEventPayloadBuilder.buildSessionRevokedEvent(any(EventData.class)))
                 .thenReturn(mockedEventPayload);
-        when(mockedSessionEventPayloadBuilder.buildSessionTerminateEvent(any(EventData.class)))
-                .thenReturn(mockedEventPayload);
-        when(mockedSessionEventPayloadBuilder.buildSessionCreateEvent(any(EventData.class)))
+        when(mockedSessionEventPayloadBuilder.buildSessionEstablishedEvent(any(EventData.class)))
                 .thenReturn(mockedEventPayload);
     }
 

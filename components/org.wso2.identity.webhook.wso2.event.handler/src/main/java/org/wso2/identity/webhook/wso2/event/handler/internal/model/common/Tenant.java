@@ -16,20 +16,29 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.common.event.handler.api;
-
-import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
+package org.wso2.identity.webhook.wso2.event.handler.internal.model.common;
 
 /**
- * This interface is responsible for managing the event profile.
+ * Tenant class representing a tenant in the system.
  */
-public interface EventProfileManager {
+public class Tenant {
 
-    /**
-     * Resolves the event URI for the given event.
-     *
-     * @param event The event for which the URI needs to be resolved.
-     * @return Event metadata containing the profile, channel and event information.
-     */
-    EventMetadata resolveEventMetadata(String event);
+    private final String id;
+    private final String name;
+
+    public Tenant(String id, String name) {
+
+        this.id = id;
+        this.name = name;
+    }
+
+    public String getId() {
+
+        return id;
+    }
+
+    public String getName() {
+
+        return name;
+    }
 }

@@ -45,8 +45,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.wso2.carbon.identity.event.IdentityEventConstants.Event.SESSION_CREATE;
-import static org.wso2.carbon.identity.event.IdentityEventConstants.Event.SESSION_EXPIRE;
-import static org.wso2.carbon.identity.event.IdentityEventConstants.Event.SESSION_EXTEND;
+import static org.wso2.carbon.identity.event.IdentityEventConstants.Event.SESSION_EXTENSION;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.Event.SESSION_TERMINATE_V2;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.Event.SESSION_UPDATE;
 
@@ -182,15 +181,12 @@ public class SessionEventHookHandler extends AbstractEventHandler {
 
         switch (event.getEventName()) {
             case SESSION_TERMINATE_V2:
-                return payloadBuilder.buildSessionTerminateEvent(eventData);
-            case SESSION_EXPIRE:
-                return payloadBuilder.buildSessionExpireEvent(eventData);
+                return payloadBuilder.buildSessionRevokedEvent(eventData);
             case SESSION_CREATE:
-                return payloadBuilder.buildSessionCreateEvent(eventData);
+                return payloadBuilder.buildSessionEstablishedEvent(eventData);
             case SESSION_UPDATE:
-                return payloadBuilder.buildSessionUpdateEvent(eventData);
-            case SESSION_EXTEND:
-                return payloadBuilder.buildSessionExtendEvent(eventData);
+            case SESSION_EXTENSION:
+                return payloadBuilder.buildSessionPresentedEvent(eventData);
             default:
                 return null;
         }

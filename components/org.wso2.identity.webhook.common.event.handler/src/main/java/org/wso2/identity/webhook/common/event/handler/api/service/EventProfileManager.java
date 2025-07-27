@@ -16,18 +16,20 @@
  * under the License.
  */
 
-package org.wso2.identity.webhook.wso2.event.handler.api;
+package org.wso2.identity.webhook.common.event.handler.api.service;
 
-import org.wso2.identity.webhook.common.event.handler.api.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 
-import static org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils.resolveEventHandlerKey;
+/**
+ * This interface is responsible for managing the event profile.
+ */
+public interface EventProfileManager {
 
-public class WSO2EventProfileManager implements EventProfileManager {
-
-    @Override
-    public EventMetadata resolveEventMetadata(String event) {
-
-        return resolveEventHandlerKey(event);
-    }
+    /**
+     * Resolves the event URI for the given event.
+     *
+     * @param event The event for which the URI needs to be resolved.
+     * @return Event metadata containing the profile, channel and event information.
+     */
+    EventMetadata resolveEventMetadata(String event);
 }

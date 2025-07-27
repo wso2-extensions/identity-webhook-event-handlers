@@ -21,11 +21,9 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.UserSessionManagementService;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.ExternalIdPConfig;
@@ -36,34 +34,42 @@ import org.wso2.carbon.identity.application.authentication.framework.model.Appli
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedIdPData;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
-import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
-import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
+import org.wso2.carbon.user.core.UniqueIDUserStoreManager;
+import org.wso2.carbon.user.core.UserRealm;
+import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionCreatedEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionPresentedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionRevokedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.CommonTestUtils;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedIdentityTenantUtil;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.closeMockedServiceURLBuilder;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockIdentityTenantUtil;
@@ -71,16 +77,25 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUti
 
 public class WSO2SessionEventPayloadBuilderTest {
 
-    private static final String SAMPLE_TENANT_DOMAIN = "myorg";
-    private static final String SAMPLE_USER_NAME = "sampleUser";
-    private static final String SAMPLE_USER_ID = "07f47397-2e77-4fce-9fac-41ff509d62de";
-    private static final String SAMPLE_USERSTORE_NAME = "DEFAULT";
-    private static final String SAMPLE_SERVICE_PROVIDER = "test-app";
-    private static final String SAMPLE_IDP = "LOCAL";
-    private static final String SAMPLE_AUTHENTICATOR = "sms-otp-authenticator";
-    private static final String SAMPLE_SP_ID = "f27178f9-984b-41df-aee5-372de8ef327f";
-    private static final int SAMPLE_TENANT_ID = 100;
+    private static final String TEST_TENANT_DOMAIN = "myorg";
+    private static final int TEST_TENANT_ID = 100;
+    private static final String TEST_USER_NAME = "test-user";
+    private static final String TEST_USER_ID = "test-user-id";
+    public static final String TEST_USER_EMAIL = "test-user@wso2.com";
+    private static final String TEST_USER_STORE_DOMAIN = "DEFAULT";
+    private static final String TEST_USER_STORE_ID = "REVGQVVMVA==";
+    private static final String TEST_APP_NAME = "test-app";
+    private static final String TEST_APP_ID = "test-app-id";
+    private static final String TEST_IDP = "LOCAL";
+    private static final String TEST_AUTHENTICATOR_NAME = "sms-otp-authenticator";
     private static final String SAMPLE_ERROR_CODE = "SMS-65020";
+    private static final String TEST_SESSION_ID_1 = "session-id-1";
+    private static final String LOGIN_TIME = String.valueOf(System.currentTimeMillis());
+    private static final String TEST_SESSION_ID_2 = "session-id-2";
+    private static final String TEST_MULTI_ATTRIBUTE_SEPARATOR = ",";
+    private static final String EVENT_PARAM_KEY_SESSION_ID = "sessionId";
+    private static final String LOCAL_EMAIL_CLAIM_URI = "http://wso2.org/claims/emailaddress";
+    private static final String LOCAL_USERNAME_CLAIM_URI = "http://wso2.org/claims/username";
 
     @Mock
     private EventData mockEventData;
@@ -92,49 +107,57 @@ public class WSO2SessionEventPayloadBuilderTest {
     private WSO2SessionEventPayloadBuilder payloadBuilder;
 
     @Mock
-    private AuthenticationContext mockAuthenticationContext;
-
-    @Mock
-    private AuthenticatedUser mockAuthenticatedUser;
-
-    @Mock
-    private SessionContext mockSessionContext;
-
-    @Mock
     private ClaimMetadataManagementService claimMetadataManagementService;
 
     @Mock
     private UserSessionManagementService userSessionManagementService;
+    @Mock
+    private RealmService realmService;
+    @Mock
+    private UserRealm userRealm;
+    @Mock
+    private UniqueIDUserStoreManager uniqueIDUserStoreManager;
 
     private MockedStatic<FrameworkUtils> frameworkUtilsMockedStatic;
 
+    private AuthenticationContext mockAuthenticationContext;
+
+    private AuthenticatedUser mockAuthenticatedUser;
+
+    private SessionContext mockSessionContext;
+
     @BeforeClass
-    public void setup() throws Exception {
+    public void setUp() throws Exception {
 
         MockitoAnnotations.openMocks(this);
         WSO2EventHookHandlerDataHolder.getInstance().setOrganizationManager(mockOrganizationManager);
         WSO2EventHookHandlerDataHolder.getInstance().setClaimMetadataManagementService(claimMetadataManagementService);
         WSO2EventHookHandlerDataHolder.getInstance().setUserSessionManagementService(userSessionManagementService);
+        WSO2EventHookHandlerDataHolder.getInstance().setRealmService(realmService);
 
         mockAuthenticationContext = createMockAuthenticationContext();
         mockAuthenticatedUser = createMockAuthenticatedUser();
         mockSessionContext = createMockSessionContext();
 
         frameworkUtilsMockedStatic = mockStatic(FrameworkUtils.class);
-        frameworkUtilsMockedStatic.when(() -> FrameworkUtils.getMultiAttributeSeparator()).thenReturn(",");
+        frameworkUtilsMockedStatic.when(FrameworkUtils::getMultiAttributeSeparator).thenReturn(
+                TEST_MULTI_ATTRIBUTE_SEPARATOR);
         mockServiceURLBuilder();
         mockIdentityTenantUtil();
-        CommonTestUtils.initPrivilegedCarbonContext(SAMPLE_TENANT_DOMAIN, SAMPLE_TENANT_ID, SAMPLE_USER_NAME);
+        CommonTestUtils.initPrivilegedCarbonContext(TEST_TENANT_DOMAIN, TEST_TENANT_ID, TEST_USER_NAME);
     }
 
     @AfterClass
-    public void teardown() {
+    public void tearDown() {
 
         frameworkUtilsMockedStatic.close();
         closeMockedServiceURLBuilder();
         closeMockedIdentityTenantUtil();
 
-        Mockito.reset(claimMetadataManagementService);
+        reset(claimMetadataManagementService,
+                userSessionManagementService,
+                mockOrganizationManager,
+                mockEventData);
     }
 
     @Test
@@ -144,137 +167,331 @@ public class WSO2SessionEventPayloadBuilderTest {
         assertEquals(schema, EventSchema.WSO2);
     }
 
-    @DataProvider(name = "revokedEventDataProvider")
-    public Object[][] revokedEventDataProvider() {
-
-        List<UserSession> sessions = new ArrayList<>();
-        UserSession session1 = getUserSession("sessionId1", "Sample1", "SampleApp1", "1");
-        sessions.add(session1);
-        UserSession session2 = getUserSession("sessionId2", "Sample2", "SampleApp2", "2");
-        sessions.add(session2);
-
-        return new Object[][]{
-                {Flow.InitiatingPersona.ADMIN, sessions},
-                {Flow.InitiatingPersona.USER, sessions},
-                {Flow.InitiatingPersona.APPLICATION, null},
-                {Flow.InitiatingPersona.SYSTEM, sessions.subList(0, 1)}
-        };
-    }
-
-    private UserSession getUserSession(String id, String applicationSample, String applicationName,
-                                       String applicationId) {
-
-        UserSession session1 = new UserSession();
-        session1.setSessionId(id);
-        Application app = new Application(applicationSample, applicationName, applicationId);
-        session1.setApplications(Collections.singletonList(app));
-        return session1;
-    }
-
-    @Test(dataProvider = "revokedEventDataProvider")
-    public void testBuildSessionTerminateEvent
-            (Flow.InitiatingPersona initiatingEntity, List<UserSession> sessions)
-            throws IdentityEventException {
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("sessions", sessions);
-        params.put("eventTimeStamp", System.currentTimeMillis());
-
-        EventData eventData = new EventData.Builder()
-                .eventName(IdentityEventConstants.Event.SESSION_TERMINATE_V2)
-                .authenticatedUser(mockAuthenticatedUser)
-                .authenticationContext(null)
-                .sessionContext(null)
-                .eventParams(params)
-                .tenantDomain(SAMPLE_TENANT_DOMAIN)
-                .userId(SAMPLE_USER_ID)
-                .build();
-
-        EventPayload payload = payloadBuilder.buildSessionTerminateEvent(eventData);
-        assertTrue(payload instanceof WSO2SessionRevokedEventPayload);
-
-        WSO2SessionRevokedEventPayload sessionRevokedPayload =
-                (WSO2SessionRevokedEventPayload) payload;
-
-        assertEquals(sessionRevokedPayload.getUser().getId(), SAMPLE_USER_ID);
-        assertEquals(sessionRevokedPayload.getUserStore().getName(), SAMPLE_USERSTORE_NAME);
-        assertEquals(sessionRevokedPayload.getTenant().getId(), String.valueOf(SAMPLE_TENANT_ID));
-        assertEquals(sessionRevokedPayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
-    }
-
     @Test
-    public void testSessionCreateEvent() throws IdentityEventException {
+    public void testSessionEstablishedEvent() throws Exception {
+
+        when(userSessionManagementService.getUserSessionBySessionId(TEST_SESSION_ID_1)).thenReturn(
+                Optional.of(getFirstMockUserSession()));
 
         Map<String, Object> params = new HashMap<>();
-        params.put("eventTimeStamp", System.currentTimeMillis());
-        params.put("sessionId", "sessionId");
+        params.put(EVENT_PARAM_KEY_SESSION_ID, TEST_SESSION_ID_1);
 
         EventData eventData = new EventData.Builder()
-                .eventName("SESSION_CREATE")
+                .eventName(IdentityEventConstants.Event.SESSION_CREATE)
                 .authenticatedUser(mockAuthenticatedUser)
                 .authenticationContext(mockAuthenticationContext)
                 .sessionContext(mockSessionContext)
-                .tenantDomain(SAMPLE_TENANT_DOMAIN)
+                .tenantDomain(TEST_TENANT_DOMAIN)
                 .eventParams(params)
                 .build();
 
-        EventPayload payload = payloadBuilder.buildSessionCreateEvent(eventData);
+        EventPayload payload = payloadBuilder.buildSessionEstablishedEvent(eventData);
         assertTrue(payload instanceof WSO2SessionCreatedEventPayload);
 
-        WSO2SessionCreatedEventPayload sessionCreatePayload =
-                (WSO2SessionCreatedEventPayload) payload;
+        WSO2SessionCreatedEventPayload sessionCreatePayload = (WSO2SessionCreatedEventPayload) payload;
 
-        assertEquals(sessionCreatePayload.getUser().getId(), SAMPLE_USER_ID);
-        assertEquals(sessionCreatePayload.getUserStore().getName(), SAMPLE_USERSTORE_NAME);
-        assertEquals(sessionCreatePayload.getTenant().getId(), String.valueOf(SAMPLE_TENANT_ID));
-        assertEquals(sessionCreatePayload.getTenant().getName(), SAMPLE_TENANT_DOMAIN);
+        assertEquals(sessionCreatePayload.getUser().getId(), TEST_USER_ID);
+        assertEquals(sessionCreatePayload.getUser().getClaims().size(), 2);
+
+        sessionCreatePayload.getUser().getClaims().forEach(entry -> {
+            if (LOCAL_EMAIL_CLAIM_URI.equals(entry.getUri())) {
+                assertEquals(entry.getValue(), TEST_USER_EMAIL);
+            } else if (LOCAL_USERNAME_CLAIM_URI.equals(entry.getUri())) {
+                assertEquals(entry.getValue(), TEST_USER_NAME);
+            } else {
+                fail("Unexpected claim: " + entry.getUri());
+            }
+        });
+
+        assertEquals(sessionCreatePayload.getUserStore().getId(), TEST_USER_STORE_ID);
+        assertEquals(sessionCreatePayload.getUserStore().getName(), TEST_USER_STORE_DOMAIN);
+        assertEquals(sessionCreatePayload.getApplication().getId(), TEST_APP_ID);
+        assertEquals(sessionCreatePayload.getApplication().getName(), TEST_APP_NAME);
+        assertEquals(sessionCreatePayload.getTenant().getId(), String.valueOf(TEST_TENANT_ID));
+        assertEquals(sessionCreatePayload.getTenant().getName(), TEST_TENANT_DOMAIN);
+        assertEquals(sessionCreatePayload.getSession().getId(), TEST_SESSION_ID_1);
+        assertEquals(sessionCreatePayload.getSession().getLoginTime(), new Date(Long.parseLong(LOGIN_TIME)));
+        assertEquals(sessionCreatePayload.getSession().getApplications().size(), 1);
+        assertEquals(sessionCreatePayload.getSession().getApplications().get(0).getId(), TEST_APP_ID);
+        assertEquals(sessionCreatePayload.getSession().getApplications().get(0).getName(), TEST_APP_NAME);
     }
 
     @Test
-    public void testSessionUpdateEvent() throws IdentityEventException {
+    public void testSessionPresentedEventAtSSOLogin() throws Exception {
 
-        EventPayload payload = payloadBuilder.buildSessionUpdateEvent(mockEventData);
-        assertNull(payload);
+        when(userSessionManagementService.getUserSessionBySessionId(TEST_SESSION_ID_1)).thenReturn(
+                Optional.of(getFirstMockUserSession()));
+
+        // In SSO or passive login going through
+        // {@link org.wso2.carbon.identity.application.authentication.framework.handler.request.impl.DefaultRequestCoordinator}
+        // the session id is available in event params.
+        Map<String, Object> params = new HashMap<>();
+        params.put(EVENT_PARAM_KEY_SESSION_ID, TEST_SESSION_ID_1);
+
+        EventData eventData = new EventData.Builder()
+                .eventName(IdentityEventConstants.Event.SESSION_UPDATE) // Internal event that fires is SESSION_UPDATE
+                .authenticatedUser(mockAuthenticatedUser)
+                .authenticationContext(mockAuthenticationContext)
+                .sessionContext(mockSessionContext)
+                .tenantDomain(TEST_TENANT_DOMAIN)
+                .eventParams(params)
+                .build();
+
+        EventPayload payload = payloadBuilder.buildSessionPresentedEvent(eventData);
+        assertTrue(payload instanceof WSO2SessionPresentedEventPayload);
+
+        WSO2SessionPresentedEventPayload sessionPresentedEventPayload = (WSO2SessionPresentedEventPayload) payload;
+
+        assertEquals(sessionPresentedEventPayload.getUser().getId(), TEST_USER_ID);
+        assertEquals(sessionPresentedEventPayload.getUser().getClaims().size(), 2);
+
+        sessionPresentedEventPayload.getUser().getClaims().forEach(entry -> {
+            if (LOCAL_EMAIL_CLAIM_URI.equals(entry.getUri())) {
+                assertEquals(entry.getValue(), TEST_USER_EMAIL);
+            } else if (LOCAL_USERNAME_CLAIM_URI.equals(entry.getUri())) {
+                assertEquals(entry.getValue(), TEST_USER_NAME);
+            } else {
+                fail("Unexpected claim: " + entry.getUri());
+            }
+        });
+
+        assertEquals(sessionPresentedEventPayload.getUserStore().getId(), TEST_USER_STORE_ID);
+        assertEquals(sessionPresentedEventPayload.getUserStore().getName(), TEST_USER_STORE_DOMAIN);
+        assertEquals(sessionPresentedEventPayload.getApplication().getId(), TEST_APP_ID);
+        assertEquals(sessionPresentedEventPayload.getApplication().getName(), TEST_APP_NAME);
+        assertEquals(sessionPresentedEventPayload.getTenant().getId(), String.valueOf(TEST_TENANT_ID));
+        assertEquals(sessionPresentedEventPayload.getTenant().getName(), TEST_TENANT_DOMAIN);
+        assertEquals(sessionPresentedEventPayload.getSession().getId(), TEST_SESSION_ID_1);
+        assertEquals(sessionPresentedEventPayload.getSession().getLoginTime(), new Date(Long.parseLong(LOGIN_TIME)));
+        assertEquals(sessionPresentedEventPayload.getSession().getApplications().size(), 1);
+        assertEquals(sessionPresentedEventPayload.getSession().getApplications().get(0).getId(), TEST_APP_ID);
+        assertEquals(sessionPresentedEventPayload.getSession().getApplications().get(0).getName(), TEST_APP_NAME);
     }
 
     @Test
-    public void testSessionExtend() throws IdentityEventException {
+    public void testSessionPresentedEventAtExplicitSessionExtension() throws Exception {
 
-        EventPayload payload = payloadBuilder.buildSessionExtendEvent(mockEventData);
-        assertNull(payload);
+        when(userSessionManagementService.getUserSessionBySessionId(TEST_SESSION_ID_1)).thenReturn(
+                Optional.of(getFirstMockUserSession()));
+
+        // In explicit session extension over api
+        // {@link org.wso2.carbon.identity.application.authentication.framework.session.extender.processor.SessionExtenderProcessor}
+        // the session id is available in event properties.
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.SESSION_CONTEXT_ID, TEST_SESSION_ID_1);
+
+        EventData eventData = new EventData.Builder()
+                .eventName(
+                        IdentityEventConstants.Event.SESSION_EXTENSION) // Internal event that fires is SESSION_UPDATE
+                .authenticatedUser(mockAuthenticatedUser)
+                .authenticationContext(mockAuthenticationContext)
+                .sessionContext(mockSessionContext)
+                .tenantDomain(TEST_TENANT_DOMAIN)
+                .properties(properties)
+                .build();
+
+        EventPayload payload = payloadBuilder.buildSessionPresentedEvent(eventData);
+        assertTrue(payload instanceof WSO2SessionPresentedEventPayload);
+
+        WSO2SessionPresentedEventPayload sessionPresentedEventPayload = (WSO2SessionPresentedEventPayload) payload;
+
+        assertEquals(sessionPresentedEventPayload.getUser().getId(), TEST_USER_ID);
+        assertEquals(sessionPresentedEventPayload.getUser().getClaims().size(), 2);
+
+        sessionPresentedEventPayload.getUser().getClaims().forEach(entry -> {
+            if (LOCAL_EMAIL_CLAIM_URI.equals(entry.getUri())) {
+                assertEquals(entry.getValue(), TEST_USER_EMAIL);
+            } else if (LOCAL_USERNAME_CLAIM_URI.equals(entry.getUri())) {
+                assertEquals(entry.getValue(), TEST_USER_NAME);
+            } else {
+                fail("Unexpected claim: " + entry.getUri());
+            }
+        });
+
+        assertEquals(sessionPresentedEventPayload.getUserStore().getId(), TEST_USER_STORE_ID);
+        assertEquals(sessionPresentedEventPayload.getUserStore().getName(), TEST_USER_STORE_DOMAIN);
+        assertEquals(sessionPresentedEventPayload.getApplication().getId(), TEST_APP_ID);
+        assertEquals(sessionPresentedEventPayload.getApplication().getName(), TEST_APP_NAME);
+        assertEquals(sessionPresentedEventPayload.getTenant().getId(), String.valueOf(TEST_TENANT_ID));
+        assertEquals(sessionPresentedEventPayload.getTenant().getName(), TEST_TENANT_DOMAIN);
+        assertEquals(sessionPresentedEventPayload.getSession().getId(), TEST_SESSION_ID_1);
+        assertEquals(sessionPresentedEventPayload.getSession().getLoginTime(), new Date(Long.parseLong(LOGIN_TIME)));
+        assertEquals(sessionPresentedEventPayload.getSession().getApplications().size(), 1);
+        assertEquals(sessionPresentedEventPayload.getSession().getApplications().get(0).getId(), TEST_APP_ID);
+        assertEquals(sessionPresentedEventPayload.getSession().getApplications().get(0).getName(), TEST_APP_NAME);
     }
 
     @Test
-    public void testSessionExpire() throws IdentityEventException {
+    public void testSessionRevokedEventByUserId() throws Exception {
 
-        EventPayload payload = payloadBuilder.buildSessionExpireEvent(mockEventData);
-        assertNull(payload);
+        when(userSessionManagementService.getUserSessionBySessionId(TEST_SESSION_ID_1)).thenReturn(
+                Optional.of(getFirstMockUserSession()));
+        when(userSessionManagementService.getUserSessionBySessionId(TEST_SESSION_ID_2)).thenReturn(
+                Optional.of(getSecondMockUserSession()));
+
+        when(realmService.getTenantUserRealm(TEST_TENANT_ID)).thenReturn(userRealm);
+        when(userRealm.getUserStoreManager()).thenReturn(uniqueIDUserStoreManager);
+        when(uniqueIDUserStoreManager.getUserClaimValuesWithID(any(), any(), any())).thenReturn(
+                getMockUserStoreClaims());
+
+        Map<String, Object> eventParams = new HashMap<>();
+        eventParams.put(IdentityEventConstants.EventProperty.SESSION_IDS, Arrays.asList(
+                TEST_SESSION_ID_1, TEST_SESSION_ID_2));
+
+        // In explicit session termination over api, account lock/disable etc.,
+        // Only user ID is available in event properties.
+        // No authenticated user object is available.
+        Map<String, Object> properties = new HashMap<>();
+        eventParams.put(IdentityEventConstants.EventProperty.USER_ID, TEST_USER_ID);
+
+        EventData eventData = new EventData.Builder()
+                .eventName(
+                        IdentityEventConstants.Event.SESSION_TERMINATE_V2)
+                .authenticatedUser(null)
+                .userId(TEST_USER_ID)
+                .authenticationContext(null)
+                .sessionContext(null)
+                .tenantDomain(TEST_TENANT_DOMAIN)
+                .eventParams(eventParams)
+                .properties(properties)
+                .build();
+
+        EventPayload payload = payloadBuilder.buildSessionRevokedEvent(eventData);
+        assertTrue(payload instanceof WSO2SessionRevokedEventPayload);
+
+        WSO2SessionRevokedEventPayload sessionRevokedEventPayload = (WSO2SessionRevokedEventPayload) payload;
+
+        assertEquals(sessionRevokedEventPayload.getUser().getId(), TEST_USER_ID);
+        assertEquals(sessionRevokedEventPayload.getUser().getClaims().size(), 2);
+
+        sessionRevokedEventPayload.getUser().getClaims().forEach(entry -> {
+            if (LOCAL_EMAIL_CLAIM_URI.equals(entry.getUri())) {
+                assertEquals(entry.getValue(), TEST_USER_EMAIL);
+            } else if (LOCAL_USERNAME_CLAIM_URI.equals(entry.getUri())) {
+                assertEquals(entry.getValue(), TEST_USER_NAME);
+            } else {
+                fail("Unexpected claim: " + entry.getUri());
+            }
+        });
+
+        // Currently user store is not available in this case.
+        assertNull(sessionRevokedEventPayload.getUserStore());
+        // Application is not available in this case.
+        assertNull(sessionRevokedEventPayload.getApplication());
+        assertEquals(sessionRevokedEventPayload.getTenant().getId(), String.valueOf(TEST_TENANT_ID));
+        assertEquals(sessionRevokedEventPayload.getTenant().getName(), TEST_TENANT_DOMAIN);
+        assertEquals(sessionRevokedEventPayload.getSessions().size(), 2);
+
+        sessionRevokedEventPayload.getSessions().forEach(entry -> {
+            if (TEST_SESSION_ID_1.equals(entry.getId())) {
+                assertEquals(String.valueOf(entry.getLoginTime().getTime()), LOGIN_TIME);
+                assertEquals(entry.getApplications().size(), 1);
+                assertEquals(entry.getApplications().get(0).getId(), TEST_APP_ID);
+                assertEquals(entry.getApplications().get(0).getName(), TEST_APP_NAME);
+            } else if (TEST_SESSION_ID_2.equals(entry.getId())) {
+                assertEquals(String.valueOf(entry.getLoginTime().getTime()), LOGIN_TIME);
+                assertEquals(entry.getApplications().size(), 1);
+                assertEquals(entry.getApplications().get(0).getId(), TEST_APP_ID);
+                assertEquals(entry.getApplications().get(0).getName(), TEST_APP_NAME);
+            } else {
+                fail("Unexpected session: " + entry.getId());
+            }
+        });
+    }
+
+    @Test
+    public void testSessionRevokedEventAtLogout() throws Exception {
+
+        when(userSessionManagementService.getUserSessionBySessionId(TEST_SESSION_ID_1)).thenReturn(
+                Optional.of(getFirstMockUserSession()));
+        when(userSessionManagementService.getUserSessionBySessionId(TEST_SESSION_ID_2)).thenReturn(
+                Optional.of(getSecondMockUserSession()));
+
+        when(realmService.getTenantUserRealm(TEST_TENANT_ID)).thenReturn(userRealm);
+        when(userRealm.getUserStoreManager()).thenReturn(uniqueIDUserStoreManager);
+        when(uniqueIDUserStoreManager.getUserClaimValuesWithID(any(), any(), any())).thenReturn(
+                getMockUserStoreClaims());
+
+        Map<String, Object> eventParams = new HashMap<>();
+        eventParams.put(EVENT_PARAM_KEY_SESSION_ID, TEST_SESSION_ID_1);
+
+        // Authenticated user object is available at logout
+        EventData eventData = new EventData.Builder()
+                .eventName(
+                        IdentityEventConstants.Event.SESSION_TERMINATE_V2)
+                .authenticatedUser(mockAuthenticatedUser)
+                .authenticationContext(mockAuthenticationContext)
+                .sessionContext(mockSessionContext)
+                .tenantDomain(TEST_TENANT_DOMAIN)
+                .eventParams(eventParams)
+                .build();
+
+        EventPayload payload = payloadBuilder.buildSessionRevokedEvent(eventData);
+        assertTrue(payload instanceof WSO2SessionRevokedEventPayload);
+
+        WSO2SessionRevokedEventPayload sessionRevokedEventPayload = (WSO2SessionRevokedEventPayload) payload;
+
+        assertEquals(sessionRevokedEventPayload.getUser().getId(), TEST_USER_ID);
+        assertEquals(sessionRevokedEventPayload.getUser().getClaims().size(), 2);
+
+        sessionRevokedEventPayload.getUser().getClaims().forEach(entry -> {
+            if (LOCAL_EMAIL_CLAIM_URI.equals(entry.getUri())) {
+                assertEquals(entry.getValue(), TEST_USER_EMAIL);
+            } else if (LOCAL_USERNAME_CLAIM_URI.equals(entry.getUri())) {
+                assertEquals(entry.getValue(), TEST_USER_NAME);
+            } else {
+                fail("Unexpected claim: " + entry.getUri());
+            }
+        });
+
+        assertEquals(sessionRevokedEventPayload.getUserStore().getId(), TEST_USER_STORE_ID);
+        assertEquals(sessionRevokedEventPayload.getUserStore().getName(), TEST_USER_STORE_DOMAIN);
+        assertEquals(sessionRevokedEventPayload.getTenant().getId(), String.valueOf(TEST_TENANT_ID));
+        assertEquals(sessionRevokedEventPayload.getTenant().getName(), TEST_TENANT_DOMAIN);
+        assertEquals(sessionRevokedEventPayload.getSessions().size(), 1);
+
+        sessionRevokedEventPayload.getSessions().forEach(entry -> {
+            if (TEST_SESSION_ID_1.equals(entry.getId())) {
+                assertEquals(String.valueOf(entry.getLoginTime().getTime()), LOGIN_TIME);
+                assertEquals(entry.getApplications().size(), 1);
+                assertEquals(entry.getApplications().get(0).getId(), TEST_APP_ID);
+                assertEquals(entry.getApplications().get(0).getName(), TEST_APP_NAME);
+            } else {
+                fail("Unexpected session: " + entry.getId());
+            }
+        });
     }
 
     private SessionContext createMockSessionContext() {
 
         SessionContext sessionContext = new SessionContext();
         Map<String, Map<String, AuthenticatedIdPData>> authenticatedIdPsOfApp = new HashMap<>();
-        authenticatedIdPsOfApp.put("SampleApp", new HashMap<>());
-        authenticatedIdPsOfApp.put("SampleApp2", new HashMap<>());
+        authenticatedIdPsOfApp.put(TEST_APP_NAME, new HashMap<>());
         sessionContext.setAuthenticatedIdPsOfApp(Collections.unmodifiableMap(authenticatedIdPsOfApp));
+
+        HashMap<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.SESSION_CONTEXT_ID, TEST_SESSION_ID_1);
+        properties.put(FrameworkConstants.AUTHENTICATED_USER, mockAuthenticatedUser);
+        sessionContext.setProperties(properties);
+
         return sessionContext;
     }
 
     private AuthenticationContext createMockAuthenticationContext() {
 
         AuthenticationContext context = new AuthenticationContext();
-        context.setTenantDomain(SAMPLE_TENANT_DOMAIN);
-        context.setLoginTenantDomain(SAMPLE_TENANT_DOMAIN);
-        context.setServiceProviderName(SAMPLE_SERVICE_PROVIDER);
-        context.setServiceProviderResourceId(SAMPLE_SP_ID);
-        AuthHistory step = new AuthHistory(SAMPLE_AUTHENTICATOR, SAMPLE_IDP);
+        context.setTenantDomain(TEST_TENANT_DOMAIN);
+        context.setLoginTenantDomain(TEST_TENANT_DOMAIN);
+        context.setServiceProviderName(TEST_APP_NAME);
+        context.setServiceProviderResourceId(TEST_APP_ID);
+        AuthHistory step = new AuthHistory(TEST_AUTHENTICATOR_NAME, TEST_IDP);
         context.addAuthenticationStepHistory(step);
         context.setCurrentStep(2);
-        context.setCurrentAuthenticator(SAMPLE_AUTHENTICATOR);
+        context.setCurrentAuthenticator(TEST_AUTHENTICATOR_NAME);
 
         IdentityProvider localIdP = new IdentityProvider();
-        localIdP.setIdentityProviderName(SAMPLE_IDP);
+        localIdP.setIdentityProviderName(TEST_IDP);
         ExternalIdPConfig localIdPConfig = new ExternalIdPConfig(localIdP);
         context.setExternalIdP(localIdPConfig);
 
@@ -291,12 +508,12 @@ public class WSO2SessionEventPayloadBuilderTest {
     private AuthenticatedUser createMockAuthenticatedUser() {
 
         AuthenticatedUser user = new AuthenticatedUser();
-        user.setUserId(SAMPLE_USER_ID);
-        user.setUserStoreDomain(SAMPLE_USERSTORE_NAME);
-        user.setTenantDomain(SAMPLE_TENANT_DOMAIN);
+        user.setUserId(TEST_USER_ID);
+        user.setUserStoreDomain(TEST_USER_STORE_DOMAIN);
+        user.setTenantDomain(TEST_TENANT_DOMAIN);
         user.setFederatedUser(false);
-        user.setAuthenticatedSubjectIdentifier(SAMPLE_USER_NAME);
-        user.setUserName(SAMPLE_USER_NAME);
+        user.setAuthenticatedSubjectIdentifier(TEST_USER_NAME);
+        user.setUserName(TEST_USER_NAME);
         user.setUserAttributes(getMockUserAttributes());
         return user;
     }
@@ -304,18 +521,57 @@ public class WSO2SessionEventPayloadBuilderTest {
     private Map<ClaimMapping, String> getMockUserAttributes() {
 
         Map<ClaimMapping, String> userAttributes = new HashMap<>();
-        Claim usernameClaim = new Claim();
-        usernameClaim.setClaimUri("http://wso2.org/claims/username");
-        ClaimMapping usernameClaimMapping = new ClaimMapping();
-        usernameClaimMapping.setLocalClaim(usernameClaim);
-        userAttributes.put(usernameClaimMapping, SAMPLE_USER_NAME);
 
         Claim emailClaim = new Claim();
-        emailClaim.setClaimUri("http://wso2.org/claims/emailaddress");
+        emailClaim.setClaimUri(LOCAL_EMAIL_CLAIM_URI);
         ClaimMapping emailClaimMapping = new ClaimMapping();
         emailClaimMapping.setLocalClaim(emailClaim);
-        userAttributes.put(emailClaimMapping, "sample@wso2.com");
+        userAttributes.put(emailClaimMapping, TEST_USER_EMAIL);
+
+        Claim localClaimWithEmptyClaimURI = new Claim();
+        localClaimWithEmptyClaimURI.setClaimUri("");
+        ClaimMapping localClaimWithEmptyClaimURIMapping = new ClaimMapping();
+        localClaimWithEmptyClaimURIMapping.setLocalClaim(localClaimWithEmptyClaimURI);
+        userAttributes.put(localClaimWithEmptyClaimURIMapping, "invalid-claim-value");
+
+        Claim localClaimWithEmptyClaimValue = new Claim();
+        localClaimWithEmptyClaimValue.setClaimUri("http://wso2.org/claims/invalid");
+        ClaimMapping localClaimWithEmptyClaimValueMapping = new ClaimMapping();
+        localClaimWithEmptyClaimValueMapping.setLocalClaim(localClaimWithEmptyClaimValue);
+        userAttributes.put(localClaimWithEmptyClaimValueMapping, null);
+
+        Claim localClaimNotInLocalClaimDialect = new Claim();
+        localClaimNotInLocalClaimDialect.setClaimUri("not-in-local-claim-dialect-uri");
+        ClaimMapping localClaimNotInLocalClaimDialectMapping = new ClaimMapping();
+        localClaimNotInLocalClaimDialectMapping.setLocalClaim(localClaimNotInLocalClaimDialect);
+        userAttributes.put(localClaimNotInLocalClaimDialectMapping, "not-in-local-claim-dialect-value");
 
         return userAttributes;
+    }
+
+    private UserSession getFirstMockUserSession() {
+
+        UserSession userSession = new UserSession();
+        userSession.setSessionId(TEST_SESSION_ID_1);
+        userSession.setLastAccessTime(LOGIN_TIME);
+        userSession.setApplications(Collections.singletonList(new Application(null, TEST_APP_NAME, TEST_APP_ID)));
+        return userSession;
+    }
+
+    private UserSession getSecondMockUserSession() {
+
+        UserSession userSession = new UserSession();
+        userSession.setSessionId(TEST_SESSION_ID_2);
+        userSession.setLastAccessTime(LOGIN_TIME);
+        userSession.setApplications(Collections.singletonList(new Application(null, TEST_APP_NAME, TEST_APP_ID)));
+        return userSession;
+    }
+
+    private Map<String, String> getMockUserStoreClaims() {
+
+        Map<String, String> claims = new HashMap<>();
+        claims.put(LOCAL_EMAIL_CLAIM_URI, TEST_USER_EMAIL);
+        claims.put(LOCAL_USERNAME_CLAIM_URI, TEST_USER_NAME);
+        return claims;
     }
 }
