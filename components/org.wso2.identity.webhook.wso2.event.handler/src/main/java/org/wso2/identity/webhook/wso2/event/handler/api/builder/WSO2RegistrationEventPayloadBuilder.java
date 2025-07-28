@@ -181,7 +181,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
             case INVITED_USER_REGISTRATION:
                 return RegistrationAction.INVITE;
             case JUST_IN_TIME_PROVISION:
-                return RegistrationAction.JUST_IN_TIME;
+                return RegistrationAction.JUST_IN_TIME_PROVISION;
             default: {
                 log.warn(name + " is not a valid registration action.");
                 return null;
@@ -190,7 +190,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
     }
 
     public enum RegistrationAction {
-        REGISTER, INVITE, JUST_IN_TIME
+        REGISTER, INVITE, JUST_IN_TIME_PROVISION
     }
 
 }
