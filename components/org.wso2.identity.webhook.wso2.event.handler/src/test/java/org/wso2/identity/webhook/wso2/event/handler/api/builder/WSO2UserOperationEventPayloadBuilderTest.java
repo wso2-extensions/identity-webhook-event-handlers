@@ -484,7 +484,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         when(mockEventData.getEventParams()).thenReturn(params);
 
         IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
-                .name(Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD)
+                .name(Flow.Name.INVITE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
 

@@ -199,7 +199,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 (IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName)  ||
                         IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
                         (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
-                                Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD.equals(flowName)));
+                                Flow.Name.INVITE.equals(flowName)));
     }
 
     private boolean isUserRegistrationFailedFlow(String eventName) {
