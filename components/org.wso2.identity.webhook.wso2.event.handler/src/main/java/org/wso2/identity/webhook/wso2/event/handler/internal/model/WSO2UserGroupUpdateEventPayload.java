@@ -20,6 +20,7 @@ package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Group;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Tenant;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
 /**
@@ -52,7 +53,7 @@ public class WSO2UserGroupUpdateEventPayload extends WSO2BaseEventPayload {
         private Group group;
         private Organization organization;
         private UserStore userStore;
-        private Organization tenant;
+        private Tenant tenant;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -78,7 +79,7 @@ public class WSO2UserGroupUpdateEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public Builder tenant(Organization tenant) {
+        public Builder tenant(Tenant tenant) {
 
             this.tenant = tenant;
             return this;

@@ -29,9 +29,12 @@ import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.common.Subject;
+import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.resource.sharing.policy.management.constant.PolicyEnum;
 import org.wso2.carbon.identity.webhook.metadata.api.exception.WebhookMetadataException;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
+import org.wso2.carbon.identity.webhook.metadata.api.model.WebhookMetadataProperties;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
@@ -91,7 +94,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
     }
 
     private void handleEventPerEventProfile(Event event, EventData eventData, EventProfile eventProfile)
-            throws IdentityEventException {
+            throws IdentityEventException, OrganizationManagementException, WebhookMetadataException {
 
         org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
                 org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
@@ -126,16 +129,33 @@ public class SessionEventHookHandler extends AbstractEventHandler {
             return;
         }
 
-        EventContext eventContext = buildEventContext(eventProfile, sessionChannel);
-        if (!canPublisherHandleEvent(eventContext, event.getEventName())) {
-            log.debug("Current active event publisher cannot handle the event: " + event.getEventName() +
-                    ". Skipping session event handling.");
-            return;
-        }
+        // Publish for tenantDomain
+        String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+        publishSessionEvent(tenantDomain, sessionChannel, eventUri, eventProfile.getProfile(), schema,
+                payloadBuilder, eventData, event);
 
-        EventPayload eventPayload = buildEventPayload(event, eventData, payloadBuilder);
-        if (eventPayload != null) {
-            publishEvent(eventPayload, eventUri, schema, eventData, eventContext);
+        // Publish for parentTenantDomain if policy allows
+        String parentOrganizationId;
+        String parentTenantDomain = null;
+        org.wso2.carbon.identity.core.context.IdentityContext identityContext =
+                org.wso2.carbon.identity.core.context.IdentityContext.getThreadLocalIdentityContext();
+        if (identityContext.getOrganization() != null) {
+            parentOrganizationId = identityContext.getOrganization().getParentOrganizationId();
+            if (parentOrganizationId != null) {
+                parentTenantDomain = EventHookHandlerDataHolder.getInstance()
+                        .getOrganizationManager().resolveTenantDomain(parentOrganizationId);
+            }
+        }
+        if (parentTenantDomain != null) {
+            WebhookMetadataProperties metadataProperties =
+                    EventHookHandlerDataHolder.getInstance().getWebhookMetadataService()
+                            .getWebhookMetadataProperties(parentTenantDomain);
+            if (metadataProperties != null &&
+                    Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
+                            PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode())) {
+                publishSessionEvent(parentTenantDomain, sessionChannel, eventUri, eventProfile.getProfile(), schema,
+                        payloadBuilder, eventData, event);
+            }
         }
     }
 
@@ -154,16 +174,6 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                 .findFirst()
                 .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                 .orElse(null);
-    }
-
-    private EventContext buildEventContext(EventProfile eventProfile, Channel sessionChannel) {
-
-        return EventContext.builder()
-                .tenantDomain(PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain())
-                .eventUri(sessionChannel.getUri())
-                .eventProfileName(eventProfile.getProfile())
-                .eventProfileVersion(Constants.EVENT_PROFILE_VERSION)
-                .build();
     }
 
     private boolean canPublisherHandleEvent(EventContext eventContext, String eventName) {
@@ -192,11 +202,28 @@ public class SessionEventHookHandler extends AbstractEventHandler {
         }
     }
 
-    private void publishEvent(EventPayload eventPayload, String eventUri,
-                              org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema,
-                              EventData eventData, EventContext eventContext) throws IdentityEventException {
+    private void publishSessionEvent(String tenantDomain, Channel sessionChannel, String eventUri,
+                                     String eventProfileName,
+                                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema,
+                                     SessionEventPayloadBuilder payloadBuilder, EventData eventData, Event event)
+            throws IdentityEventException {
 
-        // todo: This CAEP specific logic should move out of this handler.
+        EventContext eventContext = EventContext.builder()
+                .tenantDomain(tenantDomain)
+                .eventUri(sessionChannel.getUri())
+                .eventProfileName(eventProfileName)
+                .eventProfileVersion(Constants.EVENT_PROFILE_VERSION)
+                .build();
+
+        if (!canPublisherHandleEvent(eventContext, event.getEventName())) {
+            return;
+        }
+
+        EventPayload eventPayload = buildEventPayload(event, eventData, payloadBuilder);
+        if (eventPayload == null) {
+            return;
+        }
+
         Subject subject = null;
         if (schema.equals(org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.CAEP)) {
             subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);

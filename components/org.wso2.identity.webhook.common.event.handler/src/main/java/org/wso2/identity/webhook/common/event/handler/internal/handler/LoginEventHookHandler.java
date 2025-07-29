@@ -23,16 +23,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
+import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.event.publisher.api.exception.EventPublisherException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
+import org.wso2.carbon.identity.organization.resource.sharing.policy.management.constant.PolicyEnum;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
+import org.wso2.carbon.identity.webhook.metadata.api.model.WebhookMetadataProperties;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
@@ -43,8 +47,6 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 
 import java.util.List;
 import java.util.Objects;
-
-import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.EVENT_PROFILE_VERSION;
 
 /**
  * Login Event Hook Handler.
@@ -133,10 +135,6 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                             " in profile: " + eventProfile.getProfile());
                     continue;
                 }
-                String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-
-                EventPayload eventPayload;
-                String eventUri;
 
                 List<Channel> channels = eventProfile.getChannels();
                 // Get the channel URI for the channel with name "Login Channel"
@@ -149,48 +147,91 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                     continue;
                 }
 
-                eventUri = loginChannel.getEvents().stream()
+                String eventUri = loginChannel.getEvents().stream()
                         .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
                                 channelEvent.getEventUri()))
                         .findFirst()
                         .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                         .orElse(null);
 
-                EventContext eventContext = EventContext.builder()
-                        .tenantDomain(tenantDomain)
-                        .eventUri(loginChannel.getUri())
-                        .eventProfileName(eventProfile.getProfile())
-                        .eventProfileVersion(EVENT_PROFILE_VERSION)
-                        .build();
-
                 String applicationNameInEvent = eventData.getAuthenticationContext().getServiceProviderName();
                 //TODO: Remove this once the system application type is introduced.
                 boolean isEventTriggeredForSystemApplication = StringUtils.isNotBlank(applicationNameInEvent)
                         && "Console".equals(applicationNameInEvent);
 
-                boolean publisherCanHandleEvent = EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                        .canHandleEvent(eventContext);
+                if (isEventTriggeredForSystemApplication) {
+                    log.debug("Event trigger for system application: " + applicationNameInEvent +
+                            ". Skipping event handling for login event profile: " + eventProfile.getProfile());
+                    return;
+                }
 
-                if (publisherCanHandleEvent && !isEventTriggeredForSystemApplication) {
-                    switch (IdentityEventConstants.EventName.valueOf(event.getEventName())) {
-                        case AUTHENTICATION_SUCCESS:
-                            eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
-                            break;
-                        case AUTHENTICATION_STEP_FAILURE:
-                        case AUTHENTICATION_FAILURE:
-                            eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
-                            break;
-                        default:
-                            throw new IdentityRuntimeException("Unsupported event type: " + event.getEventName());
+                String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
+
+                publishEvent(tenantDomain, loginChannel, eventUri, eventProfile.getProfile(),
+                        payloadBuilder, eventData, event.getEventName());
+
+                // If parent tenant configured webhook with policy immediate sub orgs, publish the event to parent tenant as well.
+                String parentOrganizationId;
+                String parentTenantDomain = null;
+                IdentityContext identityContext = IdentityContext.getThreadLocalIdentityContext();
+                if (identityContext.getOrganization() != null) {
+                    parentOrganizationId = identityContext.getOrganization().getParentOrganizationId();
+                    if (parentOrganizationId != null) {
+                        log.debug("Resolving parent tenant domain for organization: " + parentOrganizationId);
+                        parentTenantDomain = EventHookHandlerDataHolder.getInstance()
+                                .getOrganizationManager().resolveTenantDomain(parentOrganizationId);
                     }
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                            .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                            .publish(securityEventTokenPayload, eventContext);
+                }
+                if (parentTenantDomain != null) {
+                    WebhookMetadataProperties metadataProperties =
+                            EventHookHandlerDataHolder.getInstance().getWebhookMetadataService()
+                                    .getWebhookMetadataProperties(parentTenantDomain);
+                    if (metadataProperties != null &&
+                            Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
+                                    PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode())) {
+                        publishEvent(parentTenantDomain, loginChannel, eventUri, eventProfile.getProfile(),
+                                payloadBuilder, eventData, event.getEventName());
+                    }
                 }
             }
         } catch (Exception e) {
             log.warn("Error while retrieving login event publisher configuration for tenant.", e);
         }
+    }
+
+    private void publishEvent(String tenantDomain, Channel loginChannel, String eventUri, String eventProfileName,
+                              LoginEventPayloadBuilder payloadBuilder, EventData eventData, String eventName)
+            throws IdentityEventException, EventPublisherException {
+
+        EventContext eventContext = EventContext.builder()
+                .tenantDomain(tenantDomain)
+                .eventUri(loginChannel.getUri())
+                .eventProfileName(eventProfileName)
+                .eventProfileVersion(Constants.EVENT_PROFILE_VERSION)
+                .build();
+
+        if (!EventHookHandlerDataHolder.getInstance().getEventPublisherService().canHandleEvent(eventContext)) {
+            return;
+        }
+
+        EventPayload eventPayload;
+        switch (IdentityEventConstants.EventName.valueOf(eventName)) {
+            case AUTHENTICATION_SUCCESS:
+                eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(eventData);
+                break;
+            case AUTHENTICATION_STEP_FAILURE:
+            case AUTHENTICATION_FAILURE:
+                eventPayload = payloadBuilder.buildAuthenticationFailedEvent(eventData);
+                break;
+            default:
+                throw new IdentityRuntimeException("Unsupported event type: " + eventName);
+        }
+
+        log.debug("Publishing login event: " + eventName + " for tenant: " + tenantDomain +
+                " with event URI: " + eventUri + " and profile: " + eventProfileName);
+        SecurityEventTokenPayload securityEventTokenPayload =
+                EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
+        EventHookHandlerDataHolder.getInstance().getEventPublisherService()
+                .publish(securityEventTokenPayload, eventContext);
     }
 }

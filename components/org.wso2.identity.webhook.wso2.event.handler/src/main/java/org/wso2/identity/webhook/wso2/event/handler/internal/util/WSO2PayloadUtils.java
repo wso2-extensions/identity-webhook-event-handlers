@@ -32,10 +32,10 @@ import org.wso2.carbon.identity.claim.metadata.mgt.model.LocalClaim;
 import org.wso2.carbon.identity.claim.metadata.mgt.util.ClaimConstants;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
+import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
@@ -59,7 +59,6 @@ import java.util.regex.Pattern;
 
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.USERNAME_CLAIM;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
-import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.CREATED_CLAIM;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.EMAIL_CLAIM_URI;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LOCATION_CLAIM;
@@ -72,22 +71,6 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
 public class WSO2PayloadUtils {
 
     private static final Log log = LogFactory.getLog(WSO2PayloadUtils.class);
-
-    public static Organization getUserResidentOrganization(String organizationId) {
-
-        try {
-            String organizationName = WSO2EventHookHandlerDataHolder.getInstance()
-                    .getOrganizationManager().getOrganizationNameById(organizationId);
-            return new Organization(organizationId, organizationName);
-        } catch (OrganizationManagementException e) {
-            if (ERROR_CODE_INVALID_ORGANIZATION_ID.getCode().equals(e.getErrorCode())) {
-                log.debug("Returning an empty string as the organization name as the name is not returned " +
-                        "for the given id.");
-            }
-            log.debug("Error while retrieving the organization name for the given id: " + organizationId, e);
-        }
-        return null;
-    }
 
     public static void populateUserClaims(User user, AuthenticatedUser authenticatedUser, String tenantDomain) {
 
@@ -138,7 +121,7 @@ public class WSO2PayloadUtils {
         Map<String, String> claimValues;
         try {
             claimValues = ((UniqueIDUserStoreManager) userStoreManager).getUserClaimValuesWithID(
-                    userId, new String[]{USERNAME_CLAIM_URI, EMAIL_CLAIM_URI}, null);
+                    userId, new String[] {USERNAME_CLAIM_URI, EMAIL_CLAIM_URI}, null);
         } catch (org.wso2.carbon.user.core.UserStoreException e) {
             log.error("Error while retrieving user claims for user: " + userId + " in tenant: " + tenantDomain, e);
             return;
@@ -208,7 +191,9 @@ public class WSO2PayloadUtils {
 
         try {
             UserRealm userRealm = getUserRealm(tenantDomain);
-            if (userRealm == null) return null;
+            if (userRealm == null) {
+                return null;
+            }
 
             UserStoreManager userStoreManager = userRealm.getUserStoreManager();
 
@@ -240,7 +225,9 @@ public class WSO2PayloadUtils {
 
         try {
             UserRealm userRealm = getUserRealm(tenantDomain);
-            if (userRealm == null) return null;
+            if (userRealm == null) {
+                return null;
+            }
 
             return userRealm.getRealmConfiguration();
 
@@ -293,7 +280,7 @@ public class WSO2PayloadUtils {
         }
 
         if (isMultiValuedClaim(claimKey, tenantDomain)) {
-            userClaimBuilder.value(StringUtils.isBlank(claimValue) ? new String[]{} :
+            userClaimBuilder.value(StringUtils.isBlank(claimValue) ? new String[] {} :
                     claimValue.split(Pattern.quote(multiAttributeSeparator)));
         } else {
             userClaimBuilder.value(claimValue);
@@ -431,6 +418,19 @@ public class WSO2PayloadUtils {
         }
         endpoint = constructBaseURL() + endpoint;
         return endpoint;
+    }
+
+    public static Organization buildOrganizationFromIdentityContext(IdentityContext identityContext) {
+
+        if (identityContext.getOrganization() != null) {
+            return new Organization(
+                    identityContext.getOrganization().getId(),
+                    identityContext.getOrganization().getName(),
+                    identityContext.getOrganization().getOrganizationHandle(),
+                    identityContext.getOrganization().getDepth()
+            );
+        }
+        return null;
     }
 
     private static String constructBaseURL() {

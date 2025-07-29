@@ -21,6 +21,7 @@ package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Tenant;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
@@ -31,7 +32,7 @@ public abstract class WSO2BaseEventPayload extends EventPayload {
 
     protected String initiatorType;
     protected User user;
-    protected Organization tenant;
+    protected Tenant tenant;
     protected Organization organization;
     protected UserStore userStore;
     protected Application application;
@@ -41,7 +42,7 @@ public abstract class WSO2BaseEventPayload extends EventPayload {
         return user;
     }
 
-    public Organization getTenant() {
+    public Tenant getTenant() {
 
         return tenant;
     }
