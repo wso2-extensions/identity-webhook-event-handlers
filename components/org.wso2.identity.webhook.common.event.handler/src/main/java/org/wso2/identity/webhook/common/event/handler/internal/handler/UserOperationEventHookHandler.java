@@ -189,6 +189,11 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
+        /*
+        All POST_ADD_USER events will result in a userCreated event payload.
+        Since user creation does not imply successful registration,
+        this check is valid and does not cause any issues.
+         */
         return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
                 !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName);
     }
