@@ -34,11 +34,9 @@ import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
-import org.wso2.carbon.identity.organization.resource.sharing.policy.management.constant.PolicyEnum;
 import org.wso2.carbon.identity.webhook.metadata.api.exception.WebhookMetadataException;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
-import org.wso2.carbon.identity.webhook.metadata.api.model.WebhookMetadataProperties;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
@@ -157,8 +155,8 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 payloadBuilder, eventData, event.getEventName());
 
         // Publish for immediate parent org if policy allows
-        String parentTenantDomain = resolveParentTenantDomain();
-        if (parentTenantDomain != null && isParentPolicyImmediateOrgs(parentTenantDomain)) {
+        String parentTenantDomain = EventHookHandlerUtils.resolveParentTenantDomain();
+        if (parentTenantDomain != null && EventHookHandlerUtils.isParentPolicyImmediateOrgs(parentTenantDomain)) {
             publishRegistrationEvent(parentTenantDomain, registrationChannel, eventUri, eventProfile.getProfile(),
                     payloadBuilder, eventData, event.getEventName());
         }
@@ -240,28 +238,5 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
         EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                 .publish(securityEventTokenPayload, eventContext);
-    }
-
-    private String resolveParentTenantDomain() throws OrganizationManagementException {
-
-        IdentityContext identityContext = IdentityContext.getThreadLocalIdentityContext();
-        if (identityContext.getOrganization() != null) {
-            String parentOrganizationId = identityContext.getOrganization().getParentOrganizationId();
-            if (parentOrganizationId != null) {
-                return EventHookHandlerDataHolder.getInstance()
-                        .getOrganizationManager().resolveTenantDomain(parentOrganizationId);
-            }
-        }
-        return null;
-    }
-
-    private boolean isParentPolicyImmediateOrgs(String parentTenantDomain) throws WebhookMetadataException {
-
-        WebhookMetadataProperties metadataProperties =
-                EventHookHandlerDataHolder.getInstance().getWebhookMetadataService()
-                        .getWebhookMetadataProperties(parentTenantDomain);
-        return metadataProperties != null &&
-                Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
-                        PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode());
     }
 }
