@@ -33,7 +33,9 @@ import org.wso2.carbon.identity.event.publisher.api.exception.EventPublisherExce
 import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
+import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.resource.sharing.policy.management.constant.PolicyEnum;
+import org.wso2.carbon.identity.webhook.metadata.api.exception.WebhookMetadataException;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.carbon.identity.webhook.metadata.api.model.WebhookMetadataProperties;
@@ -70,21 +72,14 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                 log.debug("MessageContext is not of type IdentityEventMessageContext. Cannot handle the event.");
                 return false;
             }
-
             IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
             String eventName = identityContext.getEvent() != null ? identityContext.getEvent().getEventName() : null;
-
             if (eventName == null) {
                 log.debug("Event name is null in IdentityEventMessageContext. Cannot handle the event.");
                 return false;
             }
-
             canHandle = isSupportedEvent(eventName);
-            if (canHandle) {
-                log.debug(eventName + " event can be handled.");
-            } else {
-                log.debug(eventName + " event cannot be handled.");
-            }
+            log.debug(eventName + (canHandle ? " event can be handled." : " event cannot be handled."));
         } catch (Exception e) {
             log.warn("Unexpected error occurred while evaluating event in LoginEventHookHandler.", e);
         }
@@ -111,91 +106,76 @@ public class LoginEventHookHandler extends AbstractEventHandler {
             List<EventProfile> eventProfileList =
                     EventHookHandlerDataHolder.getInstance().getWebhookMetadataService().getSupportedEventProfiles();
             if (eventProfileList.isEmpty()) {
-                log.warn("No event profiles found in the webhook metadata service. " +
-                        "Skipping login event handling.");
+                log.warn("No event profiles found in the webhook metadata service. Skipping login event handling.");
                 return;
             }
             for (EventProfile eventProfile : eventProfileList) {
-                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
-                        schema =
-                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
-                                eventProfile.getProfile());
-                LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                        .getLoginEventPayloadBuilder(schema);
-
-                if (payloadBuilder == null) {
-                    log.debug("Skipping login event handling for profile " + eventProfile.getProfile());
-                    continue;
-                }
-                EventMetadata eventMetadata =
-                        EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
-                                event.getEventName());
-                if (eventMetadata == null) {
-                    log.debug("No event metadata found for event: " + event.getEventName() +
-                            " in profile: " + eventProfile.getProfile());
-                    continue;
-                }
-
-                List<Channel> channels = eventProfile.getChannels();
-                // Get the channel URI for the channel with name "Login Channel"
-                Channel loginChannel = channels.stream()
-                        .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
-                        .findFirst()
-                        .orElse(null);
-                if (loginChannel == null) {
-                    log.debug("No channel found for login event profile: " + eventProfile.getProfile());
-                    continue;
-                }
-
-                String eventUri = loginChannel.getEvents().stream()
-                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
-                                channelEvent.getEventUri()))
-                        .findFirst()
-                        .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
-                        .orElse(null);
-
-                String applicationNameInEvent = eventData.getAuthenticationContext().getServiceProviderName();
-                //TODO: Remove this once the system application type is introduced.
-                boolean isEventTriggeredForSystemApplication = StringUtils.isNotBlank(applicationNameInEvent)
-                        && "Console".equals(applicationNameInEvent);
-
-                if (isEventTriggeredForSystemApplication) {
-                    log.debug("Event trigger for system application: " + applicationNameInEvent +
-                            ". Skipping event handling for login event profile: " + eventProfile.getProfile());
-                    return;
-                }
-
-                String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
-
-                publishEvent(tenantDomain, loginChannel, eventUri, eventProfile.getProfile(),
-                        payloadBuilder, eventData, event.getEventName());
-
-                // If parent tenant configured webhook with policy immediate sub orgs, publish the event to parent tenant as well.
-                String parentOrganizationId;
-                String parentTenantDomain = null;
-                IdentityContext identityContext = IdentityContext.getThreadLocalIdentityContext();
-                if (identityContext.getOrganization() != null) {
-                    parentOrganizationId = identityContext.getOrganization().getParentOrganizationId();
-                    if (parentOrganizationId != null) {
-                        log.debug("Resolving parent tenant domain for organization: " + parentOrganizationId);
-                        parentTenantDomain = EventHookHandlerDataHolder.getInstance()
-                                .getOrganizationManager().resolveTenantDomain(parentOrganizationId);
-                    }
-                }
-                if (parentTenantDomain != null) {
-                    WebhookMetadataProperties metadataProperties =
-                            EventHookHandlerDataHolder.getInstance().getWebhookMetadataService()
-                                    .getWebhookMetadataProperties(parentTenantDomain);
-                    if (metadataProperties != null &&
-                            Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
-                                    PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode())) {
-                        publishEvent(parentTenantDomain, loginChannel, eventUri, eventProfile.getProfile(),
-                                payloadBuilder, eventData, event.getEventName());
-                    }
-                }
+                handleEventForProfile(event, eventData, eventProfile);
             }
         } catch (Exception e) {
             log.warn("Error while retrieving login event publisher configuration for tenant.", e);
+        }
+    }
+
+    private void handleEventForProfile(Event event, EventData eventData, EventProfile eventProfile)
+            throws IdentityEventException, EventPublisherException, OrganizationManagementException,
+            WebhookMetadataException {
+
+        // Prepare schema, payload builder, and event metadata
+        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                        eventProfile.getProfile());
+        LoginEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getLoginEventPayloadBuilder(schema);
+
+        if (payloadBuilder == null) {
+            log.debug("Skipping login event handling for profile " + eventProfile.getProfile());
+            return;
+        }
+
+        EventMetadata eventMetadata = EventHookHandlerUtils.getEventProfileManagerByProfile(
+                eventProfile.getProfile(), event.getEventName());
+        if (eventMetadata == null) {
+            log.debug("No event metadata found for event: " + event.getEventName() +
+                    " in profile: " + eventProfile.getProfile());
+            return;
+        }
+
+        // Get channel and event URI
+        Channel loginChannel = eventProfile.getChannels().stream()
+                .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
+                .findFirst()
+                .orElse(null);
+        if (loginChannel == null) {
+            log.debug("No channel found for login event profile: " + eventProfile.getProfile());
+            return;
+        }
+
+        String eventUri = loginChannel.getEvents().stream()
+                .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(), channelEvent.getEventUri()))
+                .findFirst()
+                .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
+                .orElse(null);
+
+        // Skip system application events
+        String applicationNameInEvent = eventData.getAuthenticationContext().getServiceProviderName();
+        boolean isEventTriggeredForSystemApplication = StringUtils.isNotBlank(applicationNameInEvent)
+                && "Console".equals(applicationNameInEvent);
+        if (isEventTriggeredForSystemApplication) {
+            log.debug("Event trigger for system application: " + applicationNameInEvent +
+                    ". Skipping event handling for login event profile: " + eventProfile.getProfile());
+            return;
+        }
+
+        // Publish for current accessing org
+        String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
+        publishEvent(tenantDomain, loginChannel, eventUri, eventProfile.getProfile(),
+                payloadBuilder, eventData, event.getEventName());
+
+        // Publish for immediate parent org if policy allows
+        String parentTenantDomain = resolveParentTenantDomain();
+        if (parentTenantDomain != null && isParentPolicyImmediateOrgs(parentTenantDomain)) {
+            publishEvent(parentTenantDomain, loginChannel, eventUri, eventProfile.getProfile(),
+                    payloadBuilder, eventData, event.getEventName());
         }
     }
 
@@ -233,5 +213,29 @@ public class LoginEventHookHandler extends AbstractEventHandler {
                 EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
         EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                 .publish(securityEventTokenPayload, eventContext);
+    }
+
+    private String resolveParentTenantDomain() throws OrganizationManagementException {
+
+        IdentityContext identityContext = IdentityContext.getThreadLocalIdentityContext();
+        if (identityContext.getOrganization() != null) {
+            String parentOrganizationId = identityContext.getOrganization().getParentOrganizationId();
+            if (parentOrganizationId != null) {
+                log.debug("Resolving parent tenant domain for organization: " + parentOrganizationId);
+                return EventHookHandlerDataHolder.getInstance()
+                        .getOrganizationManager().resolveTenantDomain(parentOrganizationId);
+            }
+        }
+        return null;
+    }
+
+    private boolean isParentPolicyImmediateOrgs(String parentTenantDomain) throws WebhookMetadataException {
+
+        WebhookMetadataProperties metadataProperties =
+                EventHookHandlerDataHolder.getInstance().getWebhookMetadataService()
+                        .getWebhookMetadataProperties(parentTenantDomain);
+        return metadataProperties != null &&
+                Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
+                        PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode());
     }
 }

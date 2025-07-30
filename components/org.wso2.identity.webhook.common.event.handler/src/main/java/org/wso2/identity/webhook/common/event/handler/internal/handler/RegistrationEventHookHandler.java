@@ -33,7 +33,9 @@ import org.wso2.carbon.identity.event.publisher.api.exception.EventPublisherExce
 import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
+import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.resource.sharing.policy.management.constant.PolicyEnum;
+import org.wso2.carbon.identity.webhook.metadata.api.exception.WebhookMetadataException;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.carbon.identity.webhook.metadata.api.model.WebhookMetadataProperties;
@@ -51,6 +53,11 @@ import java.util.Objects;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.EVENT_PROFILE_VERSION;
 
+/**
+ * Event handler for registration events.
+ * This handler processes user registration success and failure events, publishing them to the appropriate channels
+ * based on the event profiles defined in the webhook metadata service.
+ */
 public class RegistrationEventHookHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(RegistrationEventHookHandler.class);
@@ -70,21 +77,14 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 log.debug("MessageContext is not of type IdentityEventMessageContext. Cannot handle the event.");
                 return false;
             }
-
             IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
             String eventName = identityContext.getEvent() != null ? identityContext.getEvent().getEventName() : null;
-
             if (eventName == null) {
                 log.debug("Event name is null in IdentityEventMessageContext. Cannot handle the event.");
                 return false;
             }
-
             canHandle = isSupportedEvent(eventName);
-            if (canHandle) {
-                log.debug(eventName + " event can be handled.");
-            } else {
-                log.debug(eventName + " event cannot be handled.");
-            }
+            log.debug(eventName + (canHandle ? " event can be handled." : " event cannot be handled."));
         } catch (Exception e) {
             log.warn("Unexpected error occurred while evaluating event in RegistrationEventHookHandler.", e);
         }
@@ -99,82 +99,68 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                     EventHookHandlerDataHolder.getInstance().getWebhookMetadataService().getSupportedEventProfiles();
 
             if (eventProfileList.isEmpty()) {
-                log.warn("No event profiles found in the webhook metadata service. " +
-                        "Skipping registration event handling.");
+                log.warn(
+                        "No event profiles found in the webhook metadata service. Skipping registration event handling.");
                 return;
             }
             for (EventProfile eventProfile : eventProfileList) {
-                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
-                        schema =
-                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
-                                eventProfile.getProfile());
-
-                EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
-
-                RegistrationEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                        .getRegistrationEventPayloadBuilder(schema);
-                if (payloadBuilder == null) {
-                    log.debug("Skipping registration event handling for event " +
-                            eventProfile.getProfile());
-                    continue;
-                }
-                // TODO Temporary fix to handle same event from different handlers.
-                EventMetadata eventMetadata = getEventMetadata(eventProfile.getProfile(), event.getEventName());
-                if (eventMetadata == null) {
-                    log.debug("No event metadata found for event: " + event.getEventName() +
-                            " in profile: " + eventProfile.getProfile());
-                    continue;
-                }
-                String eventUri;
-
-                List<Channel> channels = eventProfile.getChannels();
-                // Get the channel URI for the channel with name "Registration Channel"
-                Channel registrationChannel = channels.stream()
-                        .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
-                        .findFirst()
-                        .orElse(null);
-                if (registrationChannel == null) {
-                    log.debug("No channel found for registration event profile: " + eventProfile.getProfile());
-                    continue;
-                }
-
-                eventUri = registrationChannel.getEvents().stream()
-                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
-                                channelEvent.getEventUri()))
-                        .findFirst()
-                        .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
-                        .orElse(null);
-
-                String tenantDomain = eventData.getTenantDomain();
-                publishRegistrationEvent(tenantDomain, registrationChannel, eventUri, eventProfile.getProfile(),
-                        payloadBuilder, eventData, event.getEventName());
-
-                // If parent tenant configured webhook with policy immediate sub orgs, publish the event to parent tenant as well.
-                String parentOrganizationId;
-                String parentTenantDomain = null;
-                IdentityContext identityContext = IdentityContext.getThreadLocalIdentityContext();
-                if (identityContext.getOrganization() != null) {
-                    parentOrganizationId = identityContext.getOrganization().getParentOrganizationId();
-                    if (parentOrganizationId != null) {
-                        parentTenantDomain = EventHookHandlerDataHolder.getInstance()
-                                .getOrganizationManager().resolveTenantDomain(parentOrganizationId);
-                    }
-                }
-                if (parentTenantDomain != null) {
-                    WebhookMetadataProperties metadataProperties =
-                            EventHookHandlerDataHolder.getInstance().getWebhookMetadataService()
-                                    .getWebhookMetadataProperties(parentTenantDomain);
-                    if (metadataProperties != null &&
-                            Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
-                                    PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode())) {
-                        publishRegistrationEvent(parentTenantDomain, registrationChannel, eventUri,
-                                eventProfile.getProfile(),
-                                payloadBuilder, eventData, event.getEventName());
-                    }
-                }
+                handleEventForProfile(event, eventProfile);
             }
         } catch (Exception e) {
             log.warn("Error while retrieving registration event publisher configuration for tenant.", e);
+        }
+    }
+
+    private void handleEventForProfile(Event event, EventProfile eventProfile)
+            throws IdentityEventException, EventPublisherException, OrganizationManagementException,
+            WebhookMetadataException {
+
+        // Prepare schema, payload builder, and event data
+        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                        eventProfile.getProfile());
+        EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
+        RegistrationEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getRegistrationEventPayloadBuilder(schema);
+
+        if (payloadBuilder == null) {
+            log.debug("Skipping registration event handling for event " + eventProfile.getProfile());
+            return;
+        }
+
+        // Get event metadata and channel
+        EventMetadata eventMetadata = getEventMetadata(eventProfile.getProfile(), event.getEventName());
+        if (eventMetadata == null) {
+            log.debug("No event metadata found for event: " + event.getEventName() +
+                    " in profile: " + eventProfile.getProfile());
+            return;
+        }
+
+        Channel registrationChannel = eventProfile.getChannels().stream()
+                .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
+                .findFirst()
+                .orElse(null);
+        if (registrationChannel == null) {
+            log.debug("No channel found for registration event profile: " + eventProfile.getProfile());
+            return;
+        }
+
+        String eventUri = registrationChannel.getEvents().stream()
+                .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(), channelEvent.getEventUri()))
+                .findFirst()
+                .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
+                .orElse(null);
+
+        // Publish for current accessing org
+        String tenantDomain = eventData.getTenantDomain();
+        publishRegistrationEvent(tenantDomain, registrationChannel, eventUri, eventProfile.getProfile(),
+                payloadBuilder, eventData, event.getEventName());
+
+        // Publish for immediate parent org if policy allows
+        String parentTenantDomain = resolveParentTenantDomain();
+        if (parentTenantDomain != null && isParentPolicyImmediateOrgs(parentTenantDomain)) {
+            publishRegistrationEvent(parentTenantDomain, registrationChannel, eventUri, eventProfile.getProfile(),
+                    payloadBuilder, eventData, event.getEventName());
         }
     }
 
@@ -187,18 +173,6 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
-
-        /*
-        Event.POST_ADD_USER + Flow.Name.USER_REGISTRATION:
-            Direct user registration, initiated either by an admin or the user.
-
-        Event.POST_ADD_NEW_PASSWORD + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
-            User completes registration after being invited by an admin.
-
-        Event.POST_SELF_SIGNUP_CONFIRM:
-            Self-signup flow completed by the user.
-
-         */
         return !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName) &&
                 (IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||
                         IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
@@ -215,7 +189,6 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
         String event = null;
         String channel = null;
-
         if (isUserRegistrationSuccessFlow(eventName)) {
             channel =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
@@ -227,17 +200,14 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
             event =
                     org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_FAILED_EVENT;
         }
-
         EventMetadata eventMetadata = EventMetadata.builder()
                 .event(String.valueOf(event))
                 .channel(String.valueOf(channel))
                 .eventProfile(WSO2.name())
                 .build();
-
         if (eventMetadata != null && eventProfile.equals(eventMetadata.getEventProfile())) {
             return eventMetadata;
         }
-
         return null;
     }
 
@@ -270,5 +240,28 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
         EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                 .publish(securityEventTokenPayload, eventContext);
+    }
+
+    private String resolveParentTenantDomain() throws OrganizationManagementException {
+
+        IdentityContext identityContext = IdentityContext.getThreadLocalIdentityContext();
+        if (identityContext.getOrganization() != null) {
+            String parentOrganizationId = identityContext.getOrganization().getParentOrganizationId();
+            if (parentOrganizationId != null) {
+                return EventHookHandlerDataHolder.getInstance()
+                        .getOrganizationManager().resolveTenantDomain(parentOrganizationId);
+            }
+        }
+        return null;
+    }
+
+    private boolean isParentPolicyImmediateOrgs(String parentTenantDomain) throws WebhookMetadataException {
+
+        WebhookMetadataProperties metadataProperties =
+                EventHookHandlerDataHolder.getInstance().getWebhookMetadataService()
+                        .getWebhookMetadataProperties(parentTenantDomain);
+        return metadataProperties != null &&
+                Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
+                        PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode());
     }
 }

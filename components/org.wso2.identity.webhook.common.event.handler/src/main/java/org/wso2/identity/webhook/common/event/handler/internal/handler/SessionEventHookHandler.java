@@ -65,6 +65,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
         return Constants.SESSION_EVENT_HOOK_NAME;
     }
 
+    @Override
     public void handleEvent(Event event) throws IdentityEventException {
 
         try {
@@ -74,12 +75,57 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                 log.debug("No event profiles found. Skipping session event handling.");
                 return;
             }
-
             for (EventProfile eventProfile : eventProfileList) {
                 handleEventPerEventProfile(event, eventData, eventProfile);
             }
         } catch (Exception e) {
             log.warn("Error while executing session event webhook handler.", e);
+        }
+    }
+
+    private void handleEventPerEventProfile(Event event, EventData eventData, EventProfile eventProfile)
+            throws IdentityEventException, OrganizationManagementException, WebhookMetadataException {
+
+        // Prepare schema, payload builder, and event metadata
+        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                        eventProfile.getProfile());
+        SessionEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getSessionEventPayloadBuilder(schema);
+        if (payloadBuilder == null) {
+            log.debug("No registered session event payload builder found for profile: " +
+                    eventProfile.getProfile() + ". Skipping session event handling.");
+            return;
+        }
+        EventMetadata eventMetadata = EventHookHandlerUtils.getEventProfileManagerByProfile(
+                eventProfile.getProfile(), event.getEventName());
+        if (eventMetadata == null) {
+            log.debug("No event metadata found for event: " + event.getEventName() +
+                    " in profile: " + eventProfile.getProfile() + ". Skipping session event handling.");
+            return;
+        }
+        Channel sessionChannel = getSessionChannel(eventProfile, eventMetadata);
+        if (sessionChannel == null) {
+            log.debug("Channel not defined for session events in profile: " + eventProfile.getProfile() +
+                    ". Skipping session event handling.");
+            return;
+        }
+        String eventUri = getEventUri(sessionChannel, eventMetadata);
+        if (eventUri == null) {
+            log.debug("Event URI not found for session events in profile: " + eventProfile.getProfile() +
+                    ". Skipping session event handling.");
+            return;
+        }
+
+        // Publish for current accessing org
+        String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+        publishSessionEvent(tenantDomain, sessionChannel, eventUri, eventProfile.getProfile(), schema,
+                payloadBuilder, eventData, event);
+
+        // Publish for immediate parent org if policy allows
+        String parentTenantDomain = resolveParentTenantDomain();
+        if (parentTenantDomain != null && isParentPolicyImmediateOrgs(parentTenantDomain)) {
+            publishSessionEvent(parentTenantDomain, sessionChannel, eventUri, eventProfile.getProfile(), schema,
+                    payloadBuilder, eventData, event);
         }
     }
 
@@ -90,72 +136,6 @@ public class SessionEventHookHandler extends AbstractEventHandler {
         } catch (WebhookMetadataException e) {
             log.error("Error while retrieving event profiles from the webhook metadata service.", e);
             return Collections.emptyList();
-        }
-    }
-
-    private void handleEventPerEventProfile(Event event, EventData eventData, EventProfile eventProfile)
-            throws IdentityEventException, OrganizationManagementException, WebhookMetadataException {
-
-        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
-                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
-                        eventProfile.getProfile());
-
-        SessionEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getSessionEventPayloadBuilder(schema);
-        if (payloadBuilder == null) {
-            log.debug("No registered session event payload builder found for profile: " +
-                    eventProfile.getProfile() + ". Skipping session event handling.");
-            return;
-        }
-
-        EventMetadata eventMetadata = EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
-                event.getEventName());
-        if (eventMetadata == null) {
-            log.debug("No event metadata found for event: " + event.getEventName() +
-                    " in profile: " + eventProfile.getProfile() + ". Skipping session event handling.");
-            return;
-        }
-
-        Channel sessionChannel = getSessionChannel(eventProfile, eventMetadata);
-        if (sessionChannel == null) {
-            log.debug("Channel not defined for session events in profile: " + eventProfile.getProfile() +
-                    ". Skipping session event handling.");
-            return;
-        }
-
-        String eventUri = getEventUri(sessionChannel, eventMetadata);
-        if (eventUri == null) {
-            log.debug("Event URI not found for session events in profile: " + eventProfile.getProfile() +
-                    ". Skipping session event handling.");
-            return;
-        }
-
-        // Publish for tenantDomain
-        String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
-        publishSessionEvent(tenantDomain, sessionChannel, eventUri, eventProfile.getProfile(), schema,
-                payloadBuilder, eventData, event);
-
-        // Publish for parentTenantDomain if policy allows
-        String parentOrganizationId;
-        String parentTenantDomain = null;
-        org.wso2.carbon.identity.core.context.IdentityContext identityContext =
-                org.wso2.carbon.identity.core.context.IdentityContext.getThreadLocalIdentityContext();
-        if (identityContext.getOrganization() != null) {
-            parentOrganizationId = identityContext.getOrganization().getParentOrganizationId();
-            if (parentOrganizationId != null) {
-                parentTenantDomain = EventHookHandlerDataHolder.getInstance()
-                        .getOrganizationManager().resolveTenantDomain(parentOrganizationId);
-            }
-        }
-        if (parentTenantDomain != null) {
-            WebhookMetadataProperties metadataProperties =
-                    EventHookHandlerDataHolder.getInstance().getWebhookMetadataService()
-                            .getWebhookMetadataProperties(parentTenantDomain);
-            if (metadataProperties != null &&
-                    Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
-                            PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode())) {
-                publishSessionEvent(parentTenantDomain, sessionChannel, eventUri, eventProfile.getProfile(), schema,
-                        payloadBuilder, eventData, event);
-            }
         }
     }
 
@@ -237,5 +217,29 @@ public class SessionEventHookHandler extends AbstractEventHandler {
         } catch (EventPublisherException e) {
             log.warn("Error while publishing session event: " + eventUri, e);
         }
+    }
+
+    private String resolveParentTenantDomain() throws OrganizationManagementException {
+
+        org.wso2.carbon.identity.core.context.IdentityContext identityContext =
+                org.wso2.carbon.identity.core.context.IdentityContext.getThreadLocalIdentityContext();
+        if (identityContext.getOrganization() != null) {
+            String parentOrganizationId = identityContext.getOrganization().getParentOrganizationId();
+            if (parentOrganizationId != null) {
+                return EventHookHandlerDataHolder.getInstance()
+                        .getOrganizationManager().resolveTenantDomain(parentOrganizationId);
+            }
+        }
+        return null;
+    }
+
+    private boolean isParentPolicyImmediateOrgs(String parentTenantDomain) throws WebhookMetadataException {
+
+        WebhookMetadataProperties metadataProperties =
+                EventHookHandlerDataHolder.getInstance().getWebhookMetadataService()
+                        .getWebhookMetadataProperties(parentTenantDomain);
+        return metadataProperties != null &&
+                Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
+                        PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode());
     }
 }
