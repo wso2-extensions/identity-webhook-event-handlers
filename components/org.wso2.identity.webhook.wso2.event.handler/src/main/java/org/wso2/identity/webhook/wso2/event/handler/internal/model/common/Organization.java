@@ -23,13 +23,17 @@ package org.wso2.identity.webhook.wso2.event.handler.internal.model.common;
  */
 public class Organization {
 
-    private String id;
-    private String name;
+    private final String id;
+    private final String name;
+    private final String orgHandle;
+    private final int depth;
 
-    public Organization(String id, String name) {
+    public Organization(String id, String name, String orgHandle, int depth) {
 
         this.id = id;
         this.name = name;
+        this.orgHandle = orgHandle;
+        this.depth = depth;
     }
 
     public String getId() {
@@ -37,18 +41,18 @@ public class Organization {
         return id;
     }
 
-    public void setId(String id) {
-
-        this.id = id;
-    }
-
     public String getName() {
 
         return name;
     }
 
-    public void setName(String name) {
+    public String getOrgHandle() {
 
-        this.name = name;
+        return orgHandle;
+    }
+
+    public int getDepth() {
+
+        return depth;
     }
 }

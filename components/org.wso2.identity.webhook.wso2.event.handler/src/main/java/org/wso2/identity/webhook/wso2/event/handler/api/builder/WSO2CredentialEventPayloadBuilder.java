@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
-import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
@@ -31,6 +30,7 @@ import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2UserCredentialUpdateEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Tenant;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
@@ -46,14 +46,18 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
     public EventPayload buildCredentialUpdateEvent(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> properties = eventData.getEventParams();
-        String tenantDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
-        String tenantId = String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain));
+        String rootTenantId = String.valueOf(
+                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantId());
+        String rootTenantDomain = String.valueOf(
+                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantDomain());
+        String accessedTenantDomain = String.valueOf(
+                IdentityContext.getThreadLocalIdentityContext().getOrganization().getOrganizationHandle());
         String userName = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_NAME));
         String userStoreDomain = String.valueOf(properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN));
 
-        User user = WSO2PayloadUtils.buildUser(userStoreDomain, userName, tenantDomain);
+        User user = WSO2PayloadUtils.buildUser(userStoreDomain, userName, accessedTenantDomain);
 
-        Organization organization = new Organization(tenantId, tenantDomain);
+        Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
         UserStore userStore = new UserStore(userStoreDomain);
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
@@ -66,12 +70,16 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
                     .orElse(null);
             initiatorType = flow.getInitiatingPersona().name();
         }
+        Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
+                IdentityContext.getThreadLocalIdentityContext());
+
         return new WSO2UserCredentialUpdateEventPayload.Builder()
                 .initiatorType(initiatorType)
                 .action(action)
                 .credentialType("PASSWORD")
                 .user(user)
-                .tenant(organization)
+                .tenant(tenant)
+                .organization(organization)
                 .userStore(userStore)
                 .build();
     }

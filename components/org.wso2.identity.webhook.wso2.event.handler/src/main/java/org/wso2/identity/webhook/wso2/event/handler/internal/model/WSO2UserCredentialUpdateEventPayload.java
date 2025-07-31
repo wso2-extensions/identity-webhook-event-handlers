@@ -19,6 +19,7 @@
 package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Tenant;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
@@ -56,7 +57,7 @@ public class WSO2UserCredentialUpdateEventPayload extends WSO2BaseEventPayload {
         private User user;
         private String credentialType;
         private String action;
-        private Organization tenant;
+        private Tenant tenant;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -94,7 +95,7 @@ public class WSO2UserCredentialUpdateEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public Builder tenant(Organization tenant) {
+        public Builder tenant(Tenant tenant) {
 
             this.tenant = tenant;
             return this;

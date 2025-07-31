@@ -31,6 +31,8 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
+import org.wso2.carbon.identity.core.context.model.Organization;
+import org.wso2.carbon.identity.core.context.model.RootOrganization;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -114,6 +116,10 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     private ClaimMetadataManagementService claimMetadataManagementService;
 
     private MockedStatic<FrameworkUtils> frameworkUtils;
+    private MockedStatic<IdentityContext> identityContextMockedStatic;
+    private IdentityContext mockIdentityContext;
+    RootOrganization mockRootOrg;
+    Organization mockOrg;
 
     @BeforeClass
     public void setup() throws Exception {
@@ -134,6 +140,22 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         Map<String, Object> threadLocalMap = new HashMap<>();
         threadLocalMap.put(PRE_DELETE_USER_ID, DELETED_USER_ID);
         IdentityUtil.threadLocalProperties.set(threadLocalMap);
+
+        // Properly manage static mock for IdentityContext
+        identityContextMockedStatic = Mockito.mockStatic(IdentityContext.class);
+        mockIdentityContext = Mockito.mock(IdentityContext.class);
+        mockRootOrg = Mockito.mock(RootOrganization.class);
+        mockOrg = Mockito.mock(Organization.class);
+        when(mockOrg.getOrganizationHandle()).thenReturn(TENANT_DOMAIN);
+        when(mockIdentityContext.getOrganization()).thenReturn(mockOrg);
+        when(mockIdentityContext.getTenantDomain()).thenReturn(TENANT_DOMAIN);
+        when(mockIdentityContext.getTenantId()).thenReturn(101);
+        when(mockRootOrg.getAssociatedTenantId()).thenReturn(100);
+        when(mockRootOrg.getAssociatedTenantDomain()).thenReturn(TENANT_DOMAIN);
+        when(mockIdentityContext.getRootOrganization()).thenReturn(mockRootOrg);
+        identityContextMockedStatic.when(IdentityContext::getThreadLocalIdentityContext)
+                .thenReturn(mockIdentityContext);
+
         CommonTestUtils.initPrivilegedCarbonContext();
     }
 
@@ -145,6 +167,9 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         Mockito.reset(realmConfiguration, claimMetadataManagementService, userStoreManager);
         IdentityUtil.threadLocalProperties.remove();
         frameworkUtils.close();
+        if (identityContextMockedStatic != null) {
+            identityContextMockedStatic.close();
+        }
     }
 
     @Test
@@ -156,10 +181,12 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     @Test
     public void testBuildUserGroupUpdateEvent() throws IdentityEventException, UserStoreException {
 
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+        Flow mockFlow = new Flow.Builder()
                 .name(Flow.Name.USER_GROUP_UPDATE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
+                .build();
+        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
 
         Map<String, Object> params = new HashMap<>();
         params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
@@ -167,9 +194,9 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         params.put(USER_STORE_MANAGER, userStoreManager);
         params.put(IdentityEventConstants.EventProperty.ROLE_NAME, ROLE_NAME);
 
-        String[] addedUsers = new String[]{DOMAIN_QUALIFIED_ADDED_USER_NAME};
+        String[] addedUsers = new String[] {DOMAIN_QUALIFIED_ADDED_USER_NAME};
         params.put(IdentityEventConstants.EventProperty.NEW_USERS, addedUsers);
-        String[] deletedUsers = new String[]{DOMAIN_QUALIFIED_DELETED_USER_NAME};
+        String[] deletedUsers = new String[] {DOMAIN_QUALIFIED_DELETED_USER_NAME};
         params.put(IdentityEventConstants.EventProperty.DELETED_USERS, deletedUsers);
 
         when(mockEventData.getEventParams()).thenReturn(params);
@@ -241,10 +268,12 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     @Test
     public void testBuildUserDeleteEvent() throws IdentityEventException, UserStoreException {
 
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+        Flow mockFlow = new Flow.Builder()
                 .name(Flow.Name.USER_DELETE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
+                .build();
+        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
 
         Map<String, Object> params = new HashMap<>();
         params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
@@ -298,10 +327,12 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
                 eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(TEST_USER_ID);
 
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+        Flow mockFlow = new Flow.Builder()
                 .name(Flow.Name.ACCOUNT_UNLOCK)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
+                .build();
+        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildUserUnlockAccountEvent(mockEventData);
         WSO2BaseEventPayload wso2BaseEventPayload = (WSO2BaseEventPayload) eventPayload;
@@ -344,10 +375,12 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
                 eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(TEST_USER_ID);
 
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+        Flow mockFlow = new Flow.Builder()
                 .name(Flow.Name.ACCOUNT_LOCK)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
+                .build();
+        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildUserLockAccountEvent(mockEventData);
         WSO2BaseEventPayload wso2BaseEventPayload = (WSO2BaseEventPayload) eventPayload;
@@ -403,10 +436,12 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
 
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+        Flow mockFlow = new Flow.Builder()
                 .name(Flow.Name.ACCOUNT_DISABLE) //TODO change the flow when introduce ACCOUNT_ENABLE
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
+                .build();
+        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildUserAccountEnableEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
@@ -441,10 +476,12 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         when(userStoreManager.getUserClaimValue(eq(DOMAIN_QUALIFIED_TEST_USER_NAME),
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
 
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+        Flow mockFlow = new Flow.Builder()
                 .name(Flow.Name.ACCOUNT_DISABLE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
+                .build();
+        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildUserAccountEnableEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
@@ -483,10 +520,12 @@ public class WSO2UserOperationEventPayloadBuilderTest {
 
         when(mockEventData.getEventParams()).thenReturn(params);
 
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+        Flow mockFlow = new Flow.Builder()
                 .name(Flow.Name.INVITE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
+                .build();
+        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildUserCreatedEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);

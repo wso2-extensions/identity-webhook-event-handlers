@@ -21,6 +21,7 @@ package org.wso2.identity.webhook.common.event.handler.internal.component;
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherService;
+import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
@@ -40,6 +41,7 @@ import java.util.List;
 public class EventHookHandlerDataHolder {
 
     private static final EventHookHandlerDataHolder instance = new EventHookHandlerDataHolder();
+    private OrganizationManager organizationManager;
     private ConfigurationManager configurationManager;
     private EventPublisherService eventPublisherService;
     private WebhookMetadataService webhookMetadataService;
@@ -341,5 +343,25 @@ public class EventHookHandlerDataHolder {
     public void setApplicationManagementService(ApplicationManagementService applicationManagementService) {
 
         this.applicationManagementService = applicationManagementService;
+    }
+
+    /**
+     * Get {@link OrganizationManager}.
+     *
+     * @return organization manager instance {@link OrganizationManager}.
+     */
+    public OrganizationManager getOrganizationManager() {
+
+        return organizationManager;
+    }
+
+    /**
+     * Set {@link OrganizationManager}.
+     *
+     * @param organizationManager Instance of {@link OrganizationManager}.
+     */
+    public void setOrganizationManager(OrganizationManager organizationManager) {
+
+        this.organizationManager = organizationManager;
     }
 }

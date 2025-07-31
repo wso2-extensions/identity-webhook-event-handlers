@@ -21,6 +21,7 @@ package org.wso2.identity.webhook.wso2.event.handler.internal.model;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Session;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Tenant;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
@@ -49,7 +50,7 @@ public class WSO2SessionPresentedEventPayload extends WSO2BaseEventPayload {
     public static class Builder {
 
         private User user;
-        private Organization tenant;
+        private Tenant tenant;
         private Organization organization;
         private UserStore userStore;
         private Application application;
@@ -61,7 +62,7 @@ public class WSO2SessionPresentedEventPayload extends WSO2BaseEventPayload {
             return this;
         }
 
-        public WSO2SessionPresentedEventPayload.Builder tenant(Organization tenant) {
+        public WSO2SessionPresentedEventPayload.Builder tenant(Tenant tenant) {
 
             this.tenant = tenant;
             return this;

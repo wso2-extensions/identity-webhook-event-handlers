@@ -30,9 +30,12 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.event.publisher.api.exception.EventPublisherException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
+import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.webhook.metadata.api.exception.WebhookMetadataException;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
@@ -71,15 +74,12 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                 log.debug("MessageContext is not of type IdentityEventMessageContext. Cannot handle the event.");
                 return false;
             }
-
             IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
             String eventName = identityContext.getEvent() != null ? identityContext.getEvent().getEventName() : null;
-
             if (eventName == null) {
                 log.debug("Event name is null in IdentityEventMessageContext. Cannot handle the event.");
                 return false;
             }
-
             canHandle = isSupportedEvent(eventName);
             if (canHandle) {
                 log.debug(eventName + " event can be handled.");
@@ -92,22 +92,85 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
         return canHandle;
     }
 
+    @Override
+    public void handleEvent(Event event) throws IdentityEventException {
+
+        try {
+            if (IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(event.getEventName())) {
+                String userId = (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.USER_ID);
+                IdentityUtil.threadLocalProperties.get().put(PRE_DELETE_USER_ID, userId);
+                return;
+            }
+            List<EventProfile> eventProfileList =
+                    EventHookHandlerDataHolder.getInstance().getWebhookMetadataService().getSupportedEventProfiles();
+            if (eventProfileList.isEmpty()) {
+                log.warn(
+                        "No event profiles found in the webhook metadata service. Skipping user operation event handling.");
+                return;
+            }
+            for (EventProfile eventProfile : eventProfileList) {
+                handleEventPerProfile(event, eventProfile);
+            }
+        } catch (Exception e) {
+            log.warn("Error while retrieving event publisher configuration for tenant.", e);
+        }
+    }
+
+    private void handleEventPerProfile(Event event, EventProfile eventProfile)
+            throws IdentityEventException, EventPublisherException, OrganizationManagementException,
+            WebhookMetadataException {
+
+        // Prepare schema, payload builder, and event metadata
+        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                        eventProfile.getProfile());
+        UserOperationEventPayloadBuilder payloadBuilder =
+                PayloadBuilderFactory.getUserOperationEventPayloadBuilder(schema);
+        if (payloadBuilder == null) {
+            log.debug("Skipping user operation event handling for profile " + eventProfile.getProfile());
+            return;
+        }
+        EventMetadata eventMetadata =
+                EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(), event.getEventName());
+        if (eventMetadata == null) {
+            log.debug("No event metadata found for event: " + event.getEventName() +
+                    " in profile: " + eventProfile.getProfile());
+            return;
+        }
+        EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
+        String tenantDomain = eventData.getTenantDomain();
+
+        // Get channel and event URI
+        Channel userOperationChannel = eventProfile.getChannels().stream()
+                .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
+                .findFirst()
+                .orElse(null);
+        if (userOperationChannel == null) {
+            log.debug("No channel found for user operation event profile: " + eventProfile.getProfile());
+            return;
+        }
+        String eventUri = userOperationChannel.getEvents().stream()
+                .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(), channelEvent.getEventUri()))
+                .findFirst()
+                .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
+                .orElse(null);
+
+        // Publish for current accessing org
+        publishUserOperationEvent(tenantDomain, userOperationChannel, eventUri, eventProfile.getProfile(),
+                payloadBuilder, eventData, event.getEventName());
+
+        // Publish for immediate parent org if policy allows
+        String parentTenantDomain = EventHookHandlerUtils.resolveParentTenantDomain();
+        if (parentTenantDomain != null && EventHookHandlerUtils.isParentPolicyImmediateOrgs(parentTenantDomain)) {
+            publishUserOperationEvent(parentTenantDomain, userOperationChannel, eventUri, eventProfile.getProfile(),
+                    payloadBuilder, eventData, event.getEventName());
+        }
+    }
+
     private boolean isSupportedEvent(String eventName) {
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
-
-        /*
-        Event.POST_ADD_USER + Flow.Name.USER_REGISTRATION:
-            Direct user registration, initiated either by an admin or the user.
-
-        Event.POST_ADD_NEW_PASSWORD + Flow.Name.USER_REGISTRATION_INVITE_WITH_PASSWORD:
-            User completes registration after being invited by an admin.
-
-        Event.POST_SELF_SIGNUP_CONFIRM:
-            Self-signup flow completed by the user.
-
-         */
         return !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName) &&
                 (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(eventName) ||
                         IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(eventName) ||
@@ -120,163 +183,60 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
                         IdentityEventConstants.Event.POST_ADD_USER.equals(eventName));
     }
 
-    @Override
-    public void handleEvent(Event event) throws IdentityEventException {
-
-        try {
-
-            if (IdentityEventConstants.Event.PRE_DELETE_USER_WITH_ID.equals(event.getEventName())) {
-
-                String userId =
-                        (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.USER_ID);
-                // Setting the thread-local to keep user-ID for use when publishing post delete user event.
-                IdentityUtil.threadLocalProperties.get().put(PRE_DELETE_USER_ID, userId);
-
-                return;
-            }
-
-            List<EventProfile> eventProfileList =
-                    EventHookHandlerDataHolder.getInstance().getWebhookMetadataService().getSupportedEventProfiles();
-            if (eventProfileList.isEmpty()) {
-                log.warn("No event profiles found in the webhook metadata service. " +
-                        "Skipping user operation event handling.");
-                return;
-            }
-            for (EventProfile eventProfile : eventProfileList) {
-                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
-                        schema =
-                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
-                                eventProfile.getProfile());
-                UserOperationEventPayloadBuilder payloadBuilder = PayloadBuilderFactory
-                        .getUserOperationEventPayloadBuilder(schema);
-
-                if (payloadBuilder == null) {
-                    log.debug("Skipping user operation event handling for profile " + eventProfile.getProfile());
-                    continue;
-                }
-                EventMetadata eventMetadata =
-                        EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
-                                event.getEventName());
-                if (eventMetadata == null) {
-                    log.debug("No event metadata found for event: " + event.getEventName() +
-                            " in profile: " + eventProfile.getProfile());
-                    continue;
-                }
-                EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
-                String tenantDomain = eventData.getTenantDomain();
-
-                EventPayload eventPayload;
-                String eventUri;
-
-                List<Channel> channels = eventProfile.getChannels();
-                // Get the channel URI for the channel with name "User Operation Channel"
-                Channel userOperationChannel = channels.stream()
-                        .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
-                        .findFirst()
-                        .orElse(null);
-                if (userOperationChannel == null) {
-                    log.debug("No channel found for user operation event profile: " + eventProfile.getProfile());
-                    continue;
-                }
-
-                eventUri = userOperationChannel.getEvents().stream()
-                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
-                                channelEvent.getEventUri()))
-                        .findFirst()
-                        .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
-                        .orElse(null);
-
-                EventContext eventContext = EventContext.builder()
-                        .tenantDomain(tenantDomain)
-                        .eventUri(userOperationChannel.getUri())
-                        .eventProfileName(eventProfile.getProfile())
-                        .eventProfileVersion(EVENT_PROFILE_VERSION)
-                        .build();
-
-                boolean publisherCanHandleEvent = EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                        .canHandleEvent(eventContext);
-
-                if (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(event.getEventName()) &&
-                        publisherCanHandleEvent) {
-                    eventPayload = payloadBuilder.buildUserGroupUpdateEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                            .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                            .publish(securityEventTokenPayload, eventContext);
-                } else if (IdentityEventConstants.Event.POST_DELETE_USER.equals(event.getEventName()) &&
-                        publisherCanHandleEvent) {
-                    eventPayload = payloadBuilder.buildUserDeleteEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                            .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                            .publish(securityEventTokenPayload, eventContext);
-                } else if (IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(event.getEventName()) &&
-                        publisherCanHandleEvent) {
-                    eventPayload = payloadBuilder.buildUserUnlockAccountEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                            .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                            .publish(securityEventTokenPayload, eventContext);
-                } else if (IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(event.getEventName()) &&
-                        publisherCanHandleEvent) {
-                    eventPayload = payloadBuilder.buildUserLockAccountEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                            .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                            .publish(securityEventTokenPayload, eventContext);
-                } else if (IdentityEventConstants.Event.POST_USER_PROFILE_UPDATE.equals(event.getEventName()) &&
-                        publisherCanHandleEvent) {
-                    eventPayload = payloadBuilder.buildUserProfileUpdateEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                            .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                            .publish(securityEventTokenPayload, eventContext);
-                } else if (IdentityEventConstants.Event.POST_ENABLE_ACCOUNT.equals(event.getEventName()) &&
-                        publisherCanHandleEvent) {
-                    eventPayload = payloadBuilder.buildUserAccountEnableEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                            .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                            .publish(securityEventTokenPayload, eventContext);
-                } else if (IdentityEventConstants.Event.POST_DISABLE_ACCOUNT.equals(event.getEventName()) &&
-                        publisherCanHandleEvent) {
-                    eventPayload = payloadBuilder.buildUserAccountDisableEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                            .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                            .publish(securityEventTokenPayload, eventContext);
-                } else if (isUserCreatedFlow(event.getEventName()) && publisherCanHandleEvent) {
-                    eventPayload = payloadBuilder.buildUserCreatedEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils
-                            .buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                            .publish(securityEventTokenPayload, eventContext);
-                } else {
-                    log.debug("Skipping user operation event handling for event: " + event.getEventName() +
-                            " in profile: " + eventProfile.getProfile());
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Error while retrieving event publisher configuration for tenant.", e);
-        }
-    }
-
-    /**
-     * Where user is created regardless of confirmed account or not.
-     *
-     * @param eventName
-     * @return
-     */
     private boolean isUserCreatedFlow(String eventName) {
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
-       /*
+        /*
         All POST_ADD_USER events will result in a userCreated event payload.
         Since user creation does not imply successful registration,
         this check is valid and does not cause any issues.
          */
         return IdentityEventConstants.Event.POST_ADD_USER.equals(eventName) &&
                 !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName);
+    }
+
+    private void publishUserOperationEvent(String tenantDomain, Channel userOperationChannel, String eventUri,
+                                           String eventProfileName, UserOperationEventPayloadBuilder payloadBuilder,
+                                           EventData eventData, String eventName)
+            throws IdentityEventException, EventPublisherException {
+
+        EventContext eventContext = EventContext.builder()
+                .tenantDomain(tenantDomain)
+                .eventUri(userOperationChannel.getUri())
+                .eventProfileName(eventProfileName)
+                .eventProfileVersion(EVENT_PROFILE_VERSION)
+                .build();
+
+        if (!EventHookHandlerDataHolder.getInstance().getEventPublisherService().canHandleEvent(eventContext)) {
+            return;
+        }
+
+        EventPayload eventPayload = null;
+        if (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(eventName)) {
+            eventPayload = payloadBuilder.buildUserGroupUpdateEvent(eventData);
+        } else if (IdentityEventConstants.Event.POST_DELETE_USER.equals(eventName)) {
+            eventPayload = payloadBuilder.buildUserDeleteEvent(eventData);
+        } else if (IdentityEventConstants.Event.POST_UNLOCK_ACCOUNT.equals(eventName)) {
+            eventPayload = payloadBuilder.buildUserUnlockAccountEvent(eventData);
+        } else if (IdentityEventConstants.Event.POST_LOCK_ACCOUNT.equals(eventName)) {
+            eventPayload = payloadBuilder.buildUserLockAccountEvent(eventData);
+        } else if (IdentityEventConstants.Event.POST_USER_PROFILE_UPDATE.equals(eventName)) {
+            eventPayload = payloadBuilder.buildUserProfileUpdateEvent(eventData);
+        } else if (IdentityEventConstants.Event.POST_ENABLE_ACCOUNT.equals(eventName)) {
+            eventPayload = payloadBuilder.buildUserAccountEnableEvent(eventData);
+        } else if (IdentityEventConstants.Event.POST_DISABLE_ACCOUNT.equals(eventName)) {
+            eventPayload = payloadBuilder.buildUserAccountDisableEvent(eventData);
+        } else if (isUserCreatedFlow(eventName)) {
+            eventPayload = payloadBuilder.buildUserCreatedEvent(eventData);
+        } else {
+            log.debug("Unsupported user operation event: " + eventName);
+            return;
+        }
+
+        SecurityEventTokenPayload securityEventTokenPayload =
+                EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
+        EventHookHandlerDataHolder.getInstance().getEventPublisherService()
+                .publish(securityEventTokenPayload, eventContext);
     }
 }

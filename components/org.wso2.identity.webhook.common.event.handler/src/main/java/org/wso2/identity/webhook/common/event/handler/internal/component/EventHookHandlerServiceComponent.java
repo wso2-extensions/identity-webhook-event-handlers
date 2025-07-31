@@ -36,6 +36,7 @@ import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherService;
+import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
@@ -353,6 +354,21 @@ public class EventHookHandlerServiceComponent {
     protected void unsetTopicManagementService(TopicManagementService topicManagementService) {
 
         EventHookHandlerDataHolder.getInstance().setTopicManagementService(null);
+    }
+
+    @Reference(name = "identity.organization.management.component",
+            service = OrganizationManager.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetOrganizationManager")
+    protected void setOrganizationManager(OrganizationManager organizationManager) {
+
+        EventHookHandlerDataHolder.getInstance().setOrganizationManager(organizationManager);
+    }
+
+    protected void unsetOrganizationManager(OrganizationManager organizationManager) {
+
+        EventHookHandlerDataHolder.getInstance().setOrganizationManager(null);
     }
 
     /**

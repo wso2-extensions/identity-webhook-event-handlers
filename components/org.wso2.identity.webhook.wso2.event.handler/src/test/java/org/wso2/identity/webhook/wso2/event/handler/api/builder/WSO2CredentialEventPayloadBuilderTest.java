@@ -32,8 +32,11 @@ import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
+import org.wso2.carbon.identity.common.testng.WithCarbonHome;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
+import org.wso2.carbon.identity.core.context.model.Organization;
+import org.wso2.carbon.identity.core.context.model.RootOrganization;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -71,6 +74,10 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUti
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockServiceURLBuilder;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils.constructFullURLWithEndpoint;
 
+/**
+ * Unit tests for {@link WSO2CredentialEventPayloadBuilder}.
+ */
+@WithCarbonHome
 public class WSO2CredentialEventPayloadBuilderTest {
 
     private static final String TENANT_DOMAIN = "example.com";
@@ -105,6 +112,10 @@ public class WSO2CredentialEventPayloadBuilderTest {
     private ClaimMetadataManagementService claimMetadataManagementService;
 
     private MockedStatic<FrameworkUtils> frameworkUtils;
+    private MockedStatic<IdentityContext> identityContextMockedStatic;
+    private IdentityContext mockIdentityContext;
+    RootOrganization mockRootOrg;
+    Organization mockOrg;
 
     @BeforeClass
     public void setup() throws Exception {
@@ -121,10 +132,25 @@ public class WSO2CredentialEventPayloadBuilderTest {
 
         Map<String, Object> threadLocalMap = new HashMap<>();
         threadLocalMap.put(PRE_DELETE_USER_ID, DELETED_USER_ID);
-        IdentityUtil.threadLocalProperties.set(threadLocalMap);
+        org.wso2.carbon.identity.core.util.IdentityUtil.threadLocalProperties.set(threadLocalMap);
 
         frameworkUtils = mockStatic(FrameworkUtils.class);
         frameworkUtils.when(FrameworkUtils::getMultiAttributeSeparator).thenReturn(",");
+
+        // Properly manage static mock for IdentityContext
+        identityContextMockedStatic = Mockito.mockStatic(IdentityContext.class);
+        mockIdentityContext = Mockito.mock(IdentityContext.class);
+        mockRootOrg = Mockito.mock(RootOrganization.class);
+        mockOrg = Mockito.mock(Organization.class);
+        when(mockOrg.getOrganizationHandle()).thenReturn(TENANT_DOMAIN);
+        when(mockIdentityContext.getOrganization()).thenReturn(mockOrg);
+        when(mockIdentityContext.getTenantDomain()).thenReturn(TENANT_DOMAIN);
+        when(mockIdentityContext.getTenantId()).thenReturn(101);
+        when(mockRootOrg.getAssociatedTenantId()).thenReturn(100);
+        when(mockRootOrg.getAssociatedTenantDomain()).thenReturn(TENANT_DOMAIN);
+        when(mockIdentityContext.getRootOrganization()).thenReturn(mockRootOrg);
+        identityContextMockedStatic.when(IdentityContext::getThreadLocalIdentityContext)
+                .thenReturn(mockIdentityContext);
 
         CommonTestUtils.initPrivilegedCarbonContext();
     }
@@ -135,8 +161,13 @@ public class WSO2CredentialEventPayloadBuilderTest {
         closeMockedServiceURLBuilder();
         closeMockedIdentityTenantUtil();
         IdentityUtil.threadLocalProperties.remove();
-        Mockito.reset(realmService, realmConfiguration, claimMetadataManagementService, userStoreManager);
-        frameworkUtils.close();
+        Mockito.reset(mockRootOrg, realmService, realmConfiguration, claimMetadataManagementService, userStoreManager);
+        if (frameworkUtils != null) {
+            frameworkUtils.close();
+        }
+        if (identityContextMockedStatic != null) {
+            identityContextMockedStatic.close();
+        }
     }
 
     @Test
@@ -148,7 +179,7 @@ public class WSO2CredentialEventPayloadBuilderTest {
     @DataProvider(name = "actionDataProvider")
     public Object[][] actionDataProvider() {
 
-        return new Object[][]{
+        return new Object[][] {
                 {PROFILE_UPDATE},
                 {PASSWORD_RESET},
                 {GROUP_UPDATE},
@@ -178,10 +209,16 @@ public class WSO2CredentialEventPayloadBuilderTest {
         }
 
         if (flowName != null) {
-            IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+            Flow mockFlow = new Flow.Builder()
                     .name(flowName)
                     .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                    .build());
+                    .build();
+            IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+
+            when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
+        } else {
+            IdentityContext.getThreadLocalIdentityContext().setFlow(null);
+            when(mockIdentityContext.getFlow()).thenReturn(null);
         }
 
         EventPayload eventPayload = payloadBuilder.buildCredentialUpdateEvent(mockEventData);

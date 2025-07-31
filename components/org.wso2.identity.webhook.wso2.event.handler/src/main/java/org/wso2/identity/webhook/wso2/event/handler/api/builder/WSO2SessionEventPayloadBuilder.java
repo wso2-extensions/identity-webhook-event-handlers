@@ -24,7 +24,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.exception.session.mgt.SessionManagementException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
-import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
@@ -38,6 +38,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2SessionRe
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Application;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Session;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Tenant;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
@@ -56,15 +57,18 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     public EventPayload buildSessionEstablishedEvent(EventData eventData) throws IdentityEventException {
 
         User user = buildUser(eventData);
-        Organization tenant = buildTenant(eventData);
+        Tenant tenant = buildTenant();
         UserStore userStore = buildUserStore(eventData);
         List<Session> sessions = getSessions(eventData);
         Application application = buildApplication(eventData.getAuthenticationContext());
+        Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
+                IdentityContext.getThreadLocalIdentityContext());
 
         return new WSO2SessionCreatedEventPayload.Builder()
                 .session(sessions != null && !sessions.isEmpty() ? sessions.get(0) : null)
                 .user(user)
                 .tenant(tenant)
+                .organization(organization)
                 .userStore(userStore)
                 .application(application)
                 .build();
@@ -74,15 +78,18 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     public EventPayload buildSessionPresentedEvent(EventData eventData) throws IdentityEventException {
 
         User user = buildUser(eventData);
-        Organization tenant = buildTenant(eventData);
+        Tenant tenant = buildTenant();
         UserStore userStore = buildUserStore(eventData);
         List<Session> sessions = getSessions(eventData);
         Application application = buildApplication(eventData.getAuthenticationContext());
+        Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
+                IdentityContext.getThreadLocalIdentityContext());
 
         return new WSO2SessionPresentedEventPayload.Builder()
                 .session(sessions != null && !sessions.isEmpty() ? sessions.get(0) : null)
                 .user(user)
                 .tenant(tenant)
+                .organization(organization)
                 .userStore(userStore)
                 .application(application)
                 .build();
@@ -92,13 +99,16 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
     public EventPayload buildSessionRevokedEvent(EventData eventData) throws IdentityEventException {
 
         User user = buildUser(eventData);
-        Organization tenant = buildTenant(eventData);
+        Tenant tenant = buildTenant();
         UserStore userStore = buildUserStore(eventData);
         List<Session> sessions = getSessions(eventData);
+        Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
+                IdentityContext.getThreadLocalIdentityContext());
 
         return new WSO2SessionRevokedEventPayload.Builder()
                 .user(user)
                 .tenant(tenant)
+                .organization(organization)
                 .userStore(userStore)
                 .sessions(sessions)
                 .build();
@@ -128,10 +138,13 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         return user;
     }
 
-    private Organization buildTenant(EventData eventData) {
+    private Tenant buildTenant() {
 
-        String tenantDomain = eventData.getTenantDomain();
-        return new Organization(String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain)), tenantDomain);
+        String rootTenantId = String.valueOf(
+                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantId());
+        String rootTenantDomain = String.valueOf(
+                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantDomain());
+        return new Tenant(rootTenantId, rootTenantDomain);
     }
 
     private UserStore buildUserStore(EventData eventData) {
