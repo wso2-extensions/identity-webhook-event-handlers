@@ -171,6 +171,18 @@ public class EventHookHandlerUtils {
     public static String constructBaseURL() {
 
         try {
+            IdentityContext identityContext = IdentityContext.getThreadLocalIdentityContext();
+            if (identityContext.getOrganization() != null && identityContext.getOrganization().getDepth() != 0) {
+                String rootTenantDomain = identityContext.getRootOrganization().getAssociatedTenantDomain();
+                String organizationId = identityContext.getOrganization().getId();
+                if (rootTenantDomain != null && organizationId != null) {
+                    log.debug("Resolving root tenant: " + rootTenantDomain +
+                            " and organization ID: " + organizationId);
+                    ServiceURLBuilder builder =
+                            ServiceURLBuilder.create().addPath("/t/" + rootTenantDomain + "/o/" + organizationId);
+                    return builder.build().getAbsolutePublicURL();
+                }
+            }
             ServiceURLBuilder builder = ServiceURLBuilder.create();
             return builder.build().getAbsolutePublicURL();
         } catch (URLBuilderException e) {
