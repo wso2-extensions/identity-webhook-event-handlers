@@ -21,6 +21,7 @@ package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -40,6 +41,9 @@ import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Organization;
+import org.wso2.carbon.identity.core.context.model.RootOrganization;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
@@ -119,12 +123,13 @@ public class WSO2SessionEventPayloadBuilderTest {
     private UniqueIDUserStoreManager uniqueIDUserStoreManager;
 
     private MockedStatic<FrameworkUtils> frameworkUtilsMockedStatic;
-
     private AuthenticationContext mockAuthenticationContext;
-
     private AuthenticatedUser mockAuthenticatedUser;
-
     private SessionContext mockSessionContext;
+    private MockedStatic<IdentityContext> identityContextMockedStatic;
+    private IdentityContext mockIdentityContext;
+    RootOrganization mockRootOrg;
+    Organization mockOrg;
 
     @BeforeClass
     public void setUp() throws Exception {
@@ -144,6 +149,22 @@ public class WSO2SessionEventPayloadBuilderTest {
                 TEST_MULTI_ATTRIBUTE_SEPARATOR);
         mockServiceURLBuilder();
         mockIdentityTenantUtil();
+
+        // Properly manage static mock for IdentityContext
+        identityContextMockedStatic = Mockito.mockStatic(IdentityContext.class);
+        mockIdentityContext = Mockito.mock(IdentityContext.class);
+        mockRootOrg = Mockito.mock(RootOrganization.class);
+        mockOrg = Mockito.mock(Organization.class);
+        when(mockOrg.getOrganizationHandle()).thenReturn(TEST_TENANT_DOMAIN);
+        when(mockIdentityContext.getOrganization()).thenReturn(mockOrg);
+        when(mockIdentityContext.getTenantDomain()).thenReturn(TEST_TENANT_DOMAIN);
+        when(mockIdentityContext.getTenantId()).thenReturn(TEST_TENANT_ID);
+        when(mockRootOrg.getAssociatedTenantId()).thenReturn(100);
+        when(mockRootOrg.getAssociatedTenantDomain()).thenReturn(TEST_TENANT_DOMAIN);
+        when(mockIdentityContext.getRootOrganization()).thenReturn(mockRootOrg);
+        identityContextMockedStatic.when(IdentityContext::getThreadLocalIdentityContext)
+                .thenReturn(mockIdentityContext);
+
         CommonTestUtils.initPrivilegedCarbonContext(TEST_TENANT_DOMAIN, TEST_TENANT_ID, TEST_USER_NAME);
     }
 
@@ -158,6 +179,9 @@ public class WSO2SessionEventPayloadBuilderTest {
                 userSessionManagementService,
                 mockOrganizationManager,
                 mockEventData);
+        if (identityContextMockedStatic != null) {
+            identityContextMockedStatic.close();
+        }
     }
 
     @Test

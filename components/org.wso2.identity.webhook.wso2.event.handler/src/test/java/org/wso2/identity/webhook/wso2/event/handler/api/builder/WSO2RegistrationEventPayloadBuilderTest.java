@@ -32,6 +32,8 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
+import org.wso2.carbon.identity.core.context.model.Organization;
+import org.wso2.carbon.identity.core.context.model.RootOrganization;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
@@ -94,6 +96,10 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     private ClaimMetadataManagementService claimMetadataManagementService;
 
     private MockedStatic<FrameworkUtils> frameworkUtils;
+    private MockedStatic<IdentityContext> identityContextMockedStatic;
+    private IdentityContext mockIdentityContext;
+    RootOrganization mockRootOrg;
+    Organization mockOrg;
 
     @BeforeClass
     public void setup() throws Exception {
@@ -111,6 +117,21 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         frameworkUtils = mockStatic(FrameworkUtils.class);
         frameworkUtils.when(FrameworkUtils::getMultiAttributeSeparator).thenReturn(",");
 
+        // Properly manage static mock for IdentityContext
+        identityContextMockedStatic = Mockito.mockStatic(IdentityContext.class);
+        mockIdentityContext = Mockito.mock(IdentityContext.class);
+        mockRootOrg = Mockito.mock(RootOrganization.class);
+        mockOrg = Mockito.mock(Organization.class);
+        when(mockOrg.getOrganizationHandle()).thenReturn(TENANT_DOMAIN);
+        when(mockIdentityContext.getOrganization()).thenReturn(mockOrg);
+        when(mockIdentityContext.getTenantDomain()).thenReturn(TENANT_DOMAIN);
+        when(mockIdentityContext.getTenantId()).thenReturn(101);
+        when(mockRootOrg.getAssociatedTenantId()).thenReturn(100);
+        when(mockRootOrg.getAssociatedTenantDomain()).thenReturn(TENANT_DOMAIN);
+        when(mockIdentityContext.getRootOrganization()).thenReturn(mockRootOrg);
+        identityContextMockedStatic.when(IdentityContext::getThreadLocalIdentityContext)
+                .thenReturn(mockIdentityContext);
+
         CommonTestUtils.initPrivilegedCarbonContext();
     }
 
@@ -122,6 +143,9 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         Mockito.reset(realmConfiguration, claimMetadataManagementService, userStoreManager);
         PrivilegedCarbonContext.endTenantFlow();
         frameworkUtils.close();
+        if (identityContextMockedStatic != null) {
+            identityContextMockedStatic.close();
+        }
     }
 
     @Test
@@ -150,10 +174,13 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         when(mockEventData.getEventParams()).thenReturn(params);
         when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
 
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+        Flow mockFlow = new Flow.Builder()
                 .name(Flow.Name.REGISTER)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
+                .build();
+        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+
+        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildRegistrationSuccessEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
@@ -229,10 +256,13 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         when(mockEventData.getEventParams()).thenReturn(params);
 
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+        Flow mockFlow = new Flow.Builder()
                 .name(Flow.Name.REGISTER)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                .build());
+                .build();
+        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+
+        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildRegistrationFailureEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);

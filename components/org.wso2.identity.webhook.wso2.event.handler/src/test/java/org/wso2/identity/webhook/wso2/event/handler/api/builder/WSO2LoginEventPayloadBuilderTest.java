@@ -27,6 +27,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.carbon.base.CarbonBaseConstants;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.ExternalIdPConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
@@ -36,6 +37,8 @@ import org.wso2.carbon.identity.application.common.model.Claim;
 import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.RootOrganization;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
@@ -46,6 +49,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationFailedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2AuthenticationSuccessEventPayload;
 
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,6 +86,12 @@ public class WSO2LoginEventPayloadBuilderTest {
     @Mock
     private OrganizationManager mockOrganizationManager;
 
+    IdentityContext mockIdentityContext;
+
+    RootOrganization mockRootOrg;
+
+    MockedStatic<IdentityContext> identityContextMockedStatic;
+
     @Mock
     private ClaimMetadataManagementService claimMetadataManagementService;
 
@@ -98,6 +108,9 @@ public class WSO2LoginEventPayloadBuilderTest {
 
     @BeforeClass
     public void setup() {
+        // Set carbon.home before any class loading or mocking
+        String carbonHome = Paths.get(System.getProperty("user.dir"), "src", "test", "resources").toString();
+        System.setProperty(CarbonBaseConstants.CARBON_HOME, carbonHome);
 
         MockitoAnnotations.openMocks(this);
         WSO2EventHookHandlerDataHolder.getInstance().setOrganizationManager(mockOrganizationManager);
@@ -108,6 +121,14 @@ public class WSO2LoginEventPayloadBuilderTest {
         mockIdentityTenantUtil();
         frameworkUtils = mockStatic(FrameworkUtils.class);
         frameworkUtils.when(FrameworkUtils::getMultiAttributeSeparator).thenReturn(",");
+        identityContextMockedStatic = Mockito.mockStatic(IdentityContext.class);
+        mockIdentityContext = Mockito.mock(IdentityContext.class);
+        mockRootOrg = Mockito.mock(RootOrganization.class);
+        when(mockRootOrg.getAssociatedTenantId()).thenReturn(100);
+        when(mockRootOrg.getAssociatedTenantDomain()).thenReturn("myorg");
+        when(mockIdentityContext.getRootOrganization()).thenReturn(mockRootOrg);
+        identityContextMockedStatic.when(IdentityContext::getThreadLocalIdentityContext)
+                .thenReturn(mockIdentityContext);
     }
 
     @AfterClass
@@ -115,14 +136,15 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         closeMockedServiceURLBuilder();
         closeMockedIdentityTenantUtil();
-        Mockito.reset(mockOrganizationManager, claimMetadataManagementService);
+        Mockito.reset(mockOrganizationManager, claimMetadataManagementService, mockIdentityContext, mockRootOrg);
+        identityContextMockedStatic.close();
         frameworkUtils.close();
     }
 
     @DataProvider(name = "successEventDataProvider")
     public Object[][] successEventDataProvider() {
 
-        return new Object[][]{
+        return new Object[][] {
                 {SAMPLE_USER_ID, SAMPLE_USERSTORE_NAME, SAMPLE_SP_ID, SAMPLE_SERVICE_PROVIDER, SAMPLE_TENANT_ID,
                         SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, 1}
         };
@@ -167,7 +189,7 @@ public class WSO2LoginEventPayloadBuilderTest {
     @DataProvider(name = "failedEventDataProvider")
     public Object[][] failedEventDataProvider() {
 
-        return new Object[][]{
+        return new Object[][] {
                 {SAMPLE_USER_ID, SAMPLE_USERSTORE_NAME, SAMPLE_SP_ID, SAMPLE_SERVICE_PROVIDER, SAMPLE_TENANT_ID,
                         SAMPLE_TENANT_DOMAIN, SAMPLE_USER_REF, SAMPLE_ERROR_MESSAGE, 2,
                         SAMPLE_IDP, SAMPLE_AUTHENTICATOR}
