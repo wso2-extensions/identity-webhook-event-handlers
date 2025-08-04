@@ -172,23 +172,33 @@ public class EventHookHandlerUtils {
 
         try {
             IdentityContext identityContext = IdentityContext.getThreadLocalIdentityContext();
+            if (identityContext.getRootOrganization() == null ||
+                    StringUtils.isBlank(identityContext.getRootOrganization().getAssociatedTenantDomain())) {
+                return null;
+            }
+            String rootTenantDomain = identityContext.getRootOrganization().getAssociatedTenantDomain();
+
             if (identityContext.getOrganization() != null && identityContext.getOrganization().getDepth() != 0) {
-                String rootTenantDomain = identityContext.getRootOrganization().getAssociatedTenantDomain();
                 String organizationId = identityContext.getOrganization().getId();
-                if (rootTenantDomain != null && organizationId != null) {
+                if (StringUtils.isNotBlank(organizationId)) {
                     log.debug("Resolving root tenant: " + rootTenantDomain +
                             " and organization ID: " + organizationId);
-                    ServiceURLBuilder builder =
-                            ServiceURLBuilder.create().addPath("/t/" + rootTenantDomain + "/o/" + organizationId);
-                    return builder.build().getAbsolutePublicURL();
+                    return ServiceURLBuilder.create()
+                            .addPath("/t/" + rootTenantDomain + "/o/" + organizationId)
+                            .build()
+                            .getAbsolutePublicURL();
                 }
             }
-            ServiceURLBuilder builder = ServiceURLBuilder.create();
-            return builder.build().getAbsolutePublicURL();
+
+            return ServiceURLBuilder.create()
+                    .addPath("/t/" + rootTenantDomain)
+                    .build()
+                    .getAbsolutePublicURL();
+
         } catch (URLBuilderException e) {
             log.debug("Error occurred while building the tenant qualified URL.", e);
+            return null;
         }
-        return null;
     }
 
     /**
