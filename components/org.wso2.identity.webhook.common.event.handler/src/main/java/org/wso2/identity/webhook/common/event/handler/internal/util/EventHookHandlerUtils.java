@@ -172,14 +172,11 @@ public class EventHookHandlerUtils {
 
         try {
             IdentityContext identityContext = IdentityContext.getThreadLocalIdentityContext();
-            if (identityContext.getRootOrganization() == null &&
+            if (identityContext.getRootOrganization() == null ||
                     StringUtils.isBlank(identityContext.getRootOrganization().getAssociatedTenantDomain())) {
                 return null;
             }
             String rootTenantDomain = identityContext.getRootOrganization().getAssociatedTenantDomain();
-            if (StringUtils.isBlank(rootTenantDomain)) {
-                return null;
-            }
 
             if (identityContext.getOrganization() != null && identityContext.getOrganization().getDepth() != 0) {
                 String organizationId = identityContext.getOrganization().getId();
