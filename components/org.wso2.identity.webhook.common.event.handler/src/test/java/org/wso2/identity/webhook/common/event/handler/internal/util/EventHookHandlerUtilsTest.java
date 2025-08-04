@@ -20,8 +20,10 @@ package org.wso2.identity.webhook.common.event.handler.internal.util;
 
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.MDC;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -29,6 +31,8 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.RootOrganization;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
@@ -75,13 +79,19 @@ public class EventHookHandlerUtilsTest {
     @Mock
     private EventPublisherService mockedEventPublisherService;
 
+    IdentityContext mockIdentityContext;
+
+    RootOrganization mockRootOrg;
+
+    MockedStatic<IdentityContext> identityContextMockedStatic;
+
     @BeforeMethod
     public void setup() throws Exception {
 
         MockitoAnnotations.openMocks(this);
         CommonTestUtils.initPrivilegedCarbonContext();
     }
-       //TODO Uncomment the below test once the MDC is set in the EventHookHandlerUtils class.
+    //TODO Uncomment the below test once the MDC is set in the EventHookHandlerUtils class.
 //    /**
 //     * Test for correlation ID generation.
 //     */
@@ -95,12 +105,31 @@ public class EventHookHandlerUtilsTest {
 //                "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
 //    }
 
+    @AfterMethod
+    public void tearDown() {
+
+        TestUtils.closeMockedServiceURLBuilder();
+        TestUtils.closeMockedIdentityTenantUtil();
+    }
+
     @Test
     public void testConstructBaseURL() {
 
         TestUtils.mockServiceURLBuilder();
+
+        // Mock IdentityContext and its methods
+        identityContextMockedStatic = Mockito.mockStatic(IdentityContext.class);
+        mockIdentityContext = Mockito.mock(IdentityContext.class);
+        mockRootOrg = Mockito.mock(RootOrganization.class);
+        when(mockRootOrg.getAssociatedTenantId()).thenReturn(100);
+        when(mockRootOrg.getAssociatedTenantDomain()).thenReturn("myorg");
+        when(mockIdentityContext.getRootOrganization()).thenReturn(mockRootOrg);
+        identityContextMockedStatic.when(IdentityContext::getThreadLocalIdentityContext)
+                .thenReturn(mockIdentityContext);
+
         String baseURL = EventHookHandlerUtils.constructBaseURL();
         assertEquals(baseURL, "https://localhost:9443", "Base URL should be correctly constructed.");
+
         closeMockedServiceURLBuilder();
     }
 
@@ -187,7 +216,7 @@ public class EventHookHandlerUtilsTest {
             mockedMDC.verify(() -> MDC.put("Correlation-ID", expectedCorrelationID), times(0));
         }
     }
-      //TODO Uncomment the below tests once the MDC is set in the EventHookHandlerUtils class.
+    //TODO Uncomment the below tests once the MDC is set in the EventHookHandlerUtils class.
 //    @Test
 //    public void testGetCorrelationIDWithoutExistingCorrelationID() {
 //
@@ -209,7 +238,7 @@ public class EventHookHandlerUtilsTest {
     @DataProvider(name = "extractSubjectDataProvider")
     public Object[][] extractSubjectDataProvider() {
 
-        return new Object[][]{
+        return new Object[][] {
                 {IdentityEventConstants.EventName.SESSION_CREATE.name()},
         };
     }

@@ -19,7 +19,7 @@
 package org.wso2.identity.webhook.common.event.handler.api.util;
 
 import org.mockito.MockitoAnnotations;
-import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
@@ -39,10 +39,11 @@ public class EventPayloadUtilsTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @AfterClass
+    @AfterMethod
     public void tearDown() {
-        // Clean up resources if needed
-        closeMockedServiceURLBuilder();
+
+        TestUtils.closeMockedServiceURLBuilder();
+        TestUtils.closeMockedIdentityTenantUtil();
     }
 
     @Test

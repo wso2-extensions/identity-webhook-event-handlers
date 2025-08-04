@@ -23,8 +23,6 @@ import org.wso2.carbon.identity.core.ServiceURL;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 
-import java.util.Arrays;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -43,6 +41,10 @@ public class TestUtils {
      * Mocks the ServiceURLBuilder.
      */
     public static void mockServiceURLBuilder() {
+        // Close previous static mock if still open
+        if (mockedStaticServiceURLBuilder != null && !mockedStaticServiceURLBuilder.isClosed()) {
+            mockedStaticServiceURLBuilder.close();
+        }
 
         ServiceURLBuilder builder = new ServiceURLBuilder() {
             String path = "";
@@ -50,7 +52,6 @@ public class TestUtils {
             @Override
             public ServiceURLBuilder addPath(String... strings) {
 
-                Arrays.stream(strings).forEach(x -> path += "/" + x);
                 return this;
             }
 
@@ -102,6 +103,9 @@ public class TestUtils {
      */
     public static void mockIdentityTenantUtil() {
 
+        if (mockedStaticIdentityTenantUtil != null && !mockedStaticIdentityTenantUtil.isClosed()) {
+            mockedStaticIdentityTenantUtil.close();
+        }
         mockedStaticIdentityTenantUtil = mockStatic(IdentityTenantUtil.class);
         when(IdentityTenantUtil.isTenantedSessionsEnabled()).thenReturn(false);
         when(IdentityTenantUtil.getTenantId(SAMPLE_TENANT_DOMAIN)).thenReturn(SAMPLE_TENANT_ID);
