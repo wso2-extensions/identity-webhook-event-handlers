@@ -37,6 +37,9 @@ public class TestUtils {
     private static MockedStatic<ServiceURLBuilder> mockedStaticServiceURLBuilder;
     private static MockedStatic<IdentityTenantUtil> mockedStaticIdentityTenantUtil;
 
+    /**
+     * Mocks the ServiceURLBuilder.
+     */
     public static void mockServiceURLBuilder() {
         // Close previous static mock if still open
         if (mockedStaticServiceURLBuilder != null && !mockedStaticServiceURLBuilder.isClosed()) {
@@ -85,6 +88,9 @@ public class TestUtils {
         when(ServiceURLBuilder.create()).thenReturn(builder);
     }
 
+    /**
+     * Closes the mocked ServiceURLBuilder.
+     */
     public static void closeMockedServiceURLBuilder() {
 
         if (mockedStaticServiceURLBuilder != null && !mockedStaticServiceURLBuilder.isClosed()) {
@@ -92,6 +98,9 @@ public class TestUtils {
         }
     }
 
+    /**
+     * Mocks the IdentityTenantUtil.
+     */
     public static void mockIdentityTenantUtil() {
 
         if (mockedStaticIdentityTenantUtil != null && !mockedStaticIdentityTenantUtil.isClosed()) {
@@ -102,6 +111,9 @@ public class TestUtils {
         when(IdentityTenantUtil.getTenantId(SAMPLE_TENANT_DOMAIN)).thenReturn(SAMPLE_TENANT_ID);
     }
 
+    /**
+     * Closes the mocked IdentityTenantUtil.
+     */
     public static void closeMockedIdentityTenantUtil() {
 
         if (mockedStaticIdentityTenantUtil != null && !mockedStaticIdentityTenantUtil.isClosed()) {
