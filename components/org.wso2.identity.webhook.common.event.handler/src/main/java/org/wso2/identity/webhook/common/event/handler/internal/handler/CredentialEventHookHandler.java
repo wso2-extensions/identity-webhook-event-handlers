@@ -175,7 +175,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
                 An admin resets the user's password via the Console.
          */
         if (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName)) {
-            Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+            Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
             Flow.Name flowName = (flow != null) ? flow.getName() : null;
             return Flow.Name.PASSWORD_RESET.equals(flowName);
         }

@@ -63,7 +63,7 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Map<String, String> reasonAdmin = new HashMap<>();
         Map<String, String> reasonUser = new HashMap<>();
 
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         if (flow != null) {
             // TODO: Switch these with relevant flow names
             switch (flow.getInitiatingPersona()) {

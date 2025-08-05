@@ -108,7 +108,7 @@ public class RegistrationEventHookHandlerTest {
         setupDataHolderMocks();
         setupPayloadBuilderMocks();
         setupUtilities();
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+        IdentityContext.getThreadLocalIdentityContext().enterFlow(new Flow.Builder()
                 .name(Flow.Name.REGISTER)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());

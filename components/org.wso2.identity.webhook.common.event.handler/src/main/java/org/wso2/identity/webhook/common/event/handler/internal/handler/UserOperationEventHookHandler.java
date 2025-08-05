@@ -169,7 +169,7 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
 
     private boolean isSupportedEvent(String eventName) {
 
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
         return !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName) &&
                 (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE.equals(eventName) ||
@@ -185,7 +185,7 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
 
     private boolean isUserCreatedFlow(String eventName) {
 
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
         /*
         All POST_ADD_USER events will result in a userCreated event payload.

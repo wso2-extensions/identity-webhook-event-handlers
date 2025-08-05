@@ -78,7 +78,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         UserStore userStore = new UserStore(userStoreDomainName);
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
@@ -140,7 +140,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             deletedUser.setClaims(userClaims);
 
             Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
-            Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+            Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
             String initiatorType = null;
             if (flow != null) {
                 initiatorType = flow.getInitiatingPersona().name();
@@ -190,7 +190,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
@@ -237,7 +237,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
@@ -298,7 +298,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
 
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = null;
         String action = null;
         if (flow != null) {
@@ -357,7 +357,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         }
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = null;
         String action = null;
         if (flow != null) {

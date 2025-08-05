@@ -178,9 +178,9 @@ public class WSO2RegistrationEventPayloadBuilderTest {
                 .name(Flow.Name.REGISTER)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
-        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+        IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
 
-        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
+        when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildRegistrationSuccessEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
@@ -260,9 +260,9 @@ public class WSO2RegistrationEventPayloadBuilderTest {
                 .name(Flow.Name.REGISTER)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
-        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+        IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
 
-        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
+        when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildRegistrationFailureEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);

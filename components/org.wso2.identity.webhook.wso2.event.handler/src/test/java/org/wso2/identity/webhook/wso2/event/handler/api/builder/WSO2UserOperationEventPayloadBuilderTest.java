@@ -185,8 +185,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .name(Flow.Name.USER_GROUP_UPDATE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
-        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
-        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
+        IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
+        when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
 
         Map<String, Object> params = new HashMap<>();
         params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
@@ -272,8 +272,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .name(Flow.Name.USER_DELETE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
-        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
-        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
+        IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
+        when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
 
         Map<String, Object> params = new HashMap<>();
         params.put(IdentityEventConstants.EventProperty.TENANT_ID, TENANT_ID);
@@ -331,8 +331,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .name(Flow.Name.ACCOUNT_UNLOCK)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
-        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
-        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
+        IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
+        when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildUserUnlockAccountEvent(mockEventData);
         WSO2BaseEventPayload wso2BaseEventPayload = (WSO2BaseEventPayload) eventPayload;
@@ -379,8 +379,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .name(Flow.Name.ACCOUNT_LOCK)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
-        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
-        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
+        IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
+        when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildUserLockAccountEvent(mockEventData);
         WSO2BaseEventPayload wso2BaseEventPayload = (WSO2BaseEventPayload) eventPayload;
@@ -440,8 +440,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .name(Flow.Name.ACCOUNT_DISABLE) //TODO change the flow when introduce ACCOUNT_ENABLE
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
-        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
-        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
+        IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
+        when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildUserAccountEnableEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
@@ -480,8 +480,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .name(Flow.Name.ACCOUNT_DISABLE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
-        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
-        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
+        IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
+        when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildUserAccountEnableEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
@@ -524,8 +524,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .name(Flow.Name.INVITE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
-        IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
-        when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
+        IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
+        when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
 
         EventPayload eventPayload = payloadBuilder.buildUserCreatedEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
