@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.slf4j.MDC;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorStatus;
+import org.wso2.carbon.identity.application.authentication.framework.context.AuthHistory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
@@ -336,6 +337,19 @@ public class EventHookHandlerUtils {
         return metadataProperties != null &&
                 Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
                         PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode());
+    }
+
+    public static boolean isB2BUserLogin(AuthenticationContext authContext) {
+
+        for (AuthHistory authHistory : authContext.getAuthenticationStepHistory()) {
+            /*
+             * For the B2B user scenario, the authentication method 'OrganizationAuthenticator'
+             */
+            if (authHistory.toTranslatableString().equals(FrameworkConstants.ORGANIZATION_AUTHENTICATOR)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static Map<String, Object> validateAndGetProperties(Event event) throws IdentityEventException {
