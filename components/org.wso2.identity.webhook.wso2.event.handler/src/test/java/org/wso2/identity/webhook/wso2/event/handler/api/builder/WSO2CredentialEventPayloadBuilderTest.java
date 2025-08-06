@@ -213,12 +213,12 @@ public class WSO2CredentialEventPayloadBuilderTest {
                     .name(flowName)
                     .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                     .build();
-            IdentityContext.getThreadLocalIdentityContext().setFlow(mockFlow);
+            IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
 
-            when(mockIdentityContext.getFlow()).thenReturn(mockFlow);
+            when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
         } else {
-            IdentityContext.getThreadLocalIdentityContext().setFlow(null);
-            when(mockIdentityContext.getFlow()).thenReturn(null);
+            IdentityContext.getThreadLocalIdentityContext().enterFlow(null);
+            when(mockIdentityContext.getCurrentFlow()).thenReturn(null);
         }
 
         EventPayload eventPayload = payloadBuilder.buildCredentialUpdateEvent(mockEventData);

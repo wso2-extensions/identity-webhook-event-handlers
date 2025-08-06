@@ -169,7 +169,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
     private boolean isUserRegistrationSuccessFlow(String eventName) {
 
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
         return !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName) &&
                 (IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||

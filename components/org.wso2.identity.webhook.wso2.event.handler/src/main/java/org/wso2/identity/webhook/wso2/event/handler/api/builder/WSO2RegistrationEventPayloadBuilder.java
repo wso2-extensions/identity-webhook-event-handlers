@@ -72,7 +72,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         }
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = null;
         String action = null;
         if (flow != null) {
@@ -122,7 +122,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         WSO2PayloadUtils.enrichUser(properties, newUser, accessedTenantDomain);
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
-        Flow flow = IdentityContext.getThreadLocalIdentityContext().getFlow();
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = null;
         String action = null;
         if (flow != null) {

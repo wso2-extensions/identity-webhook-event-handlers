@@ -107,7 +107,7 @@ public class CredentialEventHookHandlerTest {
         setupDataHolderMocks();
         setupPayloadBuilderMocks();
         setupUtilities();
-        IdentityContext.getThreadLocalIdentityContext().setFlow(new Flow.Builder()
+        IdentityContext.getThreadLocalIdentityContext().enterFlow(new Flow.Builder()
                 .name(Flow.Name.PASSWORD_RESET)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build());
