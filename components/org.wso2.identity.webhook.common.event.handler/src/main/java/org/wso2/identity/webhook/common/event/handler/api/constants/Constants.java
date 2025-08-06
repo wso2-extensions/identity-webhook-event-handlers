@@ -47,6 +47,7 @@ public class Constants {
         public static final String USER_OPERATION_CHANNEL = "https://schemas.identity.wso2.org/events/user";
         public static final String VERIFICATION_CHANNEL = "https://schemas.identity.wso2.org/events/verification";
         public static final String SESSION_CHANNEL = "https://schemas.identity.wso2.org/events/session";
+        public static final String TOKEN_CHANNEL = "https://schemas.identity.wso2.org/events/token";
     }
 
     /**
@@ -70,5 +71,7 @@ public class Constants {
         public static final String SESSION_CREATED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionEstablished";
         public static final String SESSION_REVOKED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionRevoked";
         public static final String SESSION_PRESENTED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionPresented";
+        public static final String TOKEN_ISSUED_EVENT = "https://schemas.identity.wso2.org/events/token/event-type/accessTokenIssued";
+        public static final String TOKEN_REVOKED_EVENT = "https://schemas.identity.wso2.org/events/token/event-type/accessTokenRevoked";
     }
 }

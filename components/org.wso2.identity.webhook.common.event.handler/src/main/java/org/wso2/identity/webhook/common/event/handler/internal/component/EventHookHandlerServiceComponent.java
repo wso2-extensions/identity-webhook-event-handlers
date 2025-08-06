@@ -39,6 +39,7 @@ import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherServic
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
+import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
@@ -51,6 +52,7 @@ import org.wso2.identity.webhook.common.event.handler.internal.handler.Credentia
 import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.RegistrationEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.SessionEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.TokenEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.UserOperationEventHookHandler;
 
 /**
@@ -108,6 +110,13 @@ public class EventHookHandlerServiceComponent {
                     isCredentialEventHandlerEnabled.equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
                         new CredentialEventHookHandler(), null);
+            }
+
+            String isTokenEventHandlerEnabled =
+                    getIdentityEventProperty(Constants.TOKEN_EVENT_HOOK_NAME, Constants.TOKEN_EVENT_HOOK_ENABLED);
+            if (isTokenEventHandlerEnabled != null && isTokenEventHandlerEnabled
+                    .equalsIgnoreCase(Boolean.TRUE.toString())) {
+                bundleContext.registerService(AbstractEventHandler.class.getName(), new TokenEventHookHandler(), null);
             }
         } catch (IdentityEventServerException e) {
             log.error("Error while activating event handler.", e);
@@ -224,6 +233,29 @@ public class EventHookHandlerServiceComponent {
         log.debug("Remove session event payload builder service" +
                 sessionEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().removeSessionEventPayloadBuilder(sessionEventPayloadBuilder);
+    }
+
+    @Reference(
+            name = "token.event.payload.builder",
+            service = TokenEventPayloadBuilder.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeTokenEventPayloadBuilder"
+    )
+    protected void addTokenEventPayloadBuilder(
+            TokenEventPayloadBuilder tokenEventPayloadBuilder) {
+
+        log.debug("Add Token Event Payload Builder service " +
+                tokenEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().addTokenEventPayloadBuilder(tokenEventPayloadBuilder);
+    }
+
+    protected void removeTokenEventPayloadBuilder(
+            TokenEventPayloadBuilder tokenEventPayloadBuilder) {
+
+        log.debug("Remove Token Event Payload Builder service " +
+                tokenEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance().removeTokenEventPayloadBuilder(tokenEventPayloadBuilder);
     }
 
     @Reference(

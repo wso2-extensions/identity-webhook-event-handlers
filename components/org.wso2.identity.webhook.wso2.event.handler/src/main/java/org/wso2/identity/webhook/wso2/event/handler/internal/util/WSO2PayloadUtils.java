@@ -44,11 +44,14 @@ import org.wso2.carbon.user.core.UniqueIDUserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Tenant;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -442,5 +445,115 @@ public class WSO2PayloadUtils {
             log.debug("Error occurred while building the tenant qualified URL.", e);
         }
         return null;
+    }
+
+    /**
+     * Resolves the user store domain from the event data.
+     *
+     * @param eventData The event data containing user store information.
+     * @return The user store domain name or null if not found.
+     */
+    public static String resolveUserStoreDomain(EventData eventData) {
+
+        if (eventData == null || eventData.getProperties() == null) {
+            return null;
+        }
+
+        Map<String, Object> properties = eventData.getProperties();
+        Object userStoreDomainObj = properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN);
+        String userStoreDomainName = (userStoreDomainObj instanceof String) ? (String) userStoreDomainObj : null;
+
+        if (StringUtils.isBlank(userStoreDomainName)) {
+            RealmConfiguration realmConfiguration =
+                    getRealmConfigurationByTenantDomain(eventData.getTenantDomain());
+            if (realmConfiguration == null) {
+                return null;
+            }
+            userStoreDomainName = realmConfiguration.getUserStoreProperty(
+                    UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
+        }
+        return userStoreDomainName;
+    }
+
+    /**
+     * Builds a UserStore object based on the event data.
+     *
+     * @param eventData The event data containing user store information.
+     * @return UserStore object or null if the user store domain is not found.
+     */
+    public static UserStore buildUserStore(EventData eventData) {
+
+        String userStoreDomainName = resolveUserStoreDomain(eventData);
+        if (userStoreDomainName == null) return null;
+
+        if (StringUtils.isNotBlank(userStoreDomainName)) {
+            return new UserStore(userStoreDomainName);
+        }
+
+        return null;
+    }
+
+    /**
+     * Builds a User object based on the event data.
+     *
+     * @param eventData The event data containing user information.
+     * @return User object or null if user information is not available.
+     */
+    public static User buildUser(EventData eventData) {
+
+        if (eventData == null || eventData.getProperties() == null) {
+            return null;
+        }
+
+        String userName = (String) eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_NAME);
+        String userId = (String) eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_ID);
+
+        if (userName == null || userId == null) {
+            return null;
+        }
+
+        User user = new User();
+        user.setId(userId);
+        Optional<UserClaim>
+                userNameOptional = generateUserClaim(USERNAME_CLAIM, userName,
+                eventData.getTenantDomain());
+        userNameOptional.ifPresent(user::addClaim);
+        user.setRef(constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
+
+        String userStoreDomain = resolveUserStoreDomain(eventData);
+        UserStoreManager userStoreManager = getUserStoreManagerByTenantDomain(eventData.getTenantDomain());
+
+        if (userStoreDomain == null || userStoreManager == null) {
+            return user;
+        }
+
+        try {
+            String domainQualifiedUserName = userStoreDomain + "/" + userName;
+
+            String emailAddress =
+                    userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.EMAIL_ADDRESS_CLAIM,
+                            UserCoreConstants.DEFAULT_PROFILE);
+
+            Optional<UserClaim> emailAddressUserClaimOptional =
+                    generateUserClaim(FrameworkConstants.EMAIL_ADDRESS_CLAIM, emailAddress,
+                            eventData.getTenantDomain());
+            emailAddressUserClaimOptional.ifPresent(user::addClaim);
+        } catch (UserStoreException e) {
+            log.warn("Error while extracting user claims for the user : " + user.getId(), e);
+        }
+
+        return user;
+    }
+
+    /**
+     * Builds a Tenant object based on the event data.
+     *
+     * @param eventData The event data containing tenant information.
+     * @return Tenant object with tenant ID and domain.
+     */
+    public static Tenant buildTenant(EventData eventData) {
+
+        String tenantDomain = eventData.getTenantDomain();
+        return new Tenant(String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain)), tenantDomain);
     }
 }

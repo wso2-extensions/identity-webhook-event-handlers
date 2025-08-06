@@ -211,7 +211,10 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         List<Session> sessions = new ArrayList<>();
         List<Application> applications = new ArrayList<>();
         userSession.getApplications().forEach(app -> {
-            Application application = new Application(app.getAppId(), app.getAppName());
+            Application application = new Application.Builder()
+                    .id(app.getAppId())
+                    .name(app.getAppName())
+                    .build();
             applications.add(application);
         });
         Session sessionModel = new Session.Builder()
@@ -230,8 +233,9 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
             return null;
         }
 
-        return new Application(
-                authenticationContext.getServiceProviderResourceId(),
-                authenticationContext.getServiceProviderName());
+        return new Application.Builder()
+                .id(authenticationContext.getServiceProviderResourceId())
+                .name(authenticationContext.getServiceProviderName())
+                .build();
     }
 }
