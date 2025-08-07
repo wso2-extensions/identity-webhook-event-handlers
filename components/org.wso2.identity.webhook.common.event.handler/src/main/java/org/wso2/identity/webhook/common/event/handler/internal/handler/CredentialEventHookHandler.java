@@ -165,7 +165,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
 
     public boolean isCredentialUpdateFlow(String eventName) {
         /*
-        Event.POST_ADD_NEW_PASSWORD + Flow.Name.PASSWORD_RESET:
+        Event.POST_ADD_NEW_PASSWORD + Flow.Name.CREDENTIAL_RESET:
             Triggered when a user resets their password, either:
                 After an admin-enforced password reset, or
                 Through the "Forgot Password" flow.
@@ -177,7 +177,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
         if (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName)) {
             Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
             Flow.Name flowName = (flow != null) ? flow.getName() : null;
-            return Flow.Name.PASSWORD_RESET.equals(flowName);
+            return Flow.Name.CREDENTIAL_RESET.equals(flowName);
         }
         return IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);
     }

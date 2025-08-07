@@ -94,8 +94,8 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
         switch (name) {
             case PROFILE_UPDATE:
                 return PasswordUpdateAction.UPDATE;
-            case PASSWORD_RESET:
-                return PasswordUpdateAction.RESET;
+            case CREDENTIAL_RESET:
+                return PasswordUpdateAction.CREDENTIAL_RESET;
             case INVITE:
                 return PasswordUpdateAction.INVITE;
             default: {
@@ -106,7 +106,7 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
     }
 
     public enum PasswordUpdateAction {
-        UPDATE, RESET, INVITE
+        UPDATE, CREDENTIAL_RESET, INVITE
     }
 
     @Override
