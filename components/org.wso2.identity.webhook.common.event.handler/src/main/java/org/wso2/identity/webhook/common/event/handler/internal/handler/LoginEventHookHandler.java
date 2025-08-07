@@ -163,6 +163,15 @@ public class LoginEventHookHandler extends AbstractEventHandler {
             return;
         }
 
+        if (EventHookHandlerUtils.isB2BUserLogin(eventData.getAuthenticationContext())) {
+            if (log.isDebugEnabled()) {
+                log.debug(
+                        "Login event is triggered for a B2B user federation. Skipping event handling for login event profile: " +
+                                eventProfile.getProfile());
+            }
+            return;
+        }
+
         // Publish for current accessing org
         String tenantDomain = eventData.getAuthenticationContext().getLoginTenantDomain();
         publishEvent(tenantDomain, loginChannel, eventUri, eventProfile.getProfile(),

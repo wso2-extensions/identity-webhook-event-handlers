@@ -24,9 +24,11 @@ import org.apache.commons.logging.LogFactory;
 import org.slf4j.MDC;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorStatus;
+import org.wso2.carbon.identity.application.authentication.framework.config.model.AuthenticatorConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.context.SessionContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
+import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedIdPData;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.common.model.Claim;
@@ -336,6 +338,31 @@ public class EventHookHandlerUtils {
         return metadataProperties != null &&
                 Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
                         PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode());
+    }
+
+    /**
+     * Checks if the user is a B2B user based on the authentication context.
+     *
+     * @param authContext Authentication context.
+     * @return True if the user is a B2B user, otherwise false.
+     */
+    public static boolean isB2BUserLogin(AuthenticationContext authContext) {
+
+        Map<String, AuthenticatedIdPData> currentIdPs = authContext.getCurrentAuthenticatedIdPs();
+        if (currentIdPs == null) {
+            return false;
+        }
+
+        for (AuthenticatedIdPData idpData : currentIdPs.values()) {
+            if (idpData.getAuthenticators() != null) {
+                for (AuthenticatorConfig config : idpData.getAuthenticators()) {
+                    if (FrameworkConstants.ORGANIZATION_AUTHENTICATOR.equals(config.getName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static Map<String, Object> validateAndGetProperties(Event event) throws IdentityEventException {
