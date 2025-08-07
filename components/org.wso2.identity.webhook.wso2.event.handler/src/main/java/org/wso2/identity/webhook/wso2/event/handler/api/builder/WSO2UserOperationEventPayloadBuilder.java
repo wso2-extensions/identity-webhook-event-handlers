@@ -147,6 +147,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             }
             Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                     IdentityContext.getThreadLocalIdentityContext());
+            deletedUser.setOrganization(organization);
 
             return new WSO2UserAccountEventPayload.Builder()
                     .initiatorType(initiatorType)
@@ -197,6 +198,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         }
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        user.setOrganization(organization);
 
         return new WSO2UserAccountEventPayload.Builder()
                 .user(user)
@@ -244,6 +246,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         }
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        user.setOrganization(organization);
 
         return new WSO2UserAccountEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -309,6 +312,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         }
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        user.setOrganization(organization);
 
         return new WSO2UserAccountEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -368,6 +372,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         }
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        newUser.setOrganization(organization);
 
         return new WSO2UserCreatedEventPayload.Builder()
                 .initiatorType(initiatorType)

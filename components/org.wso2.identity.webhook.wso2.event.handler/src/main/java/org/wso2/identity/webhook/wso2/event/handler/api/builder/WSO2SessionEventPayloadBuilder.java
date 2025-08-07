@@ -63,6 +63,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Application application = buildApplication(eventData.getAuthenticationContext());
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        user.setOrganization(organization);
 
         return new WSO2SessionCreatedEventPayload.Builder()
                 .session(sessions != null && !sessions.isEmpty() ? sessions.get(0) : null)
@@ -84,6 +85,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Application application = buildApplication(eventData.getAuthenticationContext());
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        user.setOrganization(organization);
 
         return new WSO2SessionPresentedEventPayload.Builder()
                 .session(sessions != null && !sessions.isEmpty() ? sessions.get(0) : null)
@@ -104,6 +106,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         List<Session> sessions = getSessions(eventData);
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        user.setOrganization(organization);
 
         return new WSO2SessionRevokedEventPayload.Builder()
                 .user(user)

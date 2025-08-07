@@ -79,6 +79,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         }
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        user.setOrganization(organization);
         Application application = new Application(
                 authenticationContext.getServiceProviderResourceId(),
                 authenticationContext.getServiceProviderName());
@@ -133,6 +134,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                 authenticationContext.getServiceProviderName());
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        user.setOrganization(organization);
         return new WSO2AuthenticationFailedEventPayload.Builder()
                 .user(user)
                 .tenant(tenant)
