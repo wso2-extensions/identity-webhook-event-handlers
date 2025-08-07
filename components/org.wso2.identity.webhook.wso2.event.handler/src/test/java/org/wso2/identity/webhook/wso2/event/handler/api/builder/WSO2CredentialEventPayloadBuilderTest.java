@@ -63,8 +63,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.*;
+import static org.wso2.carbon.identity.core.context.model.Flow.Name.CREDENTIAL_RESET;
 import static org.wso2.carbon.identity.core.context.model.Flow.Name.GROUP_UPDATE;
-import static org.wso2.carbon.identity.core.context.model.Flow.Name.PASSWORD_RESET;
 import static org.wso2.carbon.identity.core.context.model.Flow.Name.PROFILE_UPDATE;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
@@ -179,9 +179,9 @@ public class WSO2CredentialEventPayloadBuilderTest {
     @DataProvider(name = "actionDataProvider")
     public Object[][] actionDataProvider() {
 
-        return new Object[][] {
+        return new Object[][]{
                 {PROFILE_UPDATE},
-                {PASSWORD_RESET},
+                {CREDENTIAL_RESET},
                 {GROUP_UPDATE},
                 {null}
         };
@@ -209,10 +209,19 @@ public class WSO2CredentialEventPayloadBuilderTest {
         }
 
         if (flowName != null) {
-            Flow mockFlow = new Flow.Builder()
-                    .name(flowName)
-                    .initiatingPersona(Flow.InitiatingPersona.ADMIN)
-                    .build();
+            Flow mockFlow;
+            if (Flow.isCredentialFlow(flowName)) {
+                mockFlow = new Flow.CredentialFlowBuilder()
+                        .name(flowName)
+                        .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                        .credentialType(Flow.CredentialType.PASSWORD)
+                        .build();
+            } else {
+                mockFlow = new Flow.Builder()
+                        .name(flowName)
+                        .initiatingPersona(Flow.InitiatingPersona.ADMIN)
+                        .build();
+            }
             IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
 
             when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
@@ -249,10 +258,10 @@ public class WSO2CredentialEventPayloadBuilderTest {
             assertEquals(userCredentialUpdateEventPayload.getAction(),
                     WSO2CredentialEventPayloadBuilder.PasswordUpdateAction.UPDATE.name());
             assertEquals(userCredentialUpdateEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
-        } else if (flowName.equals(PASSWORD_RESET)) {
+        } else if (flowName.equals(CREDENTIAL_RESET)) {
             assertNotNull(userCredentialUpdateEventPayload.getAction());
             assertEquals(userCredentialUpdateEventPayload.getAction(),
-                    WSO2CredentialEventPayloadBuilder.PasswordUpdateAction.RESET.name());
+                    WSO2CredentialEventPayloadBuilder.PasswordUpdateAction.CREDENTIAL_RESET.name());
             assertEquals(userCredentialUpdateEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
         }
 
