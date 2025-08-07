@@ -20,13 +20,17 @@ package org.wso2.identity.webhook.common.event.handler.internal.handler;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.event.publisher.api.exception.EventPublisherException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
+import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.webhook.metadata.api.exception.WebhookMetadataException;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
@@ -40,8 +44,6 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 import java.util.List;
 import java.util.Objects;
 
-import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.EVENT_PROFILE_VERSION;
-
 /**
  * TokenEventHookHandler class.
  * This class is a placeholder for handling token-related events.
@@ -53,97 +55,111 @@ public class TokenEventHookHandler extends AbstractEventHandler {
 
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
+
+        EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
+
         try {
             List<EventProfile> eventProfileList =
                     EventHookHandlerDataHolder.getInstance().getWebhookMetadataService().getSupportedEventProfiles();
-
             if (eventProfileList.isEmpty()) {
-                log.warn("No event profiles found in the webhook metadata service. " +
-                        "Skipping token event handling.");
+                log.warn("No event profiles found in the webhook metadata service. Skipping token event handling.");
                 return;
             }
             for (EventProfile eventProfile : eventProfileList) {
-
-                //TODO: Add the implementation to read the Event Schema Type from the Tenant Configuration
-                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema
-                        schema =
-                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
-                                eventProfile.getProfile());
-
-                EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
-
-                TokenEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getTokenEventPayloadBuilder(schema);
-
-                if (payloadBuilder == null) {
-                    log.debug("Skipping token event handling for event " +
-                            eventProfile.getProfile());
-                    continue;
-                }
-                EventMetadata eventMetadata =
-                        EventHookHandlerUtils.getEventProfileManagerByProfile(eventProfile.getProfile(),
-                                event.getEventName());
-                if (eventMetadata == null) {
-                    log.debug("No event metadata found for event: " + event.getEventName() +
-                            " in profile: " + eventProfile.getProfile());
-                    continue;
-                }
-                String tenantDomain = eventData.getTenantDomain();
-
-                EventPayload eventPayload;
-                String eventUri;
-
-                List<Channel> channels = eventProfile.getChannels();
-                Channel tokenChannel = channels.stream()
-                        .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
-                        .findFirst()
-                        .orElse(null);
-                if (tokenChannel == null) {
-                    log.debug("No channel found for token event profile: " + eventProfile.getProfile());
-                    continue;
-                }
-
-                eventUri = tokenChannel.getEvents().stream()
-                        .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(),
-                                channelEvent.getEventUri()))
-                        .findFirst()
-                        .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
-                        .orElse(null);
-
-                EventContext eventContext = EventContext.builder()
-                        .tenantDomain(tenantDomain)
-                        .eventUri(tokenChannel.getUri())
-                        .eventProfileName(eventProfile.getProfile())
-                        .eventProfileVersion(EVENT_PROFILE_VERSION)
-                        .build();
-
-                boolean publisherCanHandleEvent = EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                        .canHandleEvent(eventContext);
-
-                if ((IdentityEventConstants.Event.TOKEN_REVOKED.equals(event.getEventName())) &&
-                        publisherCanHandleEvent) {
-                    eventPayload = payloadBuilder.buildAccessTokenRevokeEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload =
-                            EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                            .publish(securityEventTokenPayload, eventContext);
-                } else if (IdentityEventConstants.Event.TOKEN_ISSUED.equals(event.getEventName()) &&
-                        publisherCanHandleEvent) {
-                    eventPayload = payloadBuilder.buildAccessTokenIssueEvent(eventData);
-                    SecurityEventTokenPayload securityEventTokenPayload =
-                            EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
-                    EventHookHandlerDataHolder.getInstance().getEventPublisherService()
-                            .publish(securityEventTokenPayload, eventContext);
-                }
+                handleEventForProfile(event, eventData, eventProfile);
             }
         } catch (Exception e) {
-            log.warn("Error while executing token event webhook handler.", e);
+            log.warn("Error while retrieving token event publisher configuration for tenant.", e);
         }
     }
-
 
     @Override
     public String getName() {
 
         return Constants.TOKEN_EVENT_HOOK_NAME;
+    }
+
+    private void handleEventForProfile(Event event, EventData eventData, EventProfile eventProfile)
+            throws IdentityEventException, EventPublisherException, OrganizationManagementException,
+            WebhookMetadataException {
+
+        // Prepare schema, payload builder, and event metadata
+        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
+                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
+                        eventProfile.getProfile());
+        TokenEventPayloadBuilder payloadBuilder = PayloadBuilderFactory.getTokenEventPayloadBuilder(schema);
+
+        if (payloadBuilder == null) {
+            log.debug("Skipping token event handling for profile " + eventProfile.getProfile());
+            return;
+        }
+
+        EventMetadata eventMetadata = EventHookHandlerUtils.getEventProfileManagerByProfile(
+                eventProfile.getProfile(), event.getEventName());
+        if (eventMetadata == null) {
+            log.debug("No event metadata found for event: " + event.getEventName() +
+                    " in profile: " + eventProfile.getProfile());
+            return;
+        }
+
+        // Get channel and event URI
+        Channel tokenChannel = eventProfile.getChannels().stream()
+                .filter(channel -> eventMetadata.getChannel().equals(channel.getUri()))
+                .findFirst()
+                .orElse(null);
+        if (tokenChannel == null) {
+            log.debug("No channel found for token event profile: " + eventProfile.getProfile());
+            return;
+        }
+
+        String eventUri = tokenChannel.getEvents().stream()
+                .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(), channelEvent.getEventUri()))
+                .findFirst()
+                .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
+                .orElse(null);
+
+        // Publish for current accessing org
+        String tenantDomain = eventData.getAuthenticationContext().getTenantDomain();
+        publishEvent(tenantDomain, tokenChannel, eventUri, eventProfile.getProfile(),
+                payloadBuilder, eventData, event.getEventName());
+
+        // Publish for immediate parent org if policy allows
+        String parentTenantDomain = EventHookHandlerUtils.resolveParentTenantDomain();
+        if (parentTenantDomain != null && EventHookHandlerUtils.isParentPolicyImmediateOrgs(parentTenantDomain)) {
+            publishEvent(parentTenantDomain, tokenChannel, eventUri, eventProfile.getProfile(),
+                    payloadBuilder, eventData, event.getEventName());
+        }
+    }
+
+    private void publishEvent(String tenantDomain, Channel tokenChannel, String eventUri, String eventProfileName,
+                              TokenEventPayloadBuilder payloadBuilder, EventData eventData, String eventName)
+            throws IdentityEventException, EventPublisherException {
+
+        EventContext eventContext = EventContext.builder()
+                .tenantDomain(tenantDomain)
+                .eventUri(tokenChannel.getUri())
+                .eventProfileName(eventProfileName)
+                .eventProfileVersion(Constants.EVENT_PROFILE_VERSION)
+                .build();
+
+        if (!EventHookHandlerDataHolder.getInstance().getEventPublisherService().canHandleEvent(eventContext)) {
+            return;
+        }
+
+        EventPayload eventPayload;
+        if ((IdentityEventConstants.Event.TOKEN_REVOKED.equals(eventName))) {
+            eventPayload = payloadBuilder.buildAccessTokenRevokeEvent(eventData);
+        } else if (IdentityEventConstants.Event.TOKEN_ISSUED.equals(eventName)) {
+            eventPayload = payloadBuilder.buildAccessTokenIssueEvent(eventData);
+        } else {
+            throw new IdentityRuntimeException("Unsupported event type: " + eventName);
+        }
+
+        log.debug("Publishing token event: " + eventName + " for tenant: " + tenantDomain +
+                " with event URI: " + eventUri + " and profile: " + eventProfileName);
+        SecurityEventTokenPayload securityEventTokenPayload =
+                EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
+        EventHookHandlerDataHolder.getInstance().getEventPublisherService()
+                .publish(securityEventTokenPayload, eventContext);
     }
 }

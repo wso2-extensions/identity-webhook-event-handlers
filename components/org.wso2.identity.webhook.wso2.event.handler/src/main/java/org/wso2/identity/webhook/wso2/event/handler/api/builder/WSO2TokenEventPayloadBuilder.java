@@ -68,7 +68,7 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
     @Override
     public EventPayload buildAccessTokenIssueEvent(EventData eventData) throws IdentityEventException {
 
-        Tenant tenant = WSO2PayloadUtils.buildTenant(eventData);
+        Tenant tenant = WSO2PayloadUtils.buildTenant();
         UserStore userStore = WSO2PayloadUtils.buildUserStore(eventData);
         Application application = buildApplication(eventData);
         AccessToken accessToken = buildAccessToken(eventData);

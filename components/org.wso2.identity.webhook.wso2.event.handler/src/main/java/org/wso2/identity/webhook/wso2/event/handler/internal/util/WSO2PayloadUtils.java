@@ -548,12 +548,15 @@ public class WSO2PayloadUtils {
     /**
      * Builds a Tenant object based on the event data.
      *
-     * @param eventData The event data containing tenant information.
      * @return Tenant object with tenant ID and domain.
      */
-    public static Tenant buildTenant(EventData eventData) {
+    public static Tenant buildTenant() {
 
-        String tenantDomain = eventData.getTenantDomain();
-        return new Tenant(String.valueOf(IdentityTenantUtil.getTenantId(tenantDomain)), tenantDomain);
+        String rootTenantId = String.valueOf(
+                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantId());
+        String rootTenantDomain = String.valueOf(
+                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantDomain());
+
+        return new Tenant(rootTenantId, rootTenantDomain);
     }
 }

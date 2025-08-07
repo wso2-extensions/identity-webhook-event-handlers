@@ -49,6 +49,9 @@ public class Application {
         this.consumerKey = builder.consumerKey;
     }
 
+    /**
+     * Builder for the Application class.
+     */
     public static class Builder {
 
         private String id;

@@ -65,6 +65,10 @@ public class WSO2TokenIssuedEventPayload extends WSO2BaseEventPayload {
         this.action = builder.action;
     }
 
+    /**
+     * Builder for the WSO2TokenIssuedEventPayload.
+     * This class provides methods to set the properties of the WSO2TokenIssuedEventPayload.
+     */
     public static class Builder {
 
         private String initiatorType;

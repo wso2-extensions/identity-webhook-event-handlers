@@ -23,6 +23,9 @@ import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 
+/**
+ * This interface is responsible for building token event payloads.
+ */
 public interface TokenEventPayloadBuilder {
 
     /**

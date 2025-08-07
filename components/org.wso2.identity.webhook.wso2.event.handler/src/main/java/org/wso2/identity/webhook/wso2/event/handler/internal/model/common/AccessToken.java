@@ -58,6 +58,10 @@ public class AccessToken {
         this.grantType = builder.grantType;
     }
 
+    /*
+     * Builder class for constructing AccessToken instances.
+     * This class provides methods to set the properties of the AccessToken.
+     */
     public static class Builder {
 
         private String tokenType;

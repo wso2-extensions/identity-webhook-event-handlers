@@ -135,6 +135,12 @@ public class PayloadBuilderFactory {
         return null;
     }
 
+    /**
+     * Get the token event payload builder.
+     *
+     * @param eventSchemaType Event schema type.
+     * @return Token event payload builder.
+     */
     public static TokenEventPayloadBuilder getTokenEventPayloadBuilder(Constants.EventSchema eventSchemaType) {
 
         List<TokenEventPayloadBuilder> tokenEventPayloadBuilders =

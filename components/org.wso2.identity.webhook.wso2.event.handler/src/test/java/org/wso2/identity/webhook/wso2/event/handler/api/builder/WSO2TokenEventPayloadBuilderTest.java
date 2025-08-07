@@ -64,6 +64,9 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUti
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.TestUtils.mockServiceURLBuilder;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils.constructFullURLWithEndpoint;
 
+/**
+ * Unit tests for {@link WSO2TokenEventPayloadBuilder}.
+ */
 public class WSO2TokenEventPayloadBuilderTest {
 
     private static final int TENANT_ID = -1234;
@@ -96,6 +99,7 @@ public class WSO2TokenEventPayloadBuilderTest {
 
     @BeforeClass
     void setUp() throws Exception {
+
         MockitoAnnotations.openMocks(this);
         WSO2EventHookHandlerDataHolder.getInstance().setClaimMetadataManagementService(claimMetadataManagementService);
         WSO2EventHookHandlerDataHolder.getInstance().setRealmService(realmService);

@@ -49,6 +49,9 @@ public class WSO2TokenRevokedEventPayload extends WSO2BaseEventPayload {
         this.application = builder.application;
     }
 
+    /**
+     * Builder for the WSO2TokenRevokedEventPayload.
+     */
     public static class Builder {
 
         private String initiatorType;

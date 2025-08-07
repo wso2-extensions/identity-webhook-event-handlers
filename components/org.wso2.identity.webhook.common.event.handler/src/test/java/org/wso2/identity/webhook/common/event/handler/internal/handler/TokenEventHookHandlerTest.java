@@ -51,6 +51,9 @@ import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.clos
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockIdentityTenantUtil;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.mockServiceURLBuilder;
 
+/**
+ * Unit tests for {@link TokenEventHookHandler}.
+ */
 public class TokenEventHookHandlerTest {
 
     @Mock
