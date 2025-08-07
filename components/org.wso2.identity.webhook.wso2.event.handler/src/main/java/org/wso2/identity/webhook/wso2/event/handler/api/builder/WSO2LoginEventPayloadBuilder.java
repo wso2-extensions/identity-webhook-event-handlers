@@ -80,9 +80,10 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
         user.setOrganization(organization);
-        Application application = new Application(
-                authenticationContext.getServiceProviderResourceId(),
-                authenticationContext.getServiceProviderName());
+        Application application = new Application.Builder()
+                .id(authenticationContext.getServiceProviderResourceId())
+                .name(authenticationContext.getServiceProviderName())
+                .build();
         return new WSO2AuthenticationSuccessEventPayload.Builder()
                 .user(user)
                 .tenant(tenant)
@@ -129,9 +130,10 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                 IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantDomain());
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
-        Application application = new Application(
-                authenticationContext.getServiceProviderResourceId(),
-                authenticationContext.getServiceProviderName());
+        Application application = new Application.Builder()
+                .id(authenticationContext.getServiceProviderResourceId())
+                .name(authenticationContext.getServiceProviderName())
+                .build();
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
         user.setOrganization(organization);

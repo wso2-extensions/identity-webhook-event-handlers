@@ -24,6 +24,7 @@ import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherServic
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
+import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
@@ -54,6 +55,7 @@ public class EventHookHandlerDataHolder {
     private final List<CredentialEventPayloadBuilder> credentialEventPayloadBuilders = new ArrayList<>();
     private final List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders = new ArrayList<>();
     private final List<RegistrationEventPayloadBuilder> registrationEventPayloadBuilders = new ArrayList<>();
+    private final List<TokenEventPayloadBuilder> tokenEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
 
@@ -238,6 +240,36 @@ public class EventHookHandlerDataHolder {
             UserOperationEventPayloadBuilder userOperationEventPayloadBuilder) {
 
         userOperationEventPayloadBuilders.remove(userOperationEventPayloadBuilder);
+    }
+
+    /**
+     * Get the list of token event payload builder implementations available.
+     *
+     * @return List of token event payload builder implementations.
+     */
+    public List<TokenEventPayloadBuilder> getTokenEventPayloadBuilders() {
+
+        return tokenEventPayloadBuilders;
+    }
+
+    /**
+     * Add token event payload builder implementation.
+     *
+     * @param tokenEventPayloadBuilder Token event payload builder implementation.
+     */
+    public void addTokenEventPayloadBuilder(TokenEventPayloadBuilder tokenEventPayloadBuilder) {
+
+        tokenEventPayloadBuilders.add(tokenEventPayloadBuilder);
+    }
+
+    /**
+     * Remove token event payload builder implementation.
+     *
+     * @param tokenEventPayloadBuilder Token event payload builder implementation.
+     */
+    public void removeTokenEventPayloadBuilder(TokenEventPayloadBuilder tokenEventPayloadBuilder) {
+
+        tokenEventPayloadBuilders.remove(tokenEventPayloadBuilder);
     }
 
     /**
