@@ -83,6 +83,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         }
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        newUser.setOrganization(organization);
 
         return new WSO2RegistrationSuccessEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -150,6 +151,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         Reason reason = new Reason(errorMessage, context);
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        newUser.setOrganization(organization);
 
         return new WSO2RegistrationFailureEventPayload.Builder()
                 .initiatorType(initiatorType)

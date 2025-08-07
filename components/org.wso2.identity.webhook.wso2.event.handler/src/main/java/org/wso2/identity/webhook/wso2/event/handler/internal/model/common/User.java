@@ -28,6 +28,7 @@ public class User {
 
     private String id;
     private List<UserClaim> claims;
+    private Organization organization;
     private String ref;
     private List<String> groups = new ArrayList<>();
     private List<String> roles = new ArrayList<>();
@@ -44,6 +45,26 @@ public class User {
     public void setGroups(List<String> groups) {
 
         this.groups = groups;
+    }
+
+    /**
+     * Get the organization of the user.
+     *
+     * @return Organization of the user.
+     */
+    public Organization getOrganization() {
+
+        return organization;
+    }
+
+    /**
+     * Set the organization of the user.
+     *
+     * @param organization Organization of the user.
+     */
+    public void setOrganization(Organization organization) {
+
+        this.organization = organization;
     }
 
     public void addGroup(String group) {

@@ -72,6 +72,7 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
         }
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        user.setOrganization(organization);
 
         return new WSO2UserCredentialUpdateEventPayload.Builder()
                 .initiatorType(initiatorType)
