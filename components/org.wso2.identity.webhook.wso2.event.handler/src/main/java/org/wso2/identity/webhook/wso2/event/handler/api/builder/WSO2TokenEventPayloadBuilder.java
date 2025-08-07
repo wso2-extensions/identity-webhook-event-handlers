@@ -72,9 +72,10 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
         UserStore userStore = WSO2PayloadUtils.buildUserStore(eventData);
         Application application = buildApplication(eventData);
         AccessToken accessToken = buildAccessToken(eventData);
-        User user = WSO2PayloadUtils.buildUser(eventData);
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
+        User user = WSO2PayloadUtils.buildUser(eventData);
+        user.setOrganization(organization);
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = null;
@@ -139,5 +140,4 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
         }
         return null;
     }
-
 }

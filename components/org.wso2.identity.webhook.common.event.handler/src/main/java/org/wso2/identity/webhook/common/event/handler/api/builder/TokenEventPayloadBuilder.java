@@ -38,5 +38,4 @@ public interface TokenEventPayloadBuilder {
     EventPayload buildAccessTokenRevokeEvent(EventData eventData) throws IdentityEventException;
 
     EventPayload buildAccessTokenIssueEvent(EventData eventData) throws IdentityEventException;
-
 }

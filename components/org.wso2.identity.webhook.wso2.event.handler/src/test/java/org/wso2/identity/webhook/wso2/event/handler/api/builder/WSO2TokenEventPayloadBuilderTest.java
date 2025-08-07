@@ -206,5 +206,4 @@ public class WSO2TokenEventPayloadBuilderTest {
         PrivilegedCarbonContext.endTenantFlow();
         frameworkUtils.close();
     }
-
 }
