@@ -164,9 +164,11 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         }
 
         if (EventHookHandlerUtils.isB2BUserLogin(eventData.getAuthenticationContext())) {
-            log.debug(
-                    "Login event is triggered for a B2B user federation. Skipping event handling for login event profile: " +
-                            eventProfile.getProfile());
+            if (log.isDebugEnabled()) {
+                log.debug(
+                        "Login event is triggered for a B2B user federation. Skipping event handling for login event profile: " +
+                                eventProfile.getProfile());
+            }
             return;
         }
 
