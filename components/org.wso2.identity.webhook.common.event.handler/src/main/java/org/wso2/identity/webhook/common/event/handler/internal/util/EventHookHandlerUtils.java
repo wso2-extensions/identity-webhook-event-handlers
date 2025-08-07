@@ -340,6 +340,12 @@ public class EventHookHandlerUtils {
                         PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode());
     }
 
+    /**
+     * Checks if the user is a B2B user based on the authentication context.
+     *
+     * @param authContext Authentication context.
+     * @return True if the user is a B2B user, otherwise false.
+     */
     public static boolean isB2BUserLogin(AuthenticationContext authContext) {
 
         Map<String, AuthenticatedIdPData> currentIdPs = authContext.getCurrentAuthenticatedIdPs();
