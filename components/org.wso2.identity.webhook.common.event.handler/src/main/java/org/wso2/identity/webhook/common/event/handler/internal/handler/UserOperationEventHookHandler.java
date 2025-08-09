@@ -34,8 +34,6 @@ import org.wso2.carbon.identity.event.publisher.api.exception.EventPublisherExce
 import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
-import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
-import org.wso2.carbon.identity.webhook.metadata.api.exception.WebhookMetadataException;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
@@ -117,8 +115,7 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
     }
 
     private void handleEventPerProfile(Event event, EventProfile eventProfile)
-            throws IdentityEventException, EventPublisherException, OrganizationManagementException,
-            WebhookMetadataException {
+            throws IdentityEventException, EventPublisherException {
 
         // Prepare schema, payload builder, and event metadata
         org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
@@ -158,13 +155,6 @@ public class UserOperationEventHookHandler extends AbstractEventHandler {
         // Publish for current accessing org
         publishUserOperationEvent(tenantDomain, userOperationChannel, eventUri, eventProfile.getProfile(),
                 payloadBuilder, eventData, event.getEventName());
-
-        // Publish for immediate parent org if policy allows
-        String parentTenantDomain = EventHookHandlerUtils.resolveParentTenantDomain();
-        if (parentTenantDomain != null && EventHookHandlerUtils.isParentPolicyImmediateOrgs(parentTenantDomain)) {
-            publishUserOperationEvent(parentTenantDomain, userOperationChannel, eventUri, eventProfile.getProfile(),
-                    payloadBuilder, eventData, event.getEventName());
-        }
     }
 
     private boolean isSupportedEvent(String eventName) {

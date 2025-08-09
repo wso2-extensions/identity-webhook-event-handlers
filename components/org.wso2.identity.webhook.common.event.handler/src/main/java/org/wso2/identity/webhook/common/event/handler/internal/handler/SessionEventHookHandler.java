@@ -29,7 +29,6 @@ import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.common.Subject;
-import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.webhook.metadata.api.exception.WebhookMetadataException;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
@@ -82,7 +81,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
     }
 
     private void handleEventPerEventProfile(Event event, EventData eventData, EventProfile eventProfile)
-            throws IdentityEventException, OrganizationManagementException, WebhookMetadataException {
+            throws IdentityEventException {
 
         // Prepare schema, payload builder, and event metadata
         org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
@@ -118,13 +117,6 @@ public class SessionEventHookHandler extends AbstractEventHandler {
         String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         publishSessionEvent(tenantDomain, sessionChannel, eventUri, eventProfile.getProfile(), schema,
                 payloadBuilder, eventData, event);
-
-        // Publish for immediate parent org if policy allows
-        String parentTenantDomain = EventHookHandlerUtils.resolveParentTenantDomain();
-        if (parentTenantDomain != null && EventHookHandlerUtils.isParentPolicyImmediateOrgs(parentTenantDomain)) {
-            publishSessionEvent(parentTenantDomain, sessionChannel, eventUri, eventProfile.getProfile(), schema,
-                    payloadBuilder, eventData, event);
-        }
     }
 
     private List<EventProfile> getEventProfiles() {
