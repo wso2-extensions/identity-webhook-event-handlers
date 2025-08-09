@@ -33,8 +33,6 @@ import org.wso2.carbon.identity.event.publisher.api.exception.EventPublisherExce
 import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
-import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
-import org.wso2.carbon.identity.webhook.metadata.api.exception.WebhookMetadataException;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
@@ -108,8 +106,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
     }
 
     private void handleEventForProfile(Event event, EventProfile eventProfile)
-            throws IdentityEventException, EventPublisherException, OrganizationManagementException,
-            WebhookMetadataException {
+            throws IdentityEventException, EventPublisherException {
         // Prepare schema, payload builder, and event data
         org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
                 org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
@@ -149,13 +146,6 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
                 eventData.getEventParams().get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
         publishCredentialEvent(tenantDomain, credentialChangeChannel, eventUri, eventProfile.getProfile(),
                 payloadBuilder, eventData, event.getEventName());
-
-        // Publish for immediate parent org if policy allows
-        String parentTenantDomain = EventHookHandlerUtils.resolveParentTenantDomain();
-        if (parentTenantDomain != null && EventHookHandlerUtils.isParentPolicyImmediateOrgs(parentTenantDomain)) {
-            publishCredentialEvent(parentTenantDomain, credentialChangeChannel, eventUri, eventProfile.getProfile(),
-                    payloadBuilder, eventData, event.getEventName());
-        }
     }
 
     private boolean isSupportedEvent(String eventName) {
