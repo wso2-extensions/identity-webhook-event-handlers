@@ -46,9 +46,6 @@ import org.wso2.carbon.identity.event.publisher.api.model.common.ComplexSubject;
 import org.wso2.carbon.identity.event.publisher.api.model.common.SimpleSubject;
 import org.wso2.carbon.identity.event.publisher.api.model.common.Subject;
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
-import org.wso2.carbon.identity.organization.resource.sharing.policy.management.constant.PolicyEnum;
-import org.wso2.carbon.identity.webhook.metadata.api.exception.WebhookMetadataException;
-import org.wso2.carbon.identity.webhook.metadata.api.model.WebhookMetadataProperties;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
@@ -57,7 +54,6 @@ import org.wso2.identity.webhook.common.event.handler.internal.constant.Constant
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -321,23 +317,6 @@ public class EventHookHandlerUtils {
             }
         }
         return null;
-    }
-
-    /**
-     * Checks if the parent policy of the given tenant domain is immediate existing and future organizations.
-     *
-     * @param parentTenantDomain Parent tenant domain.
-     * @return True if the parent policy is immediate existing and future organizations, otherwise false.
-     * @throws WebhookMetadataException If an error occurs while retrieving webhook metadata properties.
-     */
-    public static boolean isParentPolicyImmediateOrgs(String parentTenantDomain) throws WebhookMetadataException {
-
-        WebhookMetadataProperties metadataProperties =
-                EventHookHandlerDataHolder.getInstance().getWebhookMetadataService()
-                        .getWebhookMetadataProperties(parentTenantDomain);
-        return metadataProperties != null &&
-                Objects.equals(metadataProperties.getOrganizationPolicy().getPolicyCode(),
-                        PolicyEnum.IMMEDIATE_EXISTING_AND_FUTURE_ORGS.getPolicyCode());
     }
 
     /**
