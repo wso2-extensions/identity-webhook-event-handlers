@@ -45,7 +45,6 @@ import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayl
 import org.wso2.carbon.identity.event.publisher.api.model.common.ComplexSubject;
 import org.wso2.carbon.identity.event.publisher.api.model.common.SimpleSubject;
 import org.wso2.carbon.identity.event.publisher.api.model.common.Subject;
-import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
@@ -297,26 +296,6 @@ public class EventHookHandlerUtils {
 
         return SimpleSubject.createOpaqueSubject(streamId);
 
-    }
-
-    /**
-     * Resolves the immediate parent tenant domain of the current organization.
-     *
-     * @return Parent tenant domain if exists, otherwise null.
-     * @throws OrganizationManagementException If an error occurs while resolving the parent tenant domain.
-     */
-    public static String resolveParentTenantDomain() throws OrganizationManagementException {
-
-        IdentityContext identityContext = IdentityContext.getThreadLocalIdentityContext();
-        if (identityContext.getOrganization() != null) {
-            String parentOrganizationId = identityContext.getOrganization().getParentOrganizationId();
-            if (parentOrganizationId != null) {
-                log.debug("Resolving parent tenant domain for organization: " + parentOrganizationId);
-                return EventHookHandlerDataHolder.getInstance()
-                        .getOrganizationManager().resolveTenantDomain(parentOrganizationId);
-            }
-        }
-        return null;
     }
 
     /**
