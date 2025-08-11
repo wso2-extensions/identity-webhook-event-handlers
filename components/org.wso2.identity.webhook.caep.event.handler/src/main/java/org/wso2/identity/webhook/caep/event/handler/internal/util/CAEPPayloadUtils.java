@@ -37,7 +37,7 @@ public class CAEPPayloadUtils {
         String event = null;
         String channel = null;
         if (Objects.requireNonNull(eventName).equals(
-                IdentityEventConstants.Event.USER_SESSION_TERMINATE)) {
+                IdentityEventConstants.Event.SESSION_TERMINATE_V2)) {
             channel = Constants.Channel.SESSION_CHANNEL;
             event = Constants.Event.SESSION_REVOKED_EVENT;
         } else if (IdentityEventConstants.Event.SESSION_CREATE.equals(eventName)) {

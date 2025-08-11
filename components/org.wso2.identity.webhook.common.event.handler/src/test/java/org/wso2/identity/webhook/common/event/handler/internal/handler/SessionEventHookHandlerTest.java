@@ -188,6 +188,7 @@ public class SessionEventHookHandlerTest {
                         mock(org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser.class);
                 when(mockUser.getTenantDomain()).thenReturn(SAMPLE_TENANT_DOMAIN);
                 when(eventDataProvider.getAuthenticatedUser()).thenReturn(mockUser);
+                when(eventDataProvider.getAuthenticationContext()).thenReturn(createAuthenticationContext());
 
                 when(eventDataProvider.getEventParams()).thenReturn(
                         new HashMap<String, Object>() {{
@@ -285,6 +286,7 @@ public class SessionEventHookHandlerTest {
 
         AuthenticationContext context = new AuthenticationContext();
         context.setTenantDomain(SAMPLE_TENANT_DOMAIN);
+        context.setServiceProviderName("TestApp");
         return context;
     }
 

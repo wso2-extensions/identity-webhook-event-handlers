@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.common.event.handler.internal.handler;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
@@ -110,6 +111,25 @@ public class SessionEventHookHandler extends AbstractEventHandler {
         if (eventUri == null) {
             log.debug("Event URI not found for session events in profile: " + eventProfile.getProfile() +
                     ". Skipping session event handling.");
+            return;
+        }
+
+        // Skip system application events
+        String applicationNameInEvent = eventData.getAuthenticationContext().getServiceProviderName();
+        boolean isEventTriggeredForSystemApplication = StringUtils.isNotBlank(applicationNameInEvent)
+                && "Console".equals(applicationNameInEvent);
+        if (isEventTriggeredForSystemApplication) {
+            log.debug("Event trigger for system application: " + applicationNameInEvent +
+                    ". Skipping event handling for session event profile: " + eventProfile.getProfile());
+            return;
+        }
+
+        if (EventHookHandlerUtils.isB2BUserLogin(eventData.getAuthenticationContext())) {
+            if (log.isDebugEnabled()) {
+                log.debug(
+                        "Session event is triggered for a B2B user federation. Skipping event handling for login event profile: " +
+                                eventProfile.getProfile());
+            }
             return;
         }
 
