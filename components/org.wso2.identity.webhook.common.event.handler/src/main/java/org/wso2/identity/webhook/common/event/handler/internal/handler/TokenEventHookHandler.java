@@ -178,7 +178,7 @@ public class TokenEventHookHandler extends AbstractEventHandler {
         } else if (eventData.getProperties().get(IdentityEventConstants.EventProperty.CONSUMER_KEYS) instanceof List) {
             List<String> consumerKeys = (List<String>) eventData.getProperties()
                     .get(IdentityEventConstants.EventProperty.CONSUMER_KEYS);
-            if (consumerKeys != null && !consumerKeys.isEmpty()) {
+            if (consumerKeys != null && consumerKeys.size() == 1) {
                 return consumerKeys.get(0);
             }
         }
