@@ -115,7 +115,7 @@ public class WSO2EventProfileManager implements EventProfileManager {
                  */
                 channel = USER_OPERATION_CHANNEL;
                 event = POST_USER_CREATED_EVENT;
-            } else if (IdentityEventConstants.Event.TOKEN_ISSUED.equals(eventName)) {
+            } else if (IdentityEventConstants.Event.POST_ISSUE_ACCESS_TOKEN_V2.equals(eventName)) {
                 channel = TOKEN_CHANNEL;
                 event = TOKEN_ISSUED_EVENT;
             } else if (IdentityEventConstants.Event.TOKEN_REVOKED.equals(eventName)) {

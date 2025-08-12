@@ -113,7 +113,7 @@ public class TokenEventHookHandlerTest {
     public Object[][] eventDataProvider() {
 
         return new Object[][]{
-                {IdentityEventConstants.Event.TOKEN_ISSUED, SAMPLE_EVENT_KEY}
+                {IdentityEventConstants.Event.POST_ISSUE_ACCESS_TOKEN_V2, SAMPLE_EVENT_KEY}
         };
     }
 

@@ -149,7 +149,7 @@ public class TokenEventHookHandler extends AbstractEventHandler {
         EventPayload eventPayload;
         if ((IdentityEventConstants.Event.TOKEN_REVOKED.equals(eventName))) {
             eventPayload = payloadBuilder.buildAccessTokenRevokeEvent(eventData);
-        } else if (IdentityEventConstants.Event.TOKEN_ISSUED.equals(eventName)) {
+        } else if (IdentityEventConstants.Event.POST_ISSUE_ACCESS_TOKEN_V2.equals(eventName)) {
             eventPayload = payloadBuilder.buildAccessTokenIssueEvent(eventData);
         } else {
             throw new IdentityRuntimeException("Unsupported event type: " + eventName);
