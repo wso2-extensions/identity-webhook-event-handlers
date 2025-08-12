@@ -177,14 +177,15 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
         }
         Map<String, Object> properties = eventData.getProperties();
 
-        String applicationResourceId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.APPLICATION_ID));
-        if (StringUtils.isNotBlank(applicationResourceId)) {
+        if (properties.get(IdentityEventConstants.EventProperty.APPLICATION_ID) != null) {
+            String applicationResourceId =
+                    String.valueOf(properties.get(IdentityEventConstants.EventProperty.APPLICATION_ID));
             Application application = buildApplicationFromResourceId(eventData, applicationResourceId);
             if (application != null) {
                 return List.of(application);
             }
-        } else if (properties.get("CONSUMER_KEYS") instanceof List){
-            ((List<String>)properties.get("CONSUMER_KEYS")).stream()
+        } else if (properties.get(IdentityEventConstants.EventProperty.CONSUMER_KEYS) instanceof List) {
+            ((List<String>) properties.get(IdentityEventConstants.EventProperty.CONSUMER_KEYS)).stream()
                     .filter(Objects::nonNull)
                     .map(consumerKey -> buildApplicationFromConsumerKey(eventData, consumerKey))
                     .filter(Objects::nonNull)
