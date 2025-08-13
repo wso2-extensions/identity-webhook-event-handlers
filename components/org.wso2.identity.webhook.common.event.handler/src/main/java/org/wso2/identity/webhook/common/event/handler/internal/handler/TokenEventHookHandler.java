@@ -116,6 +116,12 @@ public class TokenEventHookHandler extends AbstractEventHandler {
                 .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
                 .orElse(null);
 
+        if (EventHookHandlerUtils.isSubOrgLevel()) {
+            log.debug("Event trigger for sub organization level. Skipping event handling for token event profile: " +
+                    eventProfile.getProfile());
+            return;
+        }
+
         String applicationKey = resolveApplicationKey(eventData);
         boolean isEventTriggeredForSystemApplication = StringUtils.isNotBlank(applicationKey)
                 && "CONSOLE".equals(applicationKey);
