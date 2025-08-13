@@ -36,7 +36,6 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 
 import java.util.Map;
-import java.util.Optional;
 
 public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayloadBuilder {
 
@@ -63,12 +62,15 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = null;
         String initiatorType = null;
+        String credentialType = null;
 
         if (flow != null) {
-            action = Optional.ofNullable(getAction(flow.getName()))
-                    .map(Enum::name)
-                    .orElse(null);
+            action = flow.getName().name();
             initiatorType = flow.getInitiatingPersona().name();
+
+            if (Flow.isCredentialFlow(flow.getName())) {
+                credentialType = flow.getCredentialType().name();
+            }
         }
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
@@ -77,36 +79,12 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
         return new WSO2UserCredentialUpdateEventPayload.Builder()
                 .initiatorType(initiatorType)
                 .action(action)
-                .credentialType("PASSWORD")
+                .credentialType(credentialType)
                 .user(user)
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
                 .build();
-    }
-
-    private PasswordUpdateAction getAction(Flow.Name name) {
-
-        if (name == null) {
-            return null;
-        }
-
-        switch (name) {
-            case PROFILE_UPDATE:
-                return PasswordUpdateAction.UPDATE;
-            case CREDENTIAL_RESET:
-                return PasswordUpdateAction.CREDENTIAL_RESET;
-            case INVITE:
-                return PasswordUpdateAction.INVITE;
-            default: {
-                log.debug(name + " is not a valid password update action.");
-                return null;
-            }
-        }
-    }
-
-    public enum PasswordUpdateAction {
-        UPDATE, CREDENTIAL_RESET, INVITE
     }
 
     @Override
