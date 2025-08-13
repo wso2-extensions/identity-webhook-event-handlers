@@ -461,8 +461,7 @@ public class EventHookHandlerUtils {
         boolean isSubOrgEvent = false;
         Organization organization = IdentityContext.getThreadLocalIdentityContext().getOrganization();
 
-        if (organization != null && organization.getParentOrganizationId() != null &&
-                !organization.getParentOrganizationId().equals(organization.getId())) {
+        if (organization != null && StringUtils.equals(organization.getId(), organization.getParentOrganizationId())) {
             isSubOrgEvent = true;
         }
 
