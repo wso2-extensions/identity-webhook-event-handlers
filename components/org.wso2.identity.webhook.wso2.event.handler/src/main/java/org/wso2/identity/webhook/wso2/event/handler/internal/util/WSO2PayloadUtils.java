@@ -542,7 +542,7 @@ public class WSO2PayloadUtils {
                             eventData.getTenantDomain());
             emailAddressUserClaimOptional.ifPresent(user::addClaim);
         } catch (UserStoreException e) {
-            log.warn("Error while extracting user claims for the user : " + user.getId(), e);
+            log.debug("Error while extracting user claims for the user : " + user.getId(), e);
         }
 
         Optional<UserClaim>

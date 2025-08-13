@@ -179,7 +179,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
             case JUST_IN_TIME_PROVISION:
                 return RegistrationAction.JUST_IN_TIME_PROVISION;
             default: {
-                log.warn(name + " is not a valid registration action.");
+                log.debug(name + " is not a valid registration action.");
                 return null;
             }
         }
