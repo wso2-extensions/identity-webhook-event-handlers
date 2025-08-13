@@ -247,8 +247,12 @@ public class WSO2CredentialEventPayloadBuilderTest {
                 FrameworkConstants.EMAIL_ADDRESS_CLAIM);
         assertEquals(userCredentialUpdateEventPayload.getUser().getClaims().get(0).getValue(), TEST_USER_EMAIL);
 
-        assertNotNull(userCredentialUpdateEventPayload.getCredentialType());
-        assertEquals(userCredentialUpdateEventPayload.getCredentialType(), "PASSWORD");
+        if (Flow.isCredentialFlow(flowName)) {
+            assertNotNull(userCredentialUpdateEventPayload.getCredentialType());
+            assertEquals(userCredentialUpdateEventPayload.getCredentialType(), Flow.CredentialType.PASSWORD.name());
+        } else {
+            assertNull(userCredentialUpdateEventPayload.getCredentialType());
+        }
 
         if (flowName == null) {
             assertNull(userCredentialUpdateEventPayload.getAction());
