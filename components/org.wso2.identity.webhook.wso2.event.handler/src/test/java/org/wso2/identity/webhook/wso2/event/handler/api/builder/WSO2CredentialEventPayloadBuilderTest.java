@@ -63,7 +63,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.*;
+import static org.wso2.carbon.identity.core.context.model.Flow.Name.CREDENTIAL_ENROLL;
 import static org.wso2.carbon.identity.core.context.model.Flow.Name.CREDENTIAL_RESET;
+import static org.wso2.carbon.identity.core.context.model.Flow.Name.CREDENTIAL_UPDATE;
 import static org.wso2.carbon.identity.core.context.model.Flow.Name.GROUP_UPDATE;
 import static org.wso2.carbon.identity.core.context.model.Flow.Name.PROFILE_UPDATE;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
@@ -180,9 +182,9 @@ public class WSO2CredentialEventPayloadBuilderTest {
     public Object[][] actionDataProvider() {
 
         return new Object[][]{
-                {PROFILE_UPDATE},
+                {CREDENTIAL_UPDATE},
                 {CREDENTIAL_RESET},
-                {GROUP_UPDATE},
+                {CREDENTIAL_ENROLL},
                 {null}
         };
     }
@@ -222,11 +224,9 @@ public class WSO2CredentialEventPayloadBuilderTest {
                         .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                         .build();
             }
-            IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
 
             when(mockIdentityContext.getCurrentFlow()).thenReturn(mockFlow);
         } else {
-            IdentityContext.getThreadLocalIdentityContext().enterFlow(null);
             when(mockIdentityContext.getCurrentFlow()).thenReturn(null);
         }
 
@@ -256,12 +256,12 @@ public class WSO2CredentialEventPayloadBuilderTest {
         } else if (flowName.equals(PROFILE_UPDATE)) {
             assertNotNull(userCredentialUpdateEventPayload.getAction());
             assertEquals(userCredentialUpdateEventPayload.getAction(),
-                    WSO2CredentialEventPayloadBuilder.PasswordUpdateAction.UPDATE.name());
+                    PROFILE_UPDATE.name());
             assertEquals(userCredentialUpdateEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
         } else if (flowName.equals(CREDENTIAL_RESET)) {
             assertNotNull(userCredentialUpdateEventPayload.getAction());
             assertEquals(userCredentialUpdateEventPayload.getAction(),
-                    WSO2CredentialEventPayloadBuilder.PasswordUpdateAction.CREDENTIAL_RESET.name());
+                    Flow.Name.CREDENTIAL_RESET.name());
             assertEquals(userCredentialUpdateEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
         }
 

@@ -487,14 +487,14 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         switch (name) {
             case PROFILE_UPDATE:
-                return UserOperationAction.UPDATE;
+                return UserOperationAction.PROFILE_UPDATE;
             case INVITE:
             case INVITED_USER_REGISTRATION:
                 return UserOperationAction.INVITE;
             case REGISTER:
                 return UserOperationAction.REGISTER;
             case JUST_IN_TIME_PROVISION:
-                return UserOperationAction.JUST_IN_TIME;
+                return UserOperationAction.JUST_IN_TIME_PROVISION;
             default: {
                 return null;
             }
@@ -502,6 +502,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
     }
 
     public enum UserOperationAction {
-        INVITE, UPDATE, REGISTER, JUST_IN_TIME
+        INVITE, PROFILE_UPDATE, REGISTER, JUST_IN_TIME_PROVISION
     }
 }
