@@ -36,6 +36,7 @@ import org.wso2.carbon.identity.application.common.model.ClaimMapping;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
 import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Organization;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -448,5 +449,23 @@ public class EventHookHandlerUtils {
                 localClaim.setClaimUri(claimMappings.get(localClaim.getClaimUri()));
             }
         }
+    }
+
+    /**
+     * Checks if the event is a sub-organization level event.
+     *
+     * @return true if the event is a sub-organization level event, false otherwise.
+     */
+    public static boolean isSubOrgLevel() {
+
+        boolean isSubOrgEvent = false;
+        Organization organization = IdentityContext.getThreadLocalIdentityContext().getOrganization();
+
+        if (organization != null && organization.getParentOrganizationId() != null &&
+                !organization.getParentOrganizationId().equals(organization.getId())) {
+            isSubOrgEvent = true;
+        }
+
+        return isSubOrgEvent;
     }
 }
