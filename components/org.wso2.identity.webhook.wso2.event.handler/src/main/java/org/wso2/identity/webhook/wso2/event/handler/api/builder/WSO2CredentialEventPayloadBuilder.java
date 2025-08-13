@@ -99,7 +99,7 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
             case INVITE:
                 return PasswordUpdateAction.INVITE;
             default: {
-                log.warn(name + " is not a valid password update action.");
+                log.debug(name + " is not a valid password update action.");
                 return null;
             }
         }

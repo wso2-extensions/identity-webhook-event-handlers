@@ -213,7 +213,7 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
                         .build();
             }
         } catch (IdentityApplicationManagementException e) {
-            LOG.warn("Error while retrieving application by consumer key: " + consumerKey, e);
+            LOG.debug("Error while retrieving application by consumer key: " + consumerKey, e);
         }
         return null;
     }
@@ -237,7 +237,7 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
                         .build();
             }
         } catch (IdentityApplicationManagementException e) {
-            LOG.warn("Error while retrieving application by resource Id: " + resourceId, e);
+            LOG.debug("Error while retrieving application by resource Id: " + resourceId, e);
         }
         return null;
     }
