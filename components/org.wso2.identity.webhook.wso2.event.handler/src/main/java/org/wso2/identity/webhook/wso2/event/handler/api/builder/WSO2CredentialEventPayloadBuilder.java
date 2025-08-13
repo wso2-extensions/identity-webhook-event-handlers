@@ -62,7 +62,7 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = null;
         String initiatorType = null;
-        String credentialType = Flow.CredentialType.PASSWORD.name();
+        String credentialType = null;
 
         if (flow != null) {
             action = flow.getName().name();
