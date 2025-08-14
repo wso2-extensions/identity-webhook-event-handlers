@@ -539,7 +539,7 @@
         <maven.checkstyleplugin.version>2.17</maven.checkstyleplugin.version>
 
         <!-- Org management dependency versions-->
-        <identity.organization.management.core.version>1.1.5</identity.organization.management.core.version>
+        <identity.organization.management.core.version>1.1.48</identity.organization.management.core.version>
 
         <org.wso2.carbon.identity.organization.management.version>2.0.8</org.wso2.carbon.identity.organization.management.version>
         <org.wso2.carbon.identity.organization.management.version.range>[2.0.0, 3.0.0)</org.wso2.carbon.identity.organization.management.version.range>
