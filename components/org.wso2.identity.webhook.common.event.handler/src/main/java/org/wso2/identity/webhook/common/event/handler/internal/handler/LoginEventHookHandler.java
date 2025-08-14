@@ -45,6 +45,8 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 import java.util.List;
 import java.util.Objects;
 
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.CONSOLE_APP_NAME;
+
 /**
  * Login Event Hook Handler.
  */
@@ -153,7 +155,7 @@ public class LoginEventHookHandler extends AbstractEventHandler {
         // Skip system application events
         String applicationNameInEvent = eventData.getAuthenticationContext().getServiceProviderName();
         boolean isEventTriggeredForSystemApplication = StringUtils.isNotBlank(applicationNameInEvent)
-                && "Console".equals(applicationNameInEvent);
+                && CONSOLE_APP_NAME.equals(applicationNameInEvent);
         if (isEventTriggeredForSystemApplication) {
             log.debug("Event trigger for system application: " + applicationNameInEvent +
                     ". Skipping event handling for login event profile: " + eventProfile.getProfile());

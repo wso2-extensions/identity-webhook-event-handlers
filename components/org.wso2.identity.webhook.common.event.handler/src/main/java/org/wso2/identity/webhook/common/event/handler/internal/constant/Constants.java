@@ -70,4 +70,7 @@ public class Constants {
 
     public static final String PRE_DELETE_USER_ID = "PRE_DELETE_USER_ID";
 
+    public static final String CONSOLE_APP_CONSUMER_KEY = "CONSOLE";
+    public static final String CONSOLE_APP_NAME = "Console";
+
 }
