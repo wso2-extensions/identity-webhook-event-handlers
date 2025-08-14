@@ -34,6 +34,7 @@ import org.wso2.carbon.identity.organization.management.service.model.MinimalOrg
 import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
+import org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2TokenIssuedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2TokenRevokedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.AccessToken;
@@ -203,6 +204,7 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
         } else if (properties.get(IdentityEventConstants.EventProperty.CONSUMER_KEYS) instanceof List) {
             return ((List<String>) properties.get(IdentityEventConstants.EventProperty.CONSUMER_KEYS)).stream()
                     .filter(Objects::nonNull)
+                    .filter(consumerKey -> !Constants.CONSOLE_APP_CONSUMER_KEY.equals(consumerKey)) // exclude CONSOLE
                     .map(consumerKey -> buildApplicationFromConsumerKey(eventData, consumerKey))
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
@@ -270,7 +272,6 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
             LOG.debug("Error while resolving tenant domain for user resident organization: " +
                     userResidentOrganizationId, e);
         }
-
         return null;
     }
 
@@ -295,18 +296,21 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
             LOG.debug("Error while resolving retrieving user resident organization: " +
                     userResidentOrganizationId, e);
         }
+        LOG.debug("No organization found for the given organization id: " + userResidentOrganizationId);
         return null;
     }
 
     private boolean isOrganizationUser(EventData eventData) {
 
-        return Boolean.TRUE.toString()
-                .equalsIgnoreCase(String.valueOf(eventData.getProperties().get("IS_ORGANIZATION_USER")));
+        return Boolean.parseBoolean(String.valueOf(
+                eventData.getProperties().get(IdentityEventConstants.EventProperty.IS_ORGANIZATION_USER)));
     }
 
     private String getUserResidentOrganizationIdForOrgUser(EventData eventData) {
 
-        return eventData.getProperties().get("USER_RESIDENT_ORGANIZATION_ID") != null ?
-                String.valueOf(eventData.getProperties().get("USER_RESIDENT_ORGANIZATION_ID")) : null;
+        return eventData.getProperties().get(IdentityEventConstants.EventProperty.USER_RESIDENT_ORGANIZATION_ID) !=
+                null ?
+                String.valueOf(eventData.getProperties()
+                        .get(IdentityEventConstants.EventProperty.USER_RESIDENT_ORGANIZATION_ID)) : null;
     }
 }
