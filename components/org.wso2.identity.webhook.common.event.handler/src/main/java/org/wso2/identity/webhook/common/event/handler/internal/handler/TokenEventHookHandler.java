@@ -43,6 +43,8 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuild
 import java.util.List;
 import java.util.Objects;
 
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.CONSOLE_APP_CONSUMER_KEY;
+
 /**
  * TokenEventHookHandler class.
  * This class is a placeholder for handling token-related events.
@@ -124,7 +126,7 @@ public class TokenEventHookHandler extends AbstractEventHandler {
 
         String applicationKey = resolveApplicationKey(eventData);
         boolean isEventTriggeredForSystemApplication = StringUtils.isNotBlank(applicationKey)
-                && "CONSOLE".equals(applicationKey);
+                && CONSOLE_APP_CONSUMER_KEY.equals(applicationKey);
         if (isEventTriggeredForSystemApplication) {
             log.debug("Event trigger for system application: " + applicationKey +
                     ". Skipping event handling for token event profile: " + eventProfile.getProfile());
