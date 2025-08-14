@@ -29,6 +29,8 @@ import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
+import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.management.service.model.MinimalOrganization;
 import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
@@ -101,8 +103,22 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
         AccessToken accessToken = buildAccessToken(eventData);
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
-        User user = WSO2PayloadUtils.buildUser(eventData);
-        if (user != null) {
+
+        User user = new User();
+        WSO2PayloadUtils.populateUserIdAndRef(user, eventData.getUserId());
+
+        boolean isOrganizationUser = isOrganizationUser(eventData);
+
+        if (isOrganizationUser) {
+            String userResidentOrganizationId = getUserResidentOrganizationIdForOrgUser(eventData);
+            String userResidentTenantDomain = resolveUserResidentTenantDomain(userResidentOrganizationId);
+            Organization userResidentOrganization =
+                    buildUserResidentOrganizationForOrgUser(userResidentOrganizationId, userResidentTenantDomain);
+
+            WSO2PayloadUtils.populateUserClaims(user, eventData.getUserId(), userResidentTenantDomain);
+            user.setOrganization(userResidentOrganization);
+        } else {
+            WSO2PayloadUtils.populateUserClaims(user, eventData.getUserId(), eventData.getTenantDomain());
             user.setOrganization(organization);
         }
 
@@ -185,13 +201,12 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
                 return List.of(application);
             }
         } else if (properties.get(IdentityEventConstants.EventProperty.CONSUMER_KEYS) instanceof List) {
-            ((List<String>) properties.get(IdentityEventConstants.EventProperty.CONSUMER_KEYS)).stream()
+            return ((List<String>) properties.get(IdentityEventConstants.EventProperty.CONSUMER_KEYS)).stream()
                     .filter(Objects::nonNull)
                     .map(consumerKey -> buildApplicationFromConsumerKey(eventData, consumerKey))
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         }
-
         return null;
     }
 
@@ -240,5 +255,58 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
             LOG.debug("Error while retrieving application by resource Id: " + resourceId, e);
         }
         return null;
+    }
+
+    private String resolveUserResidentTenantDomain(String userResidentOrganizationId) {
+
+        if (StringUtils.isBlank(userResidentOrganizationId)) {
+            return null;
+        }
+
+        try {
+            return WSO2EventHookHandlerDataHolder.getInstance().getOrganizationManager()
+                    .resolveTenantDomain(userResidentOrganizationId);
+        } catch (OrganizationManagementException e) {
+            LOG.debug("Error while resolving tenant domain for user resident organization: " +
+                    userResidentOrganizationId, e);
+        }
+
+        return null;
+    }
+
+    private Organization buildUserResidentOrganizationForOrgUser(String userResidentOrganizationId,
+                                                                 String userResidentTenantDomain) {
+
+        if (StringUtils.isBlank(userResidentOrganizationId) || StringUtils.isBlank(userResidentTenantDomain)) {
+            return null;
+        }
+
+        try {
+            MinimalOrganization userResidentOrganization =
+                    WSO2EventHookHandlerDataHolder.getInstance().getOrganizationManager()
+                            .getMinimalOrganization(userResidentOrganizationId, userResidentTenantDomain);
+            if (userResidentOrganization != null) {
+                return new Organization(userResidentOrganization.getId(),
+                        userResidentOrganization.getName(),
+                        userResidentOrganization.getOrganizationHandle(),
+                        userResidentOrganization.getDepth());
+            }
+        } catch (OrganizationManagementException e) {
+            LOG.debug("Error while resolving retrieving user resident organization: " +
+                    userResidentOrganizationId, e);
+        }
+        return null;
+    }
+
+    private boolean isOrganizationUser(EventData eventData) {
+
+        return Boolean.TRUE.toString()
+                .equalsIgnoreCase(String.valueOf(eventData.getProperties().get("IS_ORGANIZATION_USER")));
+    }
+
+    private String getUserResidentOrganizationIdForOrgUser(EventData eventData) {
+
+        return eventData.getProperties().get("USER_RESIDENT_ORGANIZATION_ID") != null ?
+                String.valueOf(eventData.getProperties().get("USER_RESIDENT_ORGANIZATION_ID")) : null;
     }
 }
