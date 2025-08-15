@@ -116,7 +116,8 @@ public class SessionEventHookHandler extends AbstractEventHandler {
         }
 
         // Skip system application events
-        String applicationNameInEvent = eventData.getAuthenticationContext().getServiceProviderName();
+        String applicationNameInEvent = eventData.getAuthenticationContext() != null ?
+                eventData.getAuthenticationContext().getServiceProviderName() : null;
         boolean isEventTriggeredForSystemApplication = StringUtils.isNotBlank(applicationNameInEvent)
                 && CONSOLE_APP_NAME.equals(applicationNameInEvent);
         if (isEventTriggeredForSystemApplication) {
