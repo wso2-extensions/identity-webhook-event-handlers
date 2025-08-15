@@ -32,6 +32,8 @@ public class Constants {
     public static final String DATA_MAP = "dataMap";
     public static final String ORGANIZATION_AUTHENTICATOR = "OrganizationAuthenticator";
     public static final String SCIM2_USERS_ENDPOINT = "/scim2/Users";
+    public static final String CONSOLE_APP_CONSUMER_KEY = "CONSOLE";
+    public static final String CONSOLE_APP_NAME = "Console";
 
     public static final String GROUPS_CLAIM = "http://wso2.org/claims/groups";
     public static final String FIRST_NAME_CLAIM_URI = "http://wso2.org/claims/givenname";

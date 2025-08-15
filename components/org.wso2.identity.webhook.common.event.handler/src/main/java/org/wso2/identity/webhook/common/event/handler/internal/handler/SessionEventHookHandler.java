@@ -49,6 +49,7 @@ import static org.wso2.carbon.identity.event.IdentityEventConstants.Event.SESSIO
 import static org.wso2.carbon.identity.event.IdentityEventConstants.Event.SESSION_EXTENSION;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.Event.SESSION_TERMINATE_V2;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.Event.SESSION_UPDATE;
+import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.CONSOLE_APP_NAME;
 
 /**
  * This class handles session events and publishes them to the configured event publisher.
@@ -117,7 +118,7 @@ public class SessionEventHookHandler extends AbstractEventHandler {
         // Skip system application events
         String applicationNameInEvent = eventData.getAuthenticationContext().getServiceProviderName();
         boolean isEventTriggeredForSystemApplication = StringUtils.isNotBlank(applicationNameInEvent)
-                && "Console".equals(applicationNameInEvent);
+                && CONSOLE_APP_NAME.equals(applicationNameInEvent);
         if (isEventTriggeredForSystemApplication) {
             log.debug("Event trigger for system application: " + applicationNameInEvent +
                     ". Skipping event handling for session event profile: " + eventProfile.getProfile());
