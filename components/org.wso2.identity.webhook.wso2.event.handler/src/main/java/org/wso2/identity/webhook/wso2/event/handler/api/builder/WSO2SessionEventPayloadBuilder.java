@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.CONSOLE_APP_NAME;
+
 public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilder {
 
     private static final Log LOG = LogFactory.getLog(WSO2SessionEventPayloadBuilder.class);
@@ -211,11 +213,13 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         List<Session> sessions = new ArrayList<>();
         List<Application> applications = new ArrayList<>();
         userSession.getApplications().forEach(app -> {
-            Application application = new Application.Builder()
-                    .id(app.getAppId())
-                    .name(app.getAppName())
-                    .build();
-            applications.add(application);
+            if (!CONSOLE_APP_NAME.equalsIgnoreCase(app.getAppName())) {
+                Application application = new Application.Builder()
+                        .id(app.getAppId())
+                        .name(app.getAppName())
+                        .build();
+                applications.add(application);
+            }
         });
         Session sessionModel = new Session.Builder()
                 .id(userSession.getSessionId())
