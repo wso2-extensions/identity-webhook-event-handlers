@@ -307,6 +307,10 @@ public class EventHookHandlerUtils {
      */
     public static boolean isB2BUserLogin(AuthenticationContext authContext) {
 
+        if (authContext == null) {
+            return false;
+        }
+
         Map<String, AuthenticatedIdPData> currentIdPs = authContext.getCurrentAuthenticatedIdPs();
         if (currentIdPs == null) {
             return false;
