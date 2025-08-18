@@ -215,7 +215,7 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         userSession.getApplications().forEach(app -> {
             if (!CONSOLE_APP_NAME.equalsIgnoreCase(app.getAppName())) {
                 Application application = new Application.Builder()
-                        .id(app.getAppId())
+                        .id(app.getResourceId())
                         .name(app.getAppName())
                         .build();
                 applications.add(application);
