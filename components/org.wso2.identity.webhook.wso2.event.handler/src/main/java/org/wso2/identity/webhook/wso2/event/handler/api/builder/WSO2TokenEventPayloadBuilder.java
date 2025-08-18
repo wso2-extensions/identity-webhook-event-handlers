@@ -105,22 +105,25 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
 
-        User user = new User();
-        WSO2PayloadUtils.populateUserIdAndRef(user, eventData.getUserId());
+        User user = null;
+        if (accessToken != null && WSO2PayloadUtils.isUserBasedGrantType(accessToken.getGrantType())) {
+            user = new User();
+            WSO2PayloadUtils.populateUserIdAndRef(user, eventData.getUserId());
 
-        boolean isOrganizationUser = isOrganizationUser(eventData);
+            boolean isOrganizationUser = isOrganizationUser(eventData);
 
-        if (isOrganizationUser) {
-            String userResidentOrganizationId = getUserResidentOrganizationIdForOrgUser(eventData);
-            String userResidentTenantDomain = resolveUserResidentTenantDomain(userResidentOrganizationId);
-            Organization userResidentOrganization =
-                    buildUserResidentOrganizationForOrgUser(userResidentOrganizationId, userResidentTenantDomain);
+            if (isOrganizationUser) {
+                String userResidentOrganizationId = getUserResidentOrganizationIdForOrgUser(eventData);
+                String userResidentTenantDomain = resolveUserResidentTenantDomain(userResidentOrganizationId);
+                Organization userResidentOrganization =
+                        buildUserResidentOrganizationForOrgUser(userResidentOrganizationId, userResidentTenantDomain);
 
-            WSO2PayloadUtils.populateUserClaims(user, eventData.getUserId(), userResidentTenantDomain);
-            user.setOrganization(userResidentOrganization);
-        } else {
-            WSO2PayloadUtils.populateUserClaims(user, eventData.getUserId(), eventData.getTenantDomain());
-            user.setOrganization(organization);
+                WSO2PayloadUtils.populateUserClaims(user, eventData.getUserId(), userResidentTenantDomain);
+                user.setOrganization(userResidentOrganization);
+            } else {
+                WSO2PayloadUtils.populateUserClaims(user, eventData.getUserId(), eventData.getTenantDomain());
+                user.setOrganization(organization);
+            }
         }
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
@@ -173,13 +176,11 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
         }
         Map<String, Object> properties = eventData.getProperties();
 
-        String applicationId = String.valueOf(properties.get(IdentityEventConstants.EventProperty.APPLICATION_ID));
         String applicationName = (String) properties.get(IdentityEventConstants.EventProperty.APPLICATION_NAME);
         String consumerKey = (String) properties.get(IdentityEventConstants.EventProperty.CONSUMER_KEY);
 
-        if (StringUtils.isNotBlank(applicationId)) {
+        if (StringUtils.isNotBlank(applicationName)) {
             return new Application.Builder()
-                    .id(applicationId)
                     .name(applicationName)
                     .consumerKey(consumerKey)
                     .build();
