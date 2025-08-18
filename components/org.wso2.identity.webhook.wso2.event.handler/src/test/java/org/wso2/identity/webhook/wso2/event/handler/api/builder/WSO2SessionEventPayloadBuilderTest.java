@@ -578,7 +578,7 @@ public class WSO2SessionEventPayloadBuilderTest {
         UserSession userSession = new UserSession();
         userSession.setSessionId(TEST_SESSION_ID_1);
         userSession.setLastAccessTime(LOGIN_TIME);
-        userSession.setApplications(Collections.singletonList(new Application(null, TEST_APP_NAME, TEST_APP_ID)));
+        userSession.setApplications(Collections.singletonList(new Application(null, TEST_APP_NAME, null, TEST_APP_ID)));
         return userSession;
     }
 
@@ -587,7 +587,7 @@ public class WSO2SessionEventPayloadBuilderTest {
         UserSession userSession = new UserSession();
         userSession.setSessionId(TEST_SESSION_ID_2);
         userSession.setLastAccessTime(LOGIN_TIME);
-        userSession.setApplications(Collections.singletonList(new Application(null, TEST_APP_NAME, TEST_APP_ID)));
+        userSession.setApplications(Collections.singletonList(new Application(null, TEST_APP_NAME, null, TEST_APP_ID)));
         return userSession;
     }
 

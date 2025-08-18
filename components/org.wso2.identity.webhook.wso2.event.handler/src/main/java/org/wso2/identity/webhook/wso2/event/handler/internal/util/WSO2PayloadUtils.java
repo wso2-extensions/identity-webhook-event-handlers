@@ -58,6 +58,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.USERNAME_CLAIM;
@@ -74,6 +75,16 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
 public class WSO2PayloadUtils {
 
     private static final Log log = LogFactory.getLog(WSO2PayloadUtils.class);
+
+    // Generic user based grant types that are typically associated with a user.
+    private static final Set<String> USER_BASED_GRANT_TYPES = Set.of(
+            "authorization_code",
+            "implicit",
+            "password",
+            "refresh_token",
+            "urn:ietf:params:oauth:grant-type:device_code",
+            "urn:ietf:params:oauth:grant-type:saml2-bearer",
+            "urn:ietf:params:oauth:grant-type:jwt-bearer");
 
     public static void populateUserClaims(User user, AuthenticatedUser authenticatedUser, String tenantDomain) {
 
@@ -566,5 +577,16 @@ public class WSO2PayloadUtils {
                 IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantDomain());
 
         return new Tenant(rootTenantId, rootTenantDomain);
+    }
+
+    /**
+     * Checks if the provided grant type is a user-based grant type.
+     *
+     * @param grantType The grant type to check.
+     * @return true if the grant type is user-based, false otherwise.
+     */
+    public static boolean isUserBasedGrantType(String grantType) {
+
+        return grantType != null && USER_BASED_GRANT_TYPES.contains(grantType);
     }
 }
