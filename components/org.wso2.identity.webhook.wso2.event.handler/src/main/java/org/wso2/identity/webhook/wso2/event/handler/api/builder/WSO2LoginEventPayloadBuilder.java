@@ -23,6 +23,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
@@ -84,13 +85,24 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                 .id(authenticationContext.getServiceProviderResourceId())
                 .name(authenticationContext.getServiceProviderName())
                 .build();
+
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
+        String initiatorType = null;
+        String action = null;
+        if (flow != null) {
+            initiatorType = flow.getInitiatingPersona().name();
+            action = flow.getName() != null ? flow.getName().name() : null;
+        }
+
         return new WSO2AuthenticationSuccessEventPayload.Builder()
+                .initiatorType(initiatorType)
                 .user(user)
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
                 .application(application)
                 .authenticationMethods(buildAuthMethods(authenticationContext))
+                .action(action)
                 .build();
     }
 
@@ -137,13 +149,24 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
         user.setOrganization(organization);
+
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
+        String initiatorType = null;
+        String action = null;
+        if (flow != null) {
+            initiatorType = flow.getInitiatingPersona().name();
+            action = flow.getName() != null ? flow.getName().name() : null;
+        }
+
         return new WSO2AuthenticationFailedEventPayload.Builder()
+                .initiatorType(initiatorType)
                 .user(user)
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
                 .application(application)
                 .reason(buildAuthenticationFailedReason(authenticationContext))
+                .action(action)
                 .build();
     }
 
