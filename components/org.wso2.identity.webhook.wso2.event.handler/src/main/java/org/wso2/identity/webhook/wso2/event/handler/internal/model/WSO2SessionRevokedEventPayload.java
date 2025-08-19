@@ -28,7 +28,6 @@ import java.util.List;
 
 public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
 
-    private String initiatorType;
     private String sessionId;
     private List<Session> sessions;
 
@@ -41,11 +40,7 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
         this.initiatorType = builder.initiatorType;
         this.sessionId = builder.sessionId;
         this.sessions = builder.sessions;
-    }
-
-    public String getInitiatorType() {
-
-        return initiatorType;
+        this.action = builder.action;
     }
 
     public String getSessionId() {
@@ -71,6 +66,7 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
         private String initiatorType;
         private String sessionId;
         private List<Session> sessions;
+        private String action;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -111,6 +107,12 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
         public Builder sessions(List<Session> sessions) {
 
             this.sessions = sessions;
+            return this;
+        }
+
+        public Builder action(String action) {
+
+            this.action = action;
             return this;
         }
 

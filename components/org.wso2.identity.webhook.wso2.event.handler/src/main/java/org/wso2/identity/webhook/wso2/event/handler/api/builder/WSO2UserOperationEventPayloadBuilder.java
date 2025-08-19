@@ -140,17 +140,22 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             deletedUser.setClaims(userClaims);
 
             Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
-            Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
-            String initiatorType = null;
-            if (flow != null) {
-                initiatorType = flow.getInitiatingPersona().name();
-            }
+
             Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                     IdentityContext.getThreadLocalIdentityContext());
             deletedUser.setOrganization(organization);
 
+            Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
+            String initiatorType = null;
+            String action = null;
+            if (flow != null) {
+                initiatorType = flow.getInitiatingPersona().name();
+                action = flow.getName() != null ? flow.getName().name() : null;
+            }
+
             return new WSO2UserAccountEventPayload.Builder()
                     .initiatorType(initiatorType)
+                    .action(action)
                     .user(deletedUser)
                     .tenant(tenant)
                     .organization(organization)
@@ -191,20 +196,26 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
+
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = null;
+        String action = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
+            action = flow.getName() != null ? flow.getName().name() : null;
         }
+
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
         user.setOrganization(organization);
 
         return new WSO2UserAccountEventPayload.Builder()
+                .initiatorType(initiatorType)
                 .user(user)
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
+                .action(action)
                 .build();
     }
 
@@ -239,11 +250,15 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + user.getId());
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
+
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = null;
+        String action = null;
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
+            action = flow.getName() != null ? flow.getName().name() : null;
         }
+
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
         user.setOrganization(organization);
@@ -254,6 +269,7 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
+                .action(action)
                 .build();
     }
 

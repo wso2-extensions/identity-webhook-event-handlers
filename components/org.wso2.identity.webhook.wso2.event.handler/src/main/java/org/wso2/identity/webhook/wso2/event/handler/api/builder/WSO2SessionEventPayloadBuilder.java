@@ -25,6 +25,7 @@ import org.wso2.carbon.identity.application.authentication.framework.exception.s
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.model.UserSession;
 import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
@@ -67,13 +68,23 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 IdentityContext.getThreadLocalIdentityContext());
         user.setOrganization(organization);
 
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
+        String initiatorType = null;
+        String action = null;
+        if (flow != null) {
+            initiatorType = flow.getInitiatingPersona().name();
+            action = flow.getName() != null ? flow.getName().name() : null;
+        }
+
         return new WSO2SessionCreatedEventPayload.Builder()
+                .initiatorType(initiatorType)
                 .session(sessions != null && !sessions.isEmpty() ? sessions.get(0) : null)
                 .user(user)
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
                 .application(application)
+                .action(action)
                 .build();
     }
 
@@ -89,13 +100,23 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 IdentityContext.getThreadLocalIdentityContext());
         user.setOrganization(organization);
 
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
+        String initiatorType = null;
+        String action = null;
+        if (flow != null) {
+            initiatorType = flow.getInitiatingPersona().name();
+            action = flow.getName() != null ? flow.getName().name() : null;
+        }
+
         return new WSO2SessionPresentedEventPayload.Builder()
+                .initiatorType(initiatorType)
                 .session(sessions != null && !sessions.isEmpty() ? sessions.get(0) : null)
                 .user(user)
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
                 .application(application)
+                .action(action)
                 .build();
     }
 
@@ -110,12 +131,22 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 IdentityContext.getThreadLocalIdentityContext());
         user.setOrganization(organization);
 
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
+        String initiatorType = null;
+        String action = null;
+        if (flow != null) {
+            initiatorType = flow.getInitiatingPersona().name();
+            action = flow.getName() != null ? flow.getName().name() : null;
+        }
+
         return new WSO2SessionRevokedEventPayload.Builder()
+                .initiatorType(initiatorType)
                 .user(user)
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
                 .sessions(sessions)
+                .action(action)
                 .build();
     }
 
