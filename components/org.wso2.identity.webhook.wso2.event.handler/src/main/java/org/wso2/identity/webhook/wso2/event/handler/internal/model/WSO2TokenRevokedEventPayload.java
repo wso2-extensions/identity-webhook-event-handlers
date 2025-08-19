@@ -36,7 +36,6 @@ public class WSO2TokenRevokedEventPayload extends WSO2BaseEventPayload {
 
     private List<AccessToken> accessTokens;
     private Reason reason;
-    private String action;
     private List<Application> application;
 
     public List<AccessToken> getAccessTokens() {
@@ -47,11 +46,6 @@ public class WSO2TokenRevokedEventPayload extends WSO2BaseEventPayload {
     public Reason getReason() {
 
         return reason;
-    }
-
-    public String getAction() {
-
-        return action;
     }
 
     public List<Application> getApplications() {

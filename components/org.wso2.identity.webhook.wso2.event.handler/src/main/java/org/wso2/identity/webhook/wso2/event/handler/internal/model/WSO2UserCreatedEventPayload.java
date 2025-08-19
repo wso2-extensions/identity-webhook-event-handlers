@@ -11,7 +11,6 @@ public class WSO2UserCreatedEventPayload extends WSO2BaseEventPayload{
 
     private List<String> registrationMethods;
     private List<String> credentialsEnrolled;
-    private String action;
 
     public List<String> getRegistrationMethods() {
 
@@ -23,10 +22,6 @@ public class WSO2UserCreatedEventPayload extends WSO2BaseEventPayload{
         return credentialsEnrolled;
     }
 
-    public String getAction() {
-
-        return action;
-    }
     private WSO2UserCreatedEventPayload(Builder builder) {
 
         this.initiatorType = builder.initiatorType;

@@ -29,7 +29,6 @@ public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
 
     private List<String> registrationMethods;
     private List<String> credentialsEnrolled;
-    private String action;
 
     public List<String> getRegistrationMethods() {
 
@@ -39,11 +38,6 @@ public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
     public List<String> getCredentialsEnrolled() {
 
         return credentialsEnrolled;
-    }
-
-    public String getAction() {
-
-        return action;
     }
 
     private WSO2RegistrationSuccessEventPayload(Builder builder) {

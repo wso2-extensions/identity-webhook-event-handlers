@@ -42,6 +42,8 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         this.userStore = builder.userStore;
         this.application = builder.application;
         this.session = builder.session;
+        this.action = builder.action;
+        this.initiatorType = builder.initiatorType;
     }
 
     private WSO2SessionCreatedEventPayload() {
@@ -56,6 +58,8 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         private UserStore userStore;
         private Application application;
         private Session session;
+        private String action;
+        private String initiatorType;
 
         public Builder user(User user) {
 
@@ -90,6 +94,18 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         public Builder session(Session session) {
 
             this.session = session;
+            return this;
+        }
+
+        public Builder action(String action) {
+
+            this.action = action;
+            return this;
+        }
+
+        public Builder initiatorType(String initiatorType) {
+
+            this.initiatorType = initiatorType;
             return this;
         }
 

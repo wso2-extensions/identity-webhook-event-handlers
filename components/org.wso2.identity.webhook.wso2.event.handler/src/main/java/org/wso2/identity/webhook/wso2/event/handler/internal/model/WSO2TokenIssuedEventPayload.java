@@ -35,7 +35,6 @@ public class WSO2TokenIssuedEventPayload extends WSO2BaseEventPayload {
 
     private AccessToken accessToken;
     private List<String> scopes;
-    private String action;
 
     public AccessToken getAccessToken() {
 
@@ -45,11 +44,6 @@ public class WSO2TokenIssuedEventPayload extends WSO2BaseEventPayload {
     public List<String> getScopes() {
 
         return scopes;
-    }
-
-    public String getAction() {
-
-        return action;
     }
 
     private WSO2TokenIssuedEventPayload(Builder builder) {
