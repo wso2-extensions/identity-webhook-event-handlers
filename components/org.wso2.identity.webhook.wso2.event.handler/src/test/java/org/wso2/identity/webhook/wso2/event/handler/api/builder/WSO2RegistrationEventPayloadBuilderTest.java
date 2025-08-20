@@ -185,20 +185,20 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         EventPayload eventPayload = payloadBuilder.buildRegistrationSuccessEvent(mockEventData);
         assertCommonFields((WSO2BaseEventPayload) eventPayload);
 
-        WSO2RegistrationSuccessEventPayload userAccountEventPayload =
+        WSO2RegistrationSuccessEventPayload userRegistrationSuccessPayload =
                 (WSO2RegistrationSuccessEventPayload) eventPayload;
         // Assert the user account event payload
-        assertNotNull(userAccountEventPayload.getUser());
-        assertEquals(userAccountEventPayload.getUser().getId(), TEST_USER_ID);
-        assertEquals(userAccountEventPayload.getUser().getRef(),
+        assertNotNull(userRegistrationSuccessPayload.getUser());
+        assertEquals(userRegistrationSuccessPayload.getUser().getId(), TEST_USER_ID);
+        assertEquals(userRegistrationSuccessPayload.getUser().getRef(),
                 constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT) + "/" + TEST_USER_ID);
-        assertNotNull(userAccountEventPayload.getAction());
-        assertEquals(userAccountEventPayload.getAction(),
+        assertNotNull(userRegistrationSuccessPayload.getAction());
+        assertEquals(userRegistrationSuccessPayload.getAction(),
                 WSO2RegistrationEventPayloadBuilder.RegistrationAction.REGISTER.name());
-        assertNotNull(userAccountEventPayload.getUser().getClaims());
-        assertEquals(userAccountEventPayload.getUser().getClaims().size(), 3);
+        assertNotNull(userRegistrationSuccessPayload.getUser().getClaims());
+        assertEquals(userRegistrationSuccessPayload.getUser().getClaims().size(), 3);
 
-        List<UserClaim> userClaims = userAccountEventPayload.getUser().getClaims();
+        List<UserClaim> userClaims = userRegistrationSuccessPayload.getUser().getClaims();
         Map<String, Object> userClaimsMap = userClaims.stream()
                 .collect(java.util.stream.Collectors.toMap(UserClaim::getUri, UserClaim::getValue));
 
@@ -210,6 +210,9 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         assertNotNull(userClaimsMap.get(LAST_NAME_CLAIM_URI));
         assertEquals(userClaimsMap.get(LAST_NAME_CLAIM_URI), LAST_NAME);
+
+        assertEquals(userRegistrationSuccessPayload.getAction(), Flow.Name.REGISTER.name());
+        assertEquals(userRegistrationSuccessPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
         IdentityContext.destroyCurrentContext();
     }
@@ -298,6 +301,9 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         assertNotNull(userClaimsMap.get(LAST_NAME_CLAIM_URI));
         assertEquals(userClaimsMap.get(LAST_NAME_CLAIM_URI), LAST_NAME);
+
+        assertEquals(userRegistrationFailurePayload.getAction(), Flow.Name.REGISTER.name());
+        assertEquals(userRegistrationFailurePayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
         IdentityContext.destroyCurrentContext();
     }
