@@ -599,7 +599,11 @@ public class WSO2PayloadUtils {
      */
     public static String getFlowAction(Flow flow) {
 
-        return (flow != null) ? flow.getName().name() : null;
+        String action = (flow != null) ? flow.getName().name() : null;
+        if (action == null) {
+            log.debug("Flow action is null.");
+        }
+        return action;
     }
 
     /**
@@ -610,8 +614,12 @@ public class WSO2PayloadUtils {
      */
     public static String getFlowInitiatorType(Flow flow) {
 
-        return (flow != null && flow.getInitiatingPersona() != null)
+        String initiatorType = (flow != null && flow.getInitiatingPersona() != null)
                 ? flow.getInitiatingPersona().name() : null;
+        if (initiatorType == null) {
+            log.debug("Flow initiator type is null.");
+        }
+        return initiatorType;
     }
 
     /**
@@ -622,7 +630,11 @@ public class WSO2PayloadUtils {
      */
     public static String getFlowCredentialType(Flow flow) {
 
-        return (flow != null && Flow.isCredentialFlow(flow.getName()) && flow.getCredentialType() != null)
-                ? flow.getCredentialType().name() : null;
+        String credentialType = (flow != null && Flow.isCredentialFlow(flow.getName())
+                && flow.getCredentialType() != null) ? flow.getCredentialType().name() : null;
+        if (credentialType == null) {
+            log.debug("Flow credential type is null.");
+        }
+        return credentialType;
     }
 }
