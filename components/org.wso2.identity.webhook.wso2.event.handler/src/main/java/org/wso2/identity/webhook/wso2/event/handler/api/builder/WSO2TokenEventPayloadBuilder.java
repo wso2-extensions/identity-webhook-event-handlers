@@ -77,12 +77,8 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
         }
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
-        String initiatorType = null;
-        String action = null;
-        if (flow != null) {
-            initiatorType = flow.getInitiatingPersona().name();
-            action = flow.getName().name();
-        }
+        String action = WSO2PayloadUtils.getFlowAction(flow);
+        String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
 
         return new WSO2TokenRevokedEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -127,12 +123,8 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
         }
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
-        String initiatorType = null;
-        String action = null;
-        if (flow != null) {
-            initiatorType = flow.getInitiatingPersona().name();
-            action = flow.getName().name();
-        }
+        String action = WSO2PayloadUtils.getFlowAction(flow);
+        String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
 
         return new WSO2TokenIssuedEventPayload.Builder()
                 .initiatorType(initiatorType)

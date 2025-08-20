@@ -33,6 +33,7 @@ import org.wso2.carbon.identity.claim.metadata.mgt.util.ClaimConstants;
 import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
 import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -588,5 +589,40 @@ public class WSO2PayloadUtils {
     public static boolean isUserBasedGrantType(String grantType) {
 
         return grantType != null && USER_BASED_GRANT_TYPES.contains(grantType);
+    }
+
+    /**
+     * Retrieves the flow action from the Flow object.
+     *
+     * @param flow The Flow object.
+     * @return The name of the flow action or null if the flow is null.
+     */
+    public static String getFlowAction(Flow flow) {
+
+        return (flow != null) ? flow.getName().name() : null;
+    }
+
+    /**
+     * Retrieves the flow initiator type from the Flow object.
+     *
+     * @param flow The Flow object.
+     * @return The name of the initiating persona or null if the flow or initiating persona is null.
+     */
+    public static String getFlowInitiatorType(Flow flow) {
+
+        return (flow != null && flow.getInitiatingPersona() != null)
+                ? flow.getInitiatingPersona().name() : null;
+    }
+
+    /**
+     * Retrieves the flow credential type from the Flow object.
+     *
+     * @param flow The Flow object.
+     * @return The name of the credential type or null if the flow is null, not a credential flow, or credential type is null.
+     */
+    public static String getFlowCredentialType(Flow flow) {
+
+        return (flow != null && Flow.isCredentialFlow(flow.getName()) && flow.getCredentialType() != null)
+                ? flow.getCredentialType().name() : null;
     }
 }

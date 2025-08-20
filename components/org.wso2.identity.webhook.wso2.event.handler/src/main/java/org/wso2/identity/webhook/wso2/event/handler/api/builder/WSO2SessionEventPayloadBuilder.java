@@ -69,12 +69,8 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         user.setOrganization(organization);
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
-        String initiatorType = null;
-        String action = null;
-        if (flow != null) {
-            initiatorType = flow.getInitiatingPersona().name();
-            action = flow.getName() != null ? flow.getName().name() : null;
-        }
+        String action = WSO2PayloadUtils.getFlowAction(flow);
+        String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
 
         return new WSO2SessionCreatedEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -101,12 +97,8 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         user.setOrganization(organization);
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
-        String initiatorType = null;
-        String action = null;
-        if (flow != null) {
-            initiatorType = flow.getInitiatingPersona().name();
-            action = flow.getName() != null ? flow.getName().name() : null;
-        }
+        String action = WSO2PayloadUtils.getFlowAction(flow);
+        String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
 
         return new WSO2SessionPresentedEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -132,12 +124,8 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         user.setOrganization(organization);
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
-        String initiatorType = null;
-        String action = null;
-        if (flow != null) {
-            initiatorType = flow.getInitiatingPersona().name();
-            action = flow.getName() != null ? flow.getName().name() : null;
-        }
+        String action = WSO2PayloadUtils.getFlowAction(flow);
+        String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
 
         return new WSO2SessionRevokedEventPayload.Builder()
                 .initiatorType(initiatorType)
