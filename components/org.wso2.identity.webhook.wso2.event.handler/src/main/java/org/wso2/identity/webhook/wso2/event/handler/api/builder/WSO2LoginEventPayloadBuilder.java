@@ -87,12 +87,8 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                 .build();
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
-        String initiatorType = null;
-        String action = null;
-        if (flow != null) {
-            initiatorType = flow.getInitiatingPersona().name();
-            action = flow.getName() != null ? flow.getName().name() : null;
-        }
+        String action = WSO2PayloadUtils.getFlowAction(flow);
+        String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
 
         return new WSO2AuthenticationSuccessEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -151,12 +147,8 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         user.setOrganization(organization);
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
-        String initiatorType = null;
-        String action = null;
-        if (flow != null) {
-            initiatorType = flow.getInitiatingPersona().name();
-            action = flow.getName() != null ? flow.getName().name() : null;
-        }
+        String action = WSO2PayloadUtils.getFlowAction(flow);
+        String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
 
         return new WSO2AuthenticationFailedEventPayload.Builder()
                 .initiatorType(initiatorType)
