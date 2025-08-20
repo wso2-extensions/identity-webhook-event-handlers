@@ -26,13 +26,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 
 public class WSO2RegistrationFailureEventPayload extends WSO2BaseEventPayload {
 
-    private String action;
     private Reason reason;
-
-    public String getAction() {
-
-        return action;
-    }
 
     public Reason getReason() {
 

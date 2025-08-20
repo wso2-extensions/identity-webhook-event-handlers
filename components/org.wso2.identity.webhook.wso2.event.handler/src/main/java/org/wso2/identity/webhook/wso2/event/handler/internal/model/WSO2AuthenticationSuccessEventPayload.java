@@ -41,6 +41,8 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
         this.organization = builder.organization;
         this.userStore = builder.userStore;
         this.application = builder.application;
+        this.initiatorType = builder.initiatorType;
+        this.action = builder.action;
         this.authenticationMethods = builder.authenticationMethods;
     }
 
@@ -59,6 +61,8 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
         private Organization organization;
         private UserStore userStore;
         private Application application;
+        private String initiatorType;
+        private String action;
         private List<String> authenticationMethods = new ArrayList<>();
 
         public Builder user(User user) {
@@ -100,6 +104,18 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
         public Builder addAuthenticationMethod(String authenticationMethod) {
 
             this.authenticationMethods.add(authenticationMethod);
+            return this;
+        }
+
+        public Builder initiatorType(String initiatorType) {
+
+            this.initiatorType = initiatorType;
+            return this;
+        }
+
+        public Builder action(String action) {
+
+            this.action = action;
             return this;
         }
 

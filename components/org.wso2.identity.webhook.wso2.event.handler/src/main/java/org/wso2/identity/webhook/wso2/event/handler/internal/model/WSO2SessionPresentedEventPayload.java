@@ -40,6 +40,8 @@ public class WSO2SessionPresentedEventPayload extends WSO2BaseEventPayload {
         this.userStore = builder.userStore;
         this.application = builder.application;
         this.session = builder.session;
+        this.action = builder.action;
+        this.initiatorType = builder.initiatorType;
     }
 
     public Session getSession() {
@@ -55,40 +57,54 @@ public class WSO2SessionPresentedEventPayload extends WSO2BaseEventPayload {
         private UserStore userStore;
         private Application application;
         private Session session;
+        private String action;
+        private String initiatorType;
 
-        public WSO2SessionPresentedEventPayload.Builder user(User user) {
+        public Builder user(User user) {
 
             this.user = user;
             return this;
         }
 
-        public WSO2SessionPresentedEventPayload.Builder tenant(Tenant tenant) {
+        public Builder tenant(Tenant tenant) {
 
             this.tenant = tenant;
             return this;
         }
 
-        public WSO2SessionPresentedEventPayload.Builder organization(Organization organization) {
+        public Builder organization(Organization organization) {
 
             this.organization = organization;
             return this;
         }
 
-        public WSO2SessionPresentedEventPayload.Builder userStore(UserStore userStore) {
+        public Builder userStore(UserStore userStore) {
 
             this.userStore = userStore;
             return this;
         }
 
-        public WSO2SessionPresentedEventPayload.Builder application(Application application) {
+        public Builder application(Application application) {
 
             this.application = application;
             return this;
         }
 
-        public WSO2SessionPresentedEventPayload.Builder session(Session session) {
+        public Builder session(Session session) {
 
             this.session = session;
+            return this;
+        }
+
+        public Builder action(String action) {
+
+            this.action = action;
+            return this;
+        }
+
+        public Builder initiatorType(String initiatorType) {
+
+            this.initiatorType = initiatorType;
             return this;
         }
 

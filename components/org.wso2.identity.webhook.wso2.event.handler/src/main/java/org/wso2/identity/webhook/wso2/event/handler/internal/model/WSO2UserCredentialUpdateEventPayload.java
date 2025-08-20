@@ -26,7 +26,6 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 public class WSO2UserCredentialUpdateEventPayload extends WSO2BaseEventPayload {
 
     private String credentialType;
-    private String action;
 
     private WSO2UserCredentialUpdateEventPayload(Builder builder) {
 
@@ -37,11 +36,6 @@ public class WSO2UserCredentialUpdateEventPayload extends WSO2BaseEventPayload {
         this.userStore = builder.userStore;
         this.user = builder.user;
         this.tenant = builder.tenant;
-    }
-
-    public String getAction() {
-
-        return action;
     }
 
     public String getCredentialType() {

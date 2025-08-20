@@ -73,10 +73,9 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
-        String initiatorType = null;
+        String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
         String action = null;
         if (flow != null) {
-            initiatorType = flow.getInitiatingPersona().name();
             action = Optional.ofNullable(resolveAction(flow.getName()))
                     .map(Enum::name)
                     .orElse(null);
@@ -124,10 +123,9 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
-        String initiatorType = null;
+        String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
         String action = null;
         if (flow != null) {
-            initiatorType = flow.getInitiatingPersona().name();
             action = Optional.ofNullable(resolveAction(flow.getName()))
                     .map(Enum::name)
                     .orElse(null);
