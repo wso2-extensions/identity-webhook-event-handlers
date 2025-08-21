@@ -1,4 +1,3 @@
-# This workflow automatically syncs merged PRs from master to next branch
 name: 🔄 Sync master to next
 
 on:
@@ -13,43 +12,34 @@ permissions:
 
 env:
   TARGET_BRANCH: next
-  GH_TOKEN: ${{ secrets.PR_AUTOMATION_BOT_TOKEN }}
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PR_AUTOMATION_BOT_TOKEN }}
 
       - name: Configure Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "wso2-iam-bot"
+          git config user.email "wso2-iam-bot@users.noreply.github.com"
+
       - name: Create sync branch and cherry-pick commits
+        env:
+          GH_TOKEN: ${{ secrets.PR_AUTOMATION_BOT_TOKEN }}
         run: |
           SYNC_BRANCH="sync-to-${{ env.TARGET_BRANCH }}-${{ github.run_id }}"
           PR_NUMBER=${{ github.event.pull_request.number }}
 
-          # Fetch all branches including remote branches
           git fetch --all
-
-          # Check if target branch exists
-          if ! git ls-remote --exit-code origin "${{ env.TARGET_BRANCH }}" > /dev/null 2>&1; then
-            echo "::error::Target branch '${{ env.TARGET_BRANCH }}' does not exist"
-            exit 1
-          fi
-
-          # Create sync branch from target branch
           git checkout -b "$SYNC_BRANCH" "origin/${{ env.TARGET_BRANCH }}"
 
-          # Get PR commits (excluding merge commits)
           COMMITS=$(gh pr view $PR_NUMBER --json commits --jq '.commits[].oid' | tac)
 
-          # Cherry-pick each commit
           echo "Cherry-picking commits..."
           CONFLICTS=false
           for commit in $COMMITS; do
@@ -67,15 +57,12 @@ jobs:
           done
 
           if [ "$CONFLICTS" = true ]; then
-            # If there were conflicts, create branch from target and push without cherry-picking
             git checkout -B "$SYNC_BRANCH" "origin/${{ env.TARGET_BRANCH }}"
             echo "⚠️ Cherry-pick failed due to conflicts. Creating PR for manual resolution."
           fi
 
-          # Push sync branch
           git push origin "$SYNC_BRANCH"
 
-          # Prepare PR body with conflict status
           PR_BODY="🤖 **Auto-sync from ${{ github.event.pull_request.base.ref }}**
           This PR automatically syncs the changes from #${{ github.event.pull_request.number }} to the \`${{ env.TARGET_BRANCH }}\` branch.
 
@@ -87,8 +74,7 @@ jobs:
             PR_BODY="$PR_BODY
 
           ⚠️ **Merge Conflicts Detected**
-          This PR requires manual resolution of merge conflicts.
-          Please resolve the conflicts and update this PR accordingly."
+          This PR requires manual resolution of merge conflicts."
           fi
 
           PR_BODY="$PR_BODY
@@ -97,15 +83,10 @@ jobs:
 
           ${{ github.event.pull_request.body }}"
 
-          # Create PR
           gh pr create \
             --base "${{ env.TARGET_BRANCH }}" \
             --head "$SYNC_BRANCH" \
-            --title "[Sync][<${{ github.event.pull_request.base.ref }}> -> <${{ env.TARGET_BRANCH }}>][#${{ github.event.pull_request.number }}]: ${{ github.event.pull_request.title }}" \
+            --title "[Sync][${{ github.event.pull_request.base.ref }} -> ${{
+              env.TARGET_BRANCH }}][#${{ github.event.pull_request.number }}]: ${{ github.event.pull_request.title }}" \
             --body "$PR_BODY" \
             --reviewer "${{ github.event.pull_request.user.login }}"
-
-          # Delete the sync branch after PR creation since it's no longer needed
-          git push origin --delete "$SYNC_BRANCH"
-        env:
-          GH_TOKEN: ${{ env.GH_TOKEN }}
