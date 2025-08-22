@@ -1,8 +1,7 @@
 name: 🔄 Sync master to next
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches: [master, main]
 
 permissions:
@@ -32,13 +31,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PR_AUTOMATION_BOT_TOKEN }}
         run: |
-          SYNC_BRANCH="sync-to-${{ env.TARGET_BRANCH }}-${{ github.run_id }}"
-          PR_NUMBER=${{ github.event.pull_request.number }}
+          SYNC_BRANCH="sync-${{ github.run_id }}-to-${{ env.TARGET_BRANCH }}"
+          BASE_BRANCH=${{ github.ref_name }}
 
           git fetch --all
           git checkout -b "$SYNC_BRANCH" "origin/${{ env.TARGET_BRANCH }}"
 
-          COMMITS=$(gh pr view $PR_NUMBER --json commits --jq '.commits[].oid' | tac)
+          # Get commits from the latest push
+          COMMITS=$(git log "origin/${{ env.TARGET_BRANCH }}..${BASE_BRANCH}" --pretty=format:"%H")
 
           echo "Cherry-picking commits..."
           CONFLICTS=false
@@ -63,11 +63,9 @@ jobs:
 
           git push origin "$SYNC_BRANCH"
 
-          PR_BODY="🤖 **Auto-sync from ${{ github.event.pull_request.base.ref }}**
-          This PR automatically syncs the changes from #${{ github.event.pull_request.number }} to the \`${{ env.TARGET_BRANCH }}\` branch.
+          PR_BODY="🤖 **Auto-sync from ${BASE_BRANCH}**
+          This PR automatically syncs the latest changes from \`${BASE_BRANCH}\` to the \`${{ env.TARGET_BRANCH }}\` branch.
 
-          **Original PR:** ${{ github.event.pull_request.html_url }}
-          **Author:** @${{ github.event.pull_request.user.login }}
           **Workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
           if [ "$CONFLICTS" = true ]; then
@@ -77,16 +75,8 @@ jobs:
           This PR requires manual resolution of merge conflicts."
           fi
 
-          PR_BODY="$PR_BODY
-
-          ---
-
-          ${{ github.event.pull_request.body }}"
-
           gh pr create \
             --base "${{ env.TARGET_BRANCH }}" \
             --head "$SYNC_BRANCH" \
-            --title "[Sync][${{ github.event.pull_request.base.ref }} -> ${{
-              env.TARGET_BRANCH }}][#${{ github.event.pull_request.number }}]: ${{ github.event.pull_request.title }}" \
-            --body "$PR_BODY" \
-            --reviewer "${{ github.event.pull_request.user.login }}"
+            --title "[Sync][${BASE_BRANCH} -> ${{ env.TARGET_BRANCH }}]: Auto-sync" \
+            --body "$PR_BODY"
