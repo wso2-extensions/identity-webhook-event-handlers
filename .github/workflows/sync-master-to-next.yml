@@ -2,8 +2,7 @@
 name: 🔄 Sync PRs from master to next
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches: [master, main]
 
 permissions:
@@ -15,7 +14,7 @@ env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  sync_pr:
+  sync_push:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,19 +29,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Check PR merge commit
-        id: pr_info
+      - name: Get last commit
+        id: commit_info
         run: |
-          if [ "${{ github.event.pull_request.merged }}" != "true" ]; then
-            echo "This PR was not merged. Exiting..."
-            exit 0
-          fi
-
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          MERGE_COMMIT="${{ github.event.pull_request.merge_commit_sha }}"
-          LAST_MESSAGE=$(git log -1 --pretty=%B $MERGE_COMMIT)
-
-          echo "Last commit message: $LAST_MESSAGE"
+          LAST_COMMIT="${{ github.sha }}"
+          LAST_MESSAGE=$(git log -1 --pretty=%B $LAST_COMMIT)
+          echo "Last commit: $LAST_COMMIT"
+          echo "Message: $LAST_MESSAGE"
 
           # Skip if last commit is a Jenkins release commit
           if [[ "$LAST_MESSAGE" =~ ^"\[WSO2 Release\]" ]]; then
@@ -50,22 +43,22 @@ jobs:
             exit 0
           fi
 
-          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
-          echo "MERGE_COMMIT=$MERGE_COMMIT" >> $GITHUB_ENV
+          echo "LAST_COMMIT=$LAST_COMMIT" >> $GITHUB_ENV
 
-      - name: Get commits from PR (excluding Jenkins commits)
-        id: pr_commits
+      - name: Get commits since last push to target branch (excluding Jenkins)
+        id: commits_list
         run: |
-          echo "Fetching commits for PR #$PR_NUMBER"
-          PR_COMMITS=$(gh pr view $PR_NUMBER --repo $GITHUB_REPOSITORY --json commits --jq '.commits[].oid')
+          TARGET_BRANCH=${{ env.TARGET_BRANCH }}
+          BASE_BRANCH="${{ github.ref_name }}"
 
-          if [ -z "$PR_COMMITS" ]; then
-            echo "No commits found for PR #$PR_NUMBER"
-            exit 1
-          fi
+          # Fetch target branch
+          git fetch origin $TARGET_BRANCH
+
+          # Get all commits from master/main since target branch
+          COMMITS=$(git log "origin/$TARGET_BRANCH..$BASE_BRANCH" --no-merges --pretty=format:"%H")
 
           FILTERED_COMMITS=""
-          for commit in $PR_COMMITS; do
+          for commit in $COMMITS; do
             MESSAGE=$(git log -1 --pretty=%B $commit)
             if [[ "$MESSAGE" =~ ^"\[WSO2 Release\]" ]]; then
               echo "Skipping Jenkins commit $commit: $MESSAGE"
@@ -75,19 +68,16 @@ jobs:
           done
 
           if [ -z "$FILTERED_COMMITS" ]; then
-            echo "No commits left after filtering Jenkins commits. Exiting..."
+            echo "No commits to sync after filtering. Exiting..."
             exit 0
           fi
 
-          echo "Filtered commits: $FILTERED_COMMITS"
           echo "PR_COMMITS=$FILTERED_COMMITS" >> $GITHUB_ENV
 
-      - name: Create sync branch and cherry-pick PR commits
+      - name: Create sync branch and cherry-pick commits
         run: |
-          SYNC_BRANCH="sync-pr-${PR_NUMBER}-to-${{ env.TARGET_BRANCH }}"
+          SYNC_BRANCH="sync-${{ github.run_id }}-to-${{ env.TARGET_BRANCH }}"
 
-          # Ensure target branch exists
-          git fetch origin ${{ env.TARGET_BRANCH }}
           git checkout -b "$SYNC_BRANCH" "origin/${{ env.TARGET_BRANCH }}"
 
           CONFLICTS=false
@@ -100,15 +90,13 @@ jobs:
             fi
           done
 
-          # Push the branch even if conflicts exist
           git push origin "$SYNC_BRANCH" --force
 
-          # Build PR body safely for multiline
-          PR_BODY="🤖 **Auto-sync PR #$PR_NUMBER**"$'\n'"This PR automatically syncs changes from PR #$PR_NUMBER (merged to master/main) to \`${{ env.TARGET_BRANCH }}\`."
-
+          # Build PR body safely
+          PR_BODY="🤖 **Auto-sync from $BASE_BRANCH**"$'\n'"This PR automatically syncs changes from \`$BASE_BRANCH\` to \`${{ env.TARGET_BRANCH }}\`."
           if [ "$CONFLICTS" = true ]; then
             PR_BODY="$PR_BODY"$'\n\n'"⚠️ **Merge Conflicts Detected**"$'\n'"This PR requires manual resolution of merge conflicts."
           fi
 
           # Create PR
-          gh pr create --base "${{ env.TARGET_BRANCH }}" --head "$SYNC_BRANCH" --title "[Sync][PR #$PR_NUMBER] Auto-sync" --body "$PR_BODY"
+          gh pr create --base "${{ env.TARGET_BRANCH }}" --head "$SYNC_BRANCH" --title "[Sync][$BASE_BRANCH -> ${{ env.TARGET_BRANCH }}] Auto-sync" --body "$PR_BODY"
