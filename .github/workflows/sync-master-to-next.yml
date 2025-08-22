@@ -81,21 +81,29 @@ jobs:
           git checkout -b "$SYNC_BRANCH" "origin/${{ env.TARGET_BRANCH }}"
 
           CONFLICTS=false
+          ANY_APPLIED=false
           for commit in $PR_COMMITS; do
             echo "Cherry-picking commit $commit..."
             if ! git cherry-pick "$commit"; then
               echo "::warning::Conflict detected on commit $commit"
               CONFLICTS=true
-              break
+            else
+              ANY_APPLIED=true
             fi
           done
 
+          # Push the sync branch regardless of conflicts
           git push origin "$SYNC_BRANCH" --force
 
           # Build PR body safely
           PR_BODY="🤖 **Auto-sync from $BASE_BRANCH**"$'\n'"This PR automatically syncs changes from \`$BASE_BRANCH\` to \`${{ env.TARGET_BRANCH }}\`."
+          
           if [ "$CONFLICTS" = true ]; then
-            PR_BODY="$PR_BODY"$'\n\n'"⚠️ **Merge Conflicts Detected**"$'\n'"This PR requires manual resolution of merge conflicts."
+            if [ "$ANY_APPLIED" = false ]; then
+              PR_BODY="$PR_BODY"$'\n\n'"⚠️ **All commits conflicted. Manual merge required.**"
+            else
+              PR_BODY="$PR_BODY"$'\n\n'"⚠️ **Some commits had conflicts. Manual resolution required for these changes.**"
+            fi
           fi
 
           # Create PR
