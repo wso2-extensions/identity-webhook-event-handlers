@@ -66,7 +66,6 @@ import static org.testng.Assert.*;
 import static org.wso2.carbon.identity.core.context.model.Flow.Name.CREDENTIAL_ENROLL;
 import static org.wso2.carbon.identity.core.context.model.Flow.Name.CREDENTIAL_RESET;
 import static org.wso2.carbon.identity.core.context.model.Flow.Name.CREDENTIAL_UPDATE;
-import static org.wso2.carbon.identity.core.context.model.Flow.Name.GROUP_UPDATE;
 import static org.wso2.carbon.identity.core.context.model.Flow.Name.PROFILE_UPDATE;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.PRE_DELETE_USER_ID;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;

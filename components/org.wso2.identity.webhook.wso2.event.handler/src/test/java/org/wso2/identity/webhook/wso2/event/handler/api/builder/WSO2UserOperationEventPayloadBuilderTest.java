@@ -269,7 +269,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
     public void testBuildUserDeleteEvent() throws IdentityEventException, UserStoreException {
 
         Flow mockFlow = new Flow.Builder()
-                .name(Flow.Name.USER_DELETE)
+                .name(Flow.Name.USER_ACCOUNT_DELETE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
         IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
@@ -306,6 +306,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 FrameworkConstants.USERNAME_CLAIM);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getValue(),
                 DOMAIN_QUALIFIED_DELETED_USER_NAME);
+        assertEquals(userAccountEventPayload.getAction(), Flow.Name.USER_ACCOUNT_DELETE.name());
+        assertEquals(userAccountEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
         IdentityContext.destroyCurrentContext();
     }
@@ -328,7 +330,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(TEST_USER_ID);
 
         Flow mockFlow = new Flow.Builder()
-                .name(Flow.Name.ACCOUNT_UNLOCK)
+                .name(Flow.Name.USER_ACCOUNT_UNLOCK)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
         IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
@@ -354,6 +356,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
                 FrameworkConstants.EMAIL_ADDRESS_CLAIM);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getValue(), TEST_USER_EMAIL);
+        assertEquals(userAccountEventPayload.getAction(), Flow.Name.USER_ACCOUNT_UNLOCK.name());
+        assertEquals(userAccountEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
         IdentityContext.destroyCurrentContext();
     }
@@ -376,7 +380,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 eq(FrameworkConstants.USER_ID_CLAIM), any())).thenReturn(TEST_USER_ID);
 
         Flow mockFlow = new Flow.Builder()
-                .name(Flow.Name.ACCOUNT_LOCK)
+                .name(Flow.Name.USER_ACCOUNT_LOCK)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
         IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
@@ -402,6 +406,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
                 FrameworkConstants.EMAIL_ADDRESS_CLAIM);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getValue(), TEST_USER_EMAIL);
+        assertEquals(userAccountEventPayload.getAction(), Flow.Name.USER_ACCOUNT_LOCK.name());
+        assertEquals(userAccountEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
         IdentityContext.destroyCurrentContext();
     }
@@ -437,7 +443,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
 
         Flow mockFlow = new Flow.Builder()
-                .name(Flow.Name.ACCOUNT_DISABLE) //TODO change the flow when introduce ACCOUNT_ENABLE
+                .name(Flow.Name.USER_ACCOUNT_ENABLE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
         IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
@@ -457,6 +463,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
                 FrameworkConstants.EMAIL_ADDRESS_CLAIM);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getValue(), TEST_USER_EMAIL);
+        assertEquals(userAccountEventPayload.getAction(), Flow.Name.USER_ACCOUNT_ENABLE.name());
+        assertEquals(userAccountEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
         IdentityContext.destroyCurrentContext();
     }
@@ -477,7 +485,7 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 eq(FrameworkConstants.EMAIL_ADDRESS_CLAIM), any())).thenReturn(TEST_USER_EMAIL);
 
         Flow mockFlow = new Flow.Builder()
-                .name(Flow.Name.ACCOUNT_DISABLE)
+                .name(Flow.Name.USER_ACCOUNT_DISABLE)
                 .initiatingPersona(Flow.InitiatingPersona.ADMIN)
                 .build();
         IdentityContext.getThreadLocalIdentityContext().enterFlow(mockFlow);
@@ -497,6 +505,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getUri(),
                 FrameworkConstants.EMAIL_ADDRESS_CLAIM);
         assertEquals(userAccountEventPayload.getUser().getClaims().get(0).getValue(), TEST_USER_EMAIL);
+        assertEquals(userAccountEventPayload.getAction(), Flow.Name.USER_ACCOUNT_DISABLE.name());
+        assertEquals(userAccountEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
         IdentityContext.destroyCurrentContext();
     }
@@ -555,6 +565,9 @@ public class WSO2UserOperationEventPayloadBuilderTest {
 
         assertNotNull(userClaimsMap.get(LAST_NAME_CLAIM_URI));
         assertEquals(userClaimsMap.get(LAST_NAME_CLAIM_URI), LAST_NAME);
+
+        assertEquals(userAccountEventPayload.getAction(), Flow.Name.INVITE.name());
+        assertEquals(userAccountEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
 
         IdentityContext.destroyCurrentContext();
     }
