@@ -1,3 +1,4 @@
+# This workflow automatically syncs merged changes from master/main to next branch
 name: 🔄 Sync master to next
 
 on:
@@ -11,42 +12,52 @@ permissions:
 
 env:
   TARGET_BRANCH: next
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.PR_AUTOMATION_BOT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
         run: |
-          git config user.name "wso2-iam-bot"
-          git config user.email "wso2-iam-bot@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Create sync branch and cherry-pick commits
         env:
-          GH_TOKEN: ${{ secrets.PR_AUTOMATION_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          BASE_BRANCH="${{ github.ref_name }}"
           SYNC_BRANCH="sync-${{ github.run_id }}-to-${{ env.TARGET_BRANCH }}"
-          BASE_BRANCH=${{ github.ref_name }}
 
+          # Fetch all branches
           git fetch --all
+
+          # Ensure target branch exists
+          if ! git ls-remote --exit-code origin "${{ env.TARGET_BRANCH }}" > /dev/null 2>&1; then
+            echo "::error::Target branch '${{ env.TARGET_BRANCH }}' does not exist"
+            exit 1
+          fi
+
+          # Create sync branch from target
           git checkout -b "$SYNC_BRANCH" "origin/${{ env.TARGET_BRANCH }}"
 
-          # Get commits from the latest push
-          COMMITS=$(git log "origin/${{ env.TARGET_BRANCH }}..${BASE_BRANCH}" --pretty=format:"%H")
+          # Get commits from the push (excluding merge commits)
+          COMMITS=$(git log "origin/${{ env.TARGET_BRANCH }}..${BASE_BRANCH}" --no-merges --pretty=format:"%H")
 
           echo "Cherry-picking commits..."
           CONFLICTS=false
           for commit in $COMMITS; do
-            if git show --no-patch --format=%p "$commit" | grep -q " "; then
-              echo "Skipping merge commit: $commit"
-              continue
-            fi
             echo "Cherry-picking: $commit"
             if ! git cherry-pick "$commit"; then
               echo "::warning::Cherry-pick conflict detected for $commit"
@@ -57,12 +68,15 @@ jobs:
           done
 
           if [ "$CONFLICTS" = true ]; then
+            # Reset to target branch if conflicts
             git checkout -B "$SYNC_BRANCH" "origin/${{ env.TARGET_BRANCH }}"
             echo "⚠️ Cherry-pick failed due to conflicts. Creating PR for manual resolution."
           fi
 
+          # Push sync branch
           git push origin "$SYNC_BRANCH"
 
+          # Build PR body
           PR_BODY="🤖 **Auto-sync from ${BASE_BRANCH}**
           This PR automatically syncs the latest changes from \`${BASE_BRANCH}\` to the \`${{ env.TARGET_BRANCH }}\` branch.
 
@@ -75,6 +89,7 @@ jobs:
           This PR requires manual resolution of merge conflicts."
           fi
 
+          # Create PR
           gh pr create \
             --base "${{ env.TARGET_BRANCH }}" \
             --head "$SYNC_BRANCH" \
