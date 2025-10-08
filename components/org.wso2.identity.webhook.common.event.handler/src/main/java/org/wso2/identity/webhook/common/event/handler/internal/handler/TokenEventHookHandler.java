@@ -40,6 +40,7 @@ import org.wso2.identity.webhook.common.event.handler.internal.constant.Constant
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -183,11 +184,16 @@ public class TokenEventHookHandler extends AbstractEventHandler {
             if (StringUtils.isNotBlank(consumerKey)) {
                 return consumerKey;
             }
-        } else if (eventData.getProperties().get(IdentityEventConstants.EventProperty.CONSUMER_KEYS) instanceof List) {
-            List<String> consumerKeys = (List<String>) eventData.getProperties()
-                    .get(IdentityEventConstants.EventProperty.CONSUMER_KEYS);
-            if (consumerKeys != null && consumerKeys.size() == 1) {
-                return consumerKeys.get(0);
+        } else {
+            Object consumerKeysObj = eventData.getProperties().get(IdentityEventConstants.EventProperty.CONSUMER_KEYS);
+            if (consumerKeysObj instanceof Collection) {
+                Collection<?> consumerKeys = (Collection<?>) consumerKeysObj;
+                if (consumerKeys.size() == 1) {
+                    Object key = consumerKeys.iterator().next();
+                    if (key instanceof String) {
+                        return (String) key;
+                    }
+                }
             }
         }
         return null;
