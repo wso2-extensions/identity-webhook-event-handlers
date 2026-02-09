@@ -235,7 +235,7 @@
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
-                <artifactId>mockito-inline</artifactId>
+                <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -327,6 +327,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
                 <inherited>true</inherited>
                 <configuration>
                     <encoding>${project.build.sourceEncoding}</encoding>
@@ -500,23 +501,24 @@
 
         <carbon.p2.plugin.version>5.1.2</carbon.p2.plugin.version>
 
-        <compiler-source.version>1.8</compiler-source.version>
-        <compiler-target.version>1.8</compiler-target.version>
+        <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
+        <compiler-source.version>21</compiler-source.version>
+        <compiler-target.version>21</compiler-target.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Unit test versions -->
         <testng.version>7.10.1</testng.version>
-        <jacoco.version>0.8.6</jacoco.version>
-        <maven.bundle.plugin.version>3.2.0</maven.bundle.plugin.version>
+        <jacoco.version>0.8.12</jacoco.version>
+        <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
         <maven.buildnumber.plugin.version>1.4</maven.buildnumber.plugin.version>
         <protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
         <os-maven-plugin.version>1.6.2</os-maven-plugin.version>
-        <mockito.version>3.8.0</mockito.version>
+        <mockito.version>5.3.1</mockito.version>
         <log4j-core.version>2.17.1</log4j-core.version>
         <log4j-to-slf4j.version>2.8.2</log4j-to-slf4j.version>
 
         <!-- Spotbugs versions -->
-        <spotbugs-maven-plugin.version>4.1.3</spotbugs-maven-plugin.version>
+        <spotbugs-maven-plugin.version>4.9.8.2</spotbugs-maven-plugin.version>
         <findsecbugs-plugin.version>1.10.1</findsecbugs-plugin.version>
 
         <!-- Http versions -->
