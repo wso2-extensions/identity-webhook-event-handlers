@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025-2026, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -150,6 +150,10 @@ public class WSO2EventProfileManager implements EventProfileManager {
             Triggered when:
                 A user resets their password via the My Account portal, or
                 An admin resets the user's password via the Console.
+
+        Event.POST_UPDATE_CREDENTIAL_BY_ME_API:
+            Triggered when:
+                A user updates their password via the user password update API.
          */
         if (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName)) {
             Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
@@ -158,6 +162,7 @@ public class WSO2EventProfileManager implements EventProfileManager {
             return Flow.Name.CREDENTIAL_RESET.equals(flowName);
         }
 
-        return IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName);
+        return IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM.equals(eventName) ||
+                IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_ME_API.equals(eventName);
     }
 }

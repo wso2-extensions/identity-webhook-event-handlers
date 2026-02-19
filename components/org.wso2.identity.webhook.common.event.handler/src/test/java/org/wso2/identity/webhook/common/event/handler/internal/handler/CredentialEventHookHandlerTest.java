@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025-2026, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -137,6 +137,14 @@ public class CredentialEventHookHandlerTest {
     }
 
     @Test
+    public void testCanHandleMeApiEvent() {
+
+        Event event = createEvent(IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_ME_API);
+        IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);
+        assertTrue(credentialEventHookHandler.canHandle(messageContext));
+    }
+
+    @Test
     public void testCannotHandle() {
 
         Event event = createEvent(IdentityEventConstants.EventName.SESSION_TERMINATE.name());
@@ -148,7 +156,8 @@ public class CredentialEventHookHandlerTest {
     public Object[][] eventDataProvider() {
 
         return new Object[][] {
-                {IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM, SAMPLE_EVENT_KEY}
+                {IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_SCIM, SAMPLE_EVENT_KEY},
+                {IdentityEventConstants.Event.POST_UPDATE_CREDENTIAL_BY_ME_API, SAMPLE_EVENT_KEY}
         };
     }
 
