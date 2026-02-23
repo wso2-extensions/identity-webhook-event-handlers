@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2025-2026, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -87,17 +87,17 @@ public class CAEPSessionEventPayloadBuilder implements SessionEventPayloadBuilde
                     reasonAdmin.put("en", "User Logout");
                     reasonUser.put("en", "User Logged Out");
                     break;
-                case USER_DELETE:
+                case USER_ACCOUNT_DELETE:
                     reasonAdmin.put("en", "User Deleted");
                     reasonUser.put("en", "User Deleted");
                     initiatingEntity = "policy";
                     break;
-                case ACCOUNT_DISABLE:
+                case USER_ACCOUNT_DISABLE:
                     reasonAdmin.put("en", "Account Disabled");
                     reasonUser.put("en", "User Account was Disabled");
                     initiatingEntity = "policy";
                     break;
-                case ACCOUNT_LOCK:
+                case USER_ACCOUNT_LOCK:
                     reasonAdmin.put("en", "Account Locked");
                     reasonUser.put("en", "User Account was Locked");
                     initiatingEntity = "policy";
