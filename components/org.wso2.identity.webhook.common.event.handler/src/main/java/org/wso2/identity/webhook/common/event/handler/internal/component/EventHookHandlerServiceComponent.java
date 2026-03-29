@@ -29,7 +29,9 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
+import org.wso2.carbon.identity.compatibility.settings.core.service.CompatibilitySettingsService;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
+import org.wso2.carbon.identity.flow.mgt.FlowMgtService;
 import org.wso2.carbon.identity.event.IdentityEventConfigBuilder;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.IdentityEventServerException;
@@ -378,6 +380,40 @@ public class EventHookHandlerServiceComponent {
     protected void unsetOrganizationManager(OrganizationManager organizationManager) {
 
         EventHookHandlerDataHolder.getInstance().setOrganizationManager(null);
+    }
+
+    @Reference(
+            name = "flow.mgt.service.component",
+            service = FlowMgtService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetFlowMgtService"
+    )
+    protected void setFlowMgtService(FlowMgtService flowMgtService) {
+
+        EventHookHandlerDataHolder.getInstance().setFlowMgtService(flowMgtService);
+    }
+
+    protected void unsetFlowMgtService(FlowMgtService flowMgtService) {
+
+        EventHookHandlerDataHolder.getInstance().setFlowMgtService(null);
+    }
+
+    @Reference(
+            name = "compatibility.settings.service.component",
+            service = CompatibilitySettingsService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetCompatibilitySettingsService"
+    )
+    protected void setCompatibilitySettingsService(CompatibilitySettingsService compatibilitySettingsService) {
+
+        EventHookHandlerDataHolder.getInstance().setCompatibilitySettingsService(compatibilitySettingsService);
+    }
+
+    protected void unsetCompatibilitySettingsService(CompatibilitySettingsService compatibilitySettingsService) {
+
+        EventHookHandlerDataHolder.getInstance().setCompatibilitySettingsService(null);
     }
 
     @Reference(
