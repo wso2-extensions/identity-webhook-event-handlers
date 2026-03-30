@@ -28,6 +28,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.compatibility.settings.core.exception.CompatibilitySettingException;
 import org.wso2.carbon.identity.compatibility.settings.core.model.CompatibilitySetting;
 import org.wso2.carbon.identity.compatibility.settings.core.model.CompatibilitySettingGroup;
 import org.wso2.carbon.identity.compatibility.settings.core.service.CompatibilitySettingsService;
@@ -47,6 +48,7 @@ import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherServic
 import org.wso2.carbon.identity.flow.mgt.FlowMgtService;
 import org.wso2.carbon.identity.flow.mgt.Constants.FlowCompletionConfig;
 import org.wso2.carbon.identity.flow.mgt.Constants.FlowTypes;
+import org.wso2.carbon.identity.flow.mgt.exception.FlowMgtFrameworkException;
 import org.wso2.carbon.identity.flow.mgt.model.FlowConfigDTO;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
@@ -561,7 +563,7 @@ public class RegistrationEventHookHandlerTest {
                     eq(CARBON_SUPER),
                     eq(Constants.REGISTRATION_COMPAT_SETTING_GROUP),
                     eq(Constants.SKIP_SIGNUP_CONFIRMATION_COMPAT_SETTING)))
-                    .thenThrow(new RuntimeException("Service unavailable"));
+                    .thenThrow(new CompatibilitySettingException("Service unavailable"));
 
             Event event = createEventWithProperties(IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM);
             IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);
@@ -591,7 +593,7 @@ public class RegistrationEventHookHandlerTest {
             when(settingGroup.getSettingValue(Constants.SKIP_SIGNUP_CONFIRMATION_COMPAT_SETTING))
                     .thenReturn("true");
             when(mockedFlowMgtService.getFlowConfig(FlowTypes.REGISTRATION.getType(), -1234))
-                    .thenThrow(new RuntimeException("Flow service unavailable"));
+                    .thenThrow(new FlowMgtFrameworkException("Flow service unavailable"));
 
             Event event = createEventWithProperties(IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM);
             IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);

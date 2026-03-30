@@ -21,6 +21,7 @@ package org.wso2.identity.webhook.common.event.handler.internal.handler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
+import org.wso2.carbon.identity.compatibility.settings.core.exception.CompatibilitySettingException;
 import org.wso2.carbon.identity.compatibility.settings.core.model.CompatibilitySetting;
 import org.wso2.carbon.identity.compatibility.settings.core.service.CompatibilitySettingsService;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
@@ -40,6 +41,7 @@ import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayl
 import org.wso2.carbon.identity.flow.mgt.FlowMgtService;
 import org.wso2.carbon.identity.flow.mgt.Constants.FlowCompletionConfig;
 import org.wso2.carbon.identity.flow.mgt.Constants.FlowTypes;
+import org.wso2.carbon.identity.flow.mgt.exception.FlowMgtFrameworkException;
 import org.wso2.carbon.identity.flow.mgt.model.FlowConfigDTO;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
@@ -193,7 +195,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
             return true;
         }
         if (IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName)) {
-            return !shouldSkipRegistrationEventForFlowConfig(event);
+            return shouldHandleRegistrationEventForFlowConfig(event);
         }
         return IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
                 Flow.Name.INVITE.equals(flowName);
@@ -205,33 +207,33 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
     }
 
     /**
-     * Determines whether the registration webhook event should be skipped based on the registration flow config.
-     * If the identity.xml config is disabled, it takes precedence and the event is not skipped. If enabled,
-     * the compatibility setting for the tenant is honored to determine whether skipping applies.
+     * Determines whether the registration webhook event should be handled based on the registration flow config.
+     * If the identity.xml config is disabled, it takes precedence and the event is handled. If enabled,
+     * the compatibility setting for the tenant is honored to determine whether the event should be handled.
      *
      * @param event The event whose properties are used to resolve the tenant domain.
-     * @return true if the event should be skipped, false otherwise.
+     * @return true if the event should be handled, false otherwise.
      */
-    private boolean shouldSkipRegistrationEventForFlowConfig(Event event) {
+    private boolean shouldHandleRegistrationEventForFlowConfig(Event event) {
 
         String skipConfig = IdentityUtil.getProperty(
                 Constants.SKIP_SIGNUP_CONFIRMATION_IF_ACCOUNT_LOCK_DISABLED);
         if (!Boolean.parseBoolean(skipConfig)) {
-            return false;
+            return true;
         }
         try {
             Map<String, Object> eventProperties = event.getEventProperties();
             if (eventProperties == null ||
                     !eventProperties.containsKey(IdentityEventConstants.EventProperty.TENANT_DOMAIN) ||
                     eventProperties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN) == null) {
-                log.warn("Tenant domain not found in event properties. Defaulting to not skip.");
-                return false;
+                log.debug("Tenant domain not found in event properties. Defaulting to handle.");
+                return true;
             }
             String tenantDomain = String.valueOf(
                     eventProperties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
 
             if (!isSkipSignupConfirmationEnabledByCompatibilitySetting(tenantDomain)) {
-                return false;
+                return true;
             }
 
             FlowMgtService flowMgtService = EventHookHandlerDataHolder.getInstance().getFlowMgtService();
@@ -239,14 +241,14 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
             FlowConfigDTO flowConfig = flowMgtService.getFlowConfig(
                     FlowTypes.REGISTRATION.getType(), tenantId);
             if (flowConfig == null || !Boolean.TRUE.equals(flowConfig.getIsEnabled())) {
-                return false;
+                return true;
             }
             String accountLockConfig = flowConfig.getFlowCompletionConfig(
                     FlowCompletionConfig.IS_ACCOUNT_LOCK_ON_CREATION_ENABLED);
-            return !Boolean.parseBoolean(accountLockConfig);
-        } catch (Exception e) {
-            log.warn("Error while checking registration flow config. Defaulting to not skip.", e);
-            return false;
+            return Boolean.parseBoolean(accountLockConfig);
+        } catch (IdentityRuntimeException | FlowMgtFrameworkException e) {
+            log.error("Error while checking registration flow config. Defaulting to handle.", e);
+            return true;
         }
     }
 
@@ -268,8 +270,8 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
             String value = setting.getCompatibilitySetting(Constants.REGISTRATION_COMPAT_SETTING_GROUP)
                     .getSettingValue(Constants.SKIP_SIGNUP_CONFIRMATION_COMPAT_SETTING);
             return Boolean.parseBoolean(value);
-        } catch (Exception e) {
-            log.warn("Error while reading compatibility setting for skip signup confirmation. " +
+        } catch (CompatibilitySettingException e) {
+            log.error("Error while reading compatibility setting for skip signup confirmation. " +
                     "Defaulting to skip enabled.", e);
             return false;
         }
