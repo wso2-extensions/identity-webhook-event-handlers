@@ -240,7 +240,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
             int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
             FlowConfigDTO flowConfig = flowMgtService.getFlowConfig(
                     FlowTypes.REGISTRATION.getType(), tenantId);
-            if (flowConfig == null || !Boolean.TRUE.equals(flowConfig.getIsEnabled())) {
+            if (flowConfig == null || Boolean.FALSE.equals(flowConfig.getIsEnabled())) {
                 return true;
             }
             String accountLockConfig = flowConfig.getFlowCompletionConfig(

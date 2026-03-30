@@ -50,8 +50,9 @@ public class Constants {
     public static final String SKIP_SIGNUP_CONFIRMATION_IF_ACCOUNT_LOCK_DISABLED =
             "Webhooks.Registration.SkipSignupConfirmationIfAccountLockDisabled";
 
-    public static final String REGISTRATION_COMPAT_SETTING_GROUP = "webhookRegistrationEvent";
-    public static final String SKIP_SIGNUP_CONFIRMATION_COMPAT_SETTING = "skipSignupConfirmationIfAccountLockDisabled";
+    public static final String REGISTRATION_COMPAT_SETTING_GROUP = "webhook";
+    public static final String SKIP_SIGNUP_CONFIRMATION_COMPAT_SETTING =
+            "registration.skipSignupConfirmationIfAccountLockDisabled";
 
     /**
      * Constants for event data keys.
