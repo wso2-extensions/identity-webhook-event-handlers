@@ -47,6 +47,13 @@ public class Constants {
     public static final String TOKEN_EVENT_HOOK_NAME = "TokenEventHook";
     public static final String TOKEN_EVENT_HOOK_ENABLED = "TokenEventHook.enable";
 
+    public static final String SKIP_SIGNUP_CONFIRMATION_IF_ACCOUNT_LOCK_DISABLED =
+            "Webhooks.Registration.SkipSignupConfirmationIfAccountLockDisabled";
+
+    public static final String REGISTRATION_COMPAT_SETTING_GROUP = "webhook";
+    public static final String SKIP_SIGNUP_CONFIRMATION_COMPAT_SETTING =
+            "registration.skipSignupConfirmationIfAccountLockDisabled";
+
     /**
      * Constants for event data keys.
      * These names will be equal to the keys in the event data map.

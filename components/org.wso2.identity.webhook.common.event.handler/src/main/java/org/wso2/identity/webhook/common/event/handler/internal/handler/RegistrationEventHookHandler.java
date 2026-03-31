@@ -21,9 +21,14 @@ package org.wso2.identity.webhook.common.event.handler.internal.handler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
+import org.wso2.carbon.identity.compatibility.settings.core.exception.CompatibilitySettingException;
+import org.wso2.carbon.identity.compatibility.settings.core.model.CompatibilitySetting;
+import org.wso2.carbon.identity.compatibility.settings.core.service.CompatibilitySettingsService;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
@@ -33,8 +38,14 @@ import org.wso2.carbon.identity.event.publisher.api.exception.EventPublisherExce
 import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
+import org.wso2.carbon.identity.flow.mgt.FlowMgtService;
+import org.wso2.carbon.identity.flow.mgt.Constants.FlowCompletionConfig;
+import org.wso2.carbon.identity.flow.mgt.Constants.FlowTypes;
+import org.wso2.carbon.identity.flow.mgt.exception.FlowMgtFrameworkException;
+import org.wso2.carbon.identity.flow.mgt.model.FlowConfigDTO;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
@@ -44,8 +55,12 @@ import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHan
 import org.wso2.identity.webhook.common.event.handler.internal.util.PayloadBuilderFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_FAILED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_SUCCESS_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.EVENT_PROFILE_VERSION;
 
@@ -74,13 +89,14 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
                 return false;
             }
             IdentityEventMessageContext identityContext = (IdentityEventMessageContext) messageContext;
-            String eventName = identityContext.getEvent() != null ? identityContext.getEvent().getEventName() : null;
-            if (eventName == null) {
-                log.debug("Event name is null in IdentityEventMessageContext. Cannot handle the event.");
+            Event identityEvent = identityContext.getEvent();
+            if (identityEvent == null || identityEvent.getEventName() == null) {
+                log.debug("Event or event name is null in IdentityEventMessageContext. Cannot handle the event.");
                 return false;
             }
-            canHandle = isSupportedEvent(eventName);
-            log.debug(eventName + (canHandle ? " event can be handled." : " event cannot be handled."));
+            canHandle = isSupportedEvent(identityEvent);
+            log.debug(identityEvent.getEventName() +
+                    (canHandle ? " event can be handled." : " event cannot be handled."));
         } catch (Exception e) {
             log.warn("Unexpected error occurred while evaluating event in RegistrationEventHookHandler.", e);
         }
@@ -111,9 +127,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
             throws IdentityEventException, EventPublisherException {
 
         // Prepare schema, payload builder, and event data
-        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema =
-                org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.valueOf(
-                        eventProfile.getProfile());
+        EventSchema schema = EventSchema.valueOf(eventProfile.getProfile());
         EventData eventData = EventHookHandlerUtils.buildEventDataProvider(event);
         RegistrationEventPayloadBuilder payloadBuilder =
                 PayloadBuilderFactory.getRegistrationEventPayloadBuilder(schema);
@@ -124,7 +138,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
         }
 
         // Get event metadata and channel
-        EventMetadata eventMetadata = getEventMetadata(eventProfile.getProfile(), event.getEventName());
+        EventMetadata eventMetadata = getEventMetadata(eventProfile.getProfile(), event);
         if (eventMetadata == null) {
             log.debug("No event metadata found for event: " + event.getEventName() +
                     " in profile: " + eventProfile.getProfile());
@@ -149,23 +163,42 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
         // Publish for current accessing org
         String tenantDomain = eventData.getTenantDomain();
         publishRegistrationEvent(tenantDomain, registrationChannel, eventUri, eventProfile.getProfile(),
-                payloadBuilder, eventData, event.getEventName());
+                payloadBuilder, eventData, event);
     }
 
-    private boolean isSupportedEvent(String eventName) {
+    /**
+     * Checks whether the given event is a supported registration event.
+     *
+     * @param event The event to evaluate.
+     * @return true if the event is a supported registration success or failure event.
+     */
+    private boolean isSupportedEvent(Event event) {
 
-        return isUserRegistrationSuccessFlow(eventName) || isUserRegistrationFailedFlow(eventName);
+        return isUserRegistrationSuccessFlow(event) || isUserRegistrationFailedFlow(event.getEventName());
     }
 
-    private boolean isUserRegistrationSuccessFlow(String eventName) {
+    /**
+     * Determines whether the event corresponds to a user registration success flow.
+     *
+     * @param event The event to evaluate.
+     * @return true if the event belongs to a registration success flow and should be handled.
+     */
+    private boolean isUserRegistrationSuccessFlow(Event event) {
 
+        String eventName = event.getEventName();
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         Flow.Name flowName = (flow != null) ? flow.getName() : null;
-        return !Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName) &&
-                (IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName) ||
-                        IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName) ||
-                        (IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
-                                Flow.Name.INVITE.equals(flowName)));
+        if (Flow.Name.BULK_RESOURCE_UPDATE.equals(flowName)) {
+            return false;
+        }
+        if (IdentityEventConstants.Event.USER_REGISTRATION_SUCCESS.equals(eventName)) {
+            return true;
+        }
+        if (IdentityEventConstants.Event.POST_SELF_SIGNUP_CONFIRM.equals(eventName)) {
+            return shouldHandleRegistrationEventForFlowConfig(event);
+        }
+        return IdentityEventConstants.Event.POST_ADD_NEW_PASSWORD.equals(eventName) &&
+                Flow.Name.INVITE.equals(flowName);
     }
 
     private boolean isUserRegistrationFailedFlow(String eventName) {
@@ -173,23 +206,90 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
         return IdentityEventConstants.Event.USER_REGISTRATION_FAILED.equals(eventName);
     }
 
-    private EventMetadata getEventMetadata(String eventProfile, String eventName) {
+    /**
+     * Determines whether the registration webhook event should be handled based on the registration flow config.
+     * If the identity.xml config is disabled, it takes precedence and the event is handled. If enabled,
+     * the compatibility setting for the tenant is honored to determine whether the event should be handled.
+     *
+     * @param event The event whose properties are used to resolve the tenant domain.
+     * @return true if the event should be handled, false otherwise.
+     */
+    private boolean shouldHandleRegistrationEventForFlowConfig(Event event) {
 
-        String event = null;
+        String skipConfig = IdentityUtil.getProperty(
+                Constants.SKIP_SIGNUP_CONFIRMATION_IF_ACCOUNT_LOCK_DISABLED);
+        if (!Boolean.parseBoolean(skipConfig)) {
+            return true;
+        }
+        try {
+            Map<String, Object> eventProperties = event.getEventProperties();
+            if (eventProperties == null ||
+                    !eventProperties.containsKey(IdentityEventConstants.EventProperty.TENANT_DOMAIN) ||
+                    eventProperties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN) == null) {
+                log.debug("Tenant domain not found in event properties. Defaulting to handle.");
+                return true;
+            }
+            String tenantDomain = String.valueOf(
+                    eventProperties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+
+            if (!isSkipSignupConfirmationEnabledByCompatibilitySetting(tenantDomain)) {
+                return true;
+            }
+
+            FlowMgtService flowMgtService = EventHookHandlerDataHolder.getInstance().getFlowMgtService();
+            int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+            FlowConfigDTO flowConfig = flowMgtService.getFlowConfig(
+                    FlowTypes.REGISTRATION.getType(), tenantId);
+            if (flowConfig == null || Boolean.FALSE.equals(flowConfig.getIsEnabled())) {
+                return true;
+            }
+            String accountLockConfig = flowConfig.getFlowCompletionConfig(
+                    FlowCompletionConfig.IS_ACCOUNT_LOCK_ON_CREATION_ENABLED);
+            return Boolean.parseBoolean(accountLockConfig);
+        } catch (IdentityRuntimeException | FlowMgtFrameworkException e) {
+            log.error("Error while checking registration flow config. Defaulting to handle.", e);
+            return true;
+        }
+    }
+
+    /**
+     * Checks the compatibility setting for the tenant to determine whether skip signup confirmation behavior applies.
+     *
+     * @param tenantDomain Tenant domain.
+     * @return true if the compatibility setting allows skipping, false otherwise.
+     */
+    private boolean isSkipSignupConfirmationEnabledByCompatibilitySetting(String tenantDomain) {
+
+        CompatibilitySettingsService compatibilitySettingsService =
+                EventHookHandlerDataHolder.getInstance().getCompatibilitySettingsService();
+        try {
+            CompatibilitySetting setting = compatibilitySettingsService.getCompatibilitySettingsByGroupAndSetting(
+                    tenantDomain,
+                    Constants.REGISTRATION_COMPAT_SETTING_GROUP,
+                    Constants.SKIP_SIGNUP_CONFIRMATION_COMPAT_SETTING);
+            String value = setting.getCompatibilitySetting(Constants.REGISTRATION_COMPAT_SETTING_GROUP)
+                    .getSettingValue(Constants.SKIP_SIGNUP_CONFIRMATION_COMPAT_SETTING);
+            return Boolean.parseBoolean(value);
+        } catch (CompatibilitySettingException e) {
+            log.error("Error while reading compatibility setting for skip signup confirmation. " +
+                    "Defaulting to skip enabled.", e);
+            return false;
+        }
+    }
+
+    private EventMetadata getEventMetadata(String eventProfile, Event event) {
+
+        String eventName = null;
         String channel = null;
-        if (isUserRegistrationSuccessFlow(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_SUCCESS_EVENT;
-        } else if (isUserRegistrationFailedFlow(eventName)) {
-            channel =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.REGISTRATION_CHANNEL;
-            event =
-                    org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_REGISTRATION_FAILED_EVENT;
+        if (isUserRegistrationSuccessFlow(event)) {
+            channel = REGISTRATION_CHANNEL;
+            eventName = POST_REGISTRATION_SUCCESS_EVENT;
+        } else if (isUserRegistrationFailedFlow(event.getEventName())) {
+            channel = REGISTRATION_CHANNEL;
+            eventName = POST_REGISTRATION_FAILED_EVENT;
         }
         EventMetadata eventMetadata = EventMetadata.builder()
-                .event(String.valueOf(event))
+                .event(String.valueOf(eventName))
                 .channel(String.valueOf(channel))
                 .eventProfile(WSO2.name())
                 .build();
@@ -201,7 +301,7 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
 
     private void publishRegistrationEvent(String tenantDomain, Channel registrationChannel, String eventUri,
                                           String eventProfileName, RegistrationEventPayloadBuilder payloadBuilder,
-                                          EventData eventData, String eventName)
+                                          EventData eventData, Event event)
             throws IdentityEventException, EventPublisherException {
 
         EventContext eventContext = EventContext.builder()
@@ -216,12 +316,12 @@ public class RegistrationEventHookHandler extends AbstractEventHandler {
         }
 
         EventPayload eventPayload;
-        if (isUserRegistrationSuccessFlow(eventName)) {
+        if (isUserRegistrationSuccessFlow(event)) {
             eventPayload = payloadBuilder.buildRegistrationSuccessEvent(eventData);
-        } else if (isUserRegistrationFailedFlow(eventName)) {
+        } else if (isUserRegistrationFailedFlow(event.getEventName())) {
             eventPayload = payloadBuilder.buildRegistrationFailureEvent(eventData);
         } else {
-            throw new IdentityRuntimeException("Unsupported event type: " + eventName);
+            throw new IdentityRuntimeException("Unsupported event type: " + event.getEventName());
         }
 
         SecurityEventTokenPayload securityEventTokenPayload =

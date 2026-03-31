@@ -19,8 +19,10 @@
 package org.wso2.identity.webhook.common.event.handler.internal.component;
 
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
+import org.wso2.carbon.identity.compatibility.settings.core.service.CompatibilitySettingsService;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherService;
+import org.wso2.carbon.identity.flow.mgt.FlowMgtService;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
@@ -44,6 +46,8 @@ public class EventHookHandlerDataHolder {
     private static final EventHookHandlerDataHolder instance = new EventHookHandlerDataHolder();
     private OrganizationManager organizationManager;
     private ConfigurationManager configurationManager;
+    private FlowMgtService flowMgtService;
+    private CompatibilitySettingsService compatibilitySettingsService;
     private EventPublisherService eventPublisherService;
     private WebhookMetadataService webhookMetadataService;
     private TopicManagementService topicManagementService;
@@ -270,6 +274,46 @@ public class EventHookHandlerDataHolder {
     public void removeTokenEventPayloadBuilder(TokenEventPayloadBuilder tokenEventPayloadBuilder) {
 
         tokenEventPayloadBuilders.remove(tokenEventPayloadBuilder);
+    }
+
+    /**
+     * Get the compatibility settings service.
+     *
+     * @return Compatibility settings service.
+     */
+    public CompatibilitySettingsService getCompatibilitySettingsService() {
+
+        return compatibilitySettingsService;
+    }
+
+    /**
+     * Set the compatibility settings service.
+     *
+     * @param compatibilitySettingsService Compatibility settings service.
+     */
+    public void setCompatibilitySettingsService(CompatibilitySettingsService compatibilitySettingsService) {
+
+        this.compatibilitySettingsService = compatibilitySettingsService;
+    }
+
+    /**
+     * Get the flow management service.
+     *
+     * @return Flow management service.
+     */
+    public FlowMgtService getFlowMgtService() {
+
+        return flowMgtService;
+    }
+
+    /**
+     * Set the flow management service.
+     *
+     * @param flowMgtService Flow management service.
+     */
+    public void setFlowMgtService(FlowMgtService flowMgtService) {
+
+        this.flowMgtService = flowMgtService;
     }
 
     /**

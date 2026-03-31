@@ -110,6 +110,9 @@ public class EventHookHandlerUtilsTest {
 
         TestUtils.closeMockedServiceURLBuilder();
         TestUtils.closeMockedIdentityTenantUtil();
+        if (identityContextMockedStatic != null && !identityContextMockedStatic.isClosed()) {
+            identityContextMockedStatic.close();
+        }
     }
 
     @Test
@@ -150,6 +153,14 @@ public class EventHookHandlerUtilsTest {
     public void testConstructBaseURLSuccess() {
 
         TestUtils.mockServiceURLBuilder();
+        identityContextMockedStatic = Mockito.mockStatic(IdentityContext.class);
+        mockIdentityContext = Mockito.mock(IdentityContext.class);
+        mockRootOrg = Mockito.mock(RootOrganization.class);
+        when(mockRootOrg.getAssociatedTenantDomain()).thenReturn("myorg");
+        when(mockIdentityContext.getRootOrganization()).thenReturn(mockRootOrg);
+        identityContextMockedStatic.when(IdentityContext::getThreadLocalIdentityContext)
+                .thenReturn(mockIdentityContext);
+
         String baseURL = EventHookHandlerUtils.constructBaseURL();
         assertNotNull(baseURL, "Base URL should not be null");
         closeMockedServiceURLBuilder();

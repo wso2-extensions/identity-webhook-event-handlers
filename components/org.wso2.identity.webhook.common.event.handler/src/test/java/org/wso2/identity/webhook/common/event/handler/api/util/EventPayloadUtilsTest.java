@@ -18,13 +18,19 @@
 
 package org.wso2.identity.webhook.common.event.handler.api.util;
 
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.carbon.identity.core.context.IdentityContext;
+import org.wso2.carbon.identity.core.context.model.RootOrganization;
 import org.wso2.identity.webhook.common.event.handler.internal.util.EventHookHandlerUtils;
 import org.wso2.identity.webhook.common.event.handler.util.TestUtils;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.closeMockedServiceURLBuilder;
 
@@ -32,6 +38,8 @@ import static org.wso2.identity.webhook.common.event.handler.util.TestUtils.clos
  * Unit test class for EventPayloadUtils.
  */
 public class EventPayloadUtilsTest {
+
+    private MockedStatic<IdentityContext> identityContextMockedStatic;
 
     @BeforeClass
     public void setup() {
@@ -44,6 +52,9 @@ public class EventPayloadUtilsTest {
 
         TestUtils.closeMockedServiceURLBuilder();
         TestUtils.closeMockedIdentityTenantUtil();
+        if (identityContextMockedStatic != null && !identityContextMockedStatic.isClosed()) {
+            identityContextMockedStatic.close();
+        }
     }
 
     @Test
@@ -53,6 +64,7 @@ public class EventPayloadUtilsTest {
         String expectedURL = "https://localhost:9443/api/events";
 
         TestUtils.mockServiceURLBuilder();
+        mockIdentityContextWithTenant("myorg");
         String fullURL = constructFullURLWithEndpoint(endpoint);
         assertEquals(fullURL, expectedURL, "Full URL should be correctly constructed.");
         closeMockedServiceURLBuilder();
@@ -65,6 +77,7 @@ public class EventPayloadUtilsTest {
         String expectedURL = "https://localhost:9443";
 
         TestUtils.mockServiceURLBuilder();
+        mockIdentityContextWithTenant("myorg");
         String fullURL = constructFullURLWithEndpoint(endpoint);
         assertEquals(fullURL, expectedURL, "Full URL should handle empty endpoint correctly.");
         closeMockedServiceURLBuilder();
@@ -76,6 +89,16 @@ public class EventPayloadUtilsTest {
         TestUtils.mockServiceURLBuilder();
         constructFullURLWithEndpoint(null);
         closeMockedServiceURLBuilder();
+    }
+
+    private void mockIdentityContextWithTenant(String tenantDomain) {
+
+        identityContextMockedStatic = Mockito.mockStatic(IdentityContext.class);
+        IdentityContext mockContext = mock(IdentityContext.class);
+        RootOrganization mockRootOrg = mock(RootOrganization.class);
+        when(mockRootOrg.getAssociatedTenantDomain()).thenReturn(tenantDomain);
+        when(mockContext.getRootOrganization()).thenReturn(mockRootOrg);
+        identityContextMockedStatic.when(IdentityContext::getThreadLocalIdentityContext).thenReturn(mockContext);
     }
 
     private static String constructFullURLWithEndpoint(String endpoint) {
