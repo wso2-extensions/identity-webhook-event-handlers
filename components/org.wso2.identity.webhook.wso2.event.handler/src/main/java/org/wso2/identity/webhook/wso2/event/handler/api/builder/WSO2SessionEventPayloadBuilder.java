@@ -156,7 +156,9 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
             user = new User();
             String userId = eventData.getUserId();
             WSO2PayloadUtils.populateUserIdAndRef(user, userId);
-            WSO2PayloadUtils.populateUserClaims(user, userId, eventData.getTenantDomain());
+            if (!WSO2PayloadUtils.isFederatedUser(eventData)) {
+                WSO2PayloadUtils.populateUserClaims(user, userId, eventData.getTenantDomain());
+            }
         }
 
         return user;

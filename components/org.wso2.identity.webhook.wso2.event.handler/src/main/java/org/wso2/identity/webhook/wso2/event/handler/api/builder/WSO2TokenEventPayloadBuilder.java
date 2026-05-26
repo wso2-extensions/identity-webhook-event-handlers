@@ -117,7 +117,9 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
                 WSO2PayloadUtils.populateUserClaims(user, eventData.getUserId(), userResidentTenantDomain);
                 user.setOrganization(userResidentOrganization);
             } else {
-                WSO2PayloadUtils.populateUserClaims(user, eventData.getUserId(), eventData.getTenantDomain());
+                if (!WSO2PayloadUtils.isFederatedUser(eventData)) {
+                    WSO2PayloadUtils.populateUserClaims(user, eventData.getUserId(), eventData.getTenantDomain());
+                }
                 user.setOrganization(organization);
             }
         }

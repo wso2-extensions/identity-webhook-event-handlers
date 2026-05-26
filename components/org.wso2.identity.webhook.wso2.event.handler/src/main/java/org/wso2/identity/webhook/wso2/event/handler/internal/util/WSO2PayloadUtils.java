@@ -637,4 +637,10 @@ public class WSO2PayloadUtils {
         }
         return credentialType;
     }
+
+    public static boolean isFederatedUser(EventData eventData) {
+
+        return Boolean.parseBoolean(String.valueOf(
+                eventData.getProperties().get(IdentityEventConstants.EventProperty.IS_FEDERATED_USER)));
+    }
 }
