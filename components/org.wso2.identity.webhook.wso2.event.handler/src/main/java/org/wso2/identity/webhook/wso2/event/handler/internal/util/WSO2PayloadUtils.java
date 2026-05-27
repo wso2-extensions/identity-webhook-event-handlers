@@ -647,9 +647,6 @@ public class WSO2PayloadUtils {
     public static String resolveInitiatorIpAddress() {
 
         String initiatorIpAddress = IdentityContextUtil.getClientIpAddress();
-        if (StringUtils.isBlank(initiatorIpAddress) && log.isDebugEnabled()) {
-            log.debug("Initiator IP is not available in the identity context.");
-        }
         if (StringUtils.isBlank(initiatorIpAddress)) {
             log.info("Initiator IP is not available in the identity context.");
         } else {
