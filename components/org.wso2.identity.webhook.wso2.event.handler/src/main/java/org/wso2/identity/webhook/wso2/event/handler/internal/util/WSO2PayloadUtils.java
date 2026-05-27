@@ -651,20 +651,32 @@ public class WSO2PayloadUtils {
     public static String resolveInitiatorIpAddress(EventData eventData) {
 
         if (eventData == null || eventData.getRequest() == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Initiator IP is not available as request context is missing.");
+            }
             return null;
         }
 
         HttpServletRequest request = eventData.getRequest();
         String forwardedFor = request.getHeader(X_FORWARDED_FOR_HEADER);
         if (StringUtils.isNotBlank(forwardedFor)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Resolved initiator IP from X-Forwarded-For header.");
+            }
             return forwardedFor.split(",")[0].trim();
         }
 
         String realIp = request.getHeader(X_REAL_IP_HEADER);
         if (StringUtils.isNotBlank(realIp)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Resolved initiator IP from X-Real-IP header.");
+            }
             return realIp.trim();
         }
 
+        if (log.isDebugEnabled()) {
+            log.debug("Resolved initiator IP from remote address.");
+        }
         return request.getRemoteAddr();
     }
 
