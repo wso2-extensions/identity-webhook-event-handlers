@@ -39,6 +39,7 @@ import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.RootOrganization;
+import org.wso2.carbon.identity.core.context.util.IdentityContextUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
@@ -52,8 +53,6 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2Authentic
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
 
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -81,7 +80,6 @@ public class WSO2LoginEventPayloadBuilderTest {
     private static final String SAMPLE_TENANT_ID = "100";
     private static final String SAMPLE_USER_REF = "https://localhost:9443/t/myorg/scim2/Users/" + SAMPLE_USER_ID;
     private static final String SAMPLE_ERROR_MESSAGE = "Sample error message";
-    private static final String SAMPLE_X_FORWARDED_FOR = "203.0.113.10, 10.10.10.10";
     private static final String SAMPLE_INITIATOR_IP = "203.0.113.10";
 
     @Mock
@@ -108,10 +106,8 @@ public class WSO2LoginEventPayloadBuilderTest {
     @Mock
     private AuthenticatedUser mockAuthenticatedUser;
 
-    @Mock
-    private HttpServletRequest mockHttpServletRequest;
-
     private MockedStatic<FrameworkUtils> frameworkUtils;
+    private MockedStatic<IdentityContextUtil> identityContextUtil;
 
     @BeforeClass
     public void setup() {
@@ -128,6 +124,8 @@ public class WSO2LoginEventPayloadBuilderTest {
         mockIdentityTenantUtil();
         frameworkUtils = mockStatic(FrameworkUtils.class);
         frameworkUtils.when(FrameworkUtils::getMultiAttributeSeparator).thenReturn(",");
+        identityContextUtil = mockStatic(IdentityContextUtil.class);
+        identityContextUtil.when(IdentityContextUtil::getClientIpAddress).thenReturn(SAMPLE_INITIATOR_IP);
         identityContextMockedStatic = Mockito.mockStatic(IdentityContext.class);
         mockIdentityContext = Mockito.mock(IdentityContext.class);
         mockRootOrg = Mockito.mock(RootOrganization.class);
@@ -136,7 +134,6 @@ public class WSO2LoginEventPayloadBuilderTest {
         when(mockIdentityContext.getRootOrganization()).thenReturn(mockRootOrg);
         identityContextMockedStatic.when(IdentityContext::getThreadLocalIdentityContext)
                 .thenReturn(mockIdentityContext);
-        when(mockHttpServletRequest.getHeader("X-Forwarded-For")).thenReturn(SAMPLE_X_FORWARDED_FOR);
     }
 
     @AfterClass
@@ -146,6 +143,7 @@ public class WSO2LoginEventPayloadBuilderTest {
         closeMockedIdentityTenantUtil();
         Mockito.reset(mockOrganizationManager, claimMetadataManagementService, mockIdentityContext, mockRootOrg);
         identityContextMockedStatic.close();
+        identityContextUtil.close();
         frameworkUtils.close();
     }
 
@@ -165,7 +163,6 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
         when(mockEventData.getAuthenticatedUser()).thenReturn(mockAuthenticatedUser);
-        when(mockEventData.getRequest()).thenReturn(mockHttpServletRequest);
 
         EventPayload eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(mockEventData);
         assertTrue(eventPayload instanceof WSO2AuthenticationSuccessEventPayload);
@@ -214,7 +211,6 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
         mockAuthenticationContext.setSubject(mockAuthenticatedUser);
-        when(mockEventData.getRequest()).thenReturn(mockHttpServletRequest);
 
         EventPayload eventPayload = payloadBuilder.buildAuthenticationFailedEvent(mockEventData);
         assertTrue(eventPayload instanceof WSO2AuthenticationFailedEventPayload);
@@ -243,7 +239,6 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
         mockAuthenticationContext.setSubject(null);
-        when(mockEventData.getRequest()).thenReturn(mockHttpServletRequest);
 
         EventPayload eventPayload = payloadBuilder.buildAuthenticationFailedEvent(mockEventData);
         assertTrue(eventPayload instanceof WSO2AuthenticationFailedEventPayload);

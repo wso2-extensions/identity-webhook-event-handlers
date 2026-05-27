@@ -34,6 +34,7 @@ import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
+import org.wso2.carbon.identity.core.context.util.IdentityContextUtil;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -62,8 +63,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
-
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.USERNAME_CLAIM;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.CREATED_CLAIM;
@@ -78,8 +77,6 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
 public class WSO2PayloadUtils {
 
     private static final Log log = LogFactory.getLog(WSO2PayloadUtils.class);
-    private static final String X_FORWARDED_FOR_HEADER = "X-Forwarded-For";
-    private static final String X_REAL_IP_HEADER = "X-Real-IP";
 
     // Generic user based grant types that are typically associated with a user.
     private static final Set<String> USER_BASED_GRANT_TYPES = Set.of(
@@ -650,34 +647,11 @@ public class WSO2PayloadUtils {
      */
     public static String resolveInitiatorIpAddress(EventData eventData) {
 
-        if (eventData == null || eventData.getRequest() == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Initiator IP is not available as request context is missing.");
-            }
-            return null;
+        String initiatorIpAddress = IdentityContextUtil.getClientIpAddress();
+        if (StringUtils.isBlank(initiatorIpAddress) && log.isDebugEnabled()) {
+            log.debug("Initiator IP is not available in the identity context.");
         }
-
-        HttpServletRequest request = eventData.getRequest();
-        String forwardedFor = request.getHeader(X_FORWARDED_FOR_HEADER);
-        if (StringUtils.isNotBlank(forwardedFor)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Resolved initiator IP from X-Forwarded-For header.");
-            }
-            return forwardedFor.split(",")[0].trim();
-        }
-
-        String realIp = request.getHeader(X_REAL_IP_HEADER);
-        if (StringUtils.isNotBlank(realIp)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Resolved initiator IP from X-Real-IP header.");
-            }
-            return realIp.trim();
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("Resolved initiator IP from remote address.");
-        }
-        return request.getRemoteAddr();
+        return initiatorIpAddress;
     }
 
     public static boolean isFederatedUser(EventData eventData) {
