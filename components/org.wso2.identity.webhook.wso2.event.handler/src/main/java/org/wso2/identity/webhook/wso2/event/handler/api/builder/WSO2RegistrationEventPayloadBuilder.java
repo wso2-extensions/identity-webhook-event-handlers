@@ -47,34 +47,14 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
 
     private static final Log log = LogFactory.getLog(WSO2RegistrationEventPayloadBuilder.class);
 
-    /**
-     * Helper class to hold common registration event context.
-     */
-    private static class RegistrationEventContext {
-        final Tenant tenant;
-        final User user;
-        final UserStore userStore;
-        final String initiatorType;
-        final String initiatorIpAddress;
-        final String action;
-        final Organization organization;
-
-        RegistrationEventContext(Tenant tenant, User user, UserStore userStore, String initiatorType,
-                                 String initiatorIpAddress, String action, Organization organization) {
-            this.tenant = tenant;
-            this.user = user;
-            this.userStore = userStore;
-            this.initiatorType = initiatorType;
-            this.initiatorIpAddress = initiatorIpAddress;
-            this.action = action;
-            this.organization = organization;
-        }
-    }
-
     @Override
     public EventPayload buildRegistrationSuccessEvent(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> properties = eventData.getEventParams();
+        String rootTenantId = String.valueOf(
+                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantId());
+        String rootTenantDomain = String.valueOf(
+                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantDomain());
         String accessedTenantDomain = String.valueOf(
                 IdentityContext.getThreadLocalIdentityContext().getOrganization().getOrganizationHandle());
 
@@ -91,41 +71,6 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
             newUser = WSO2PayloadUtils.buildUser(userStoreDomainName, userName, accessedTenantDomain);
         }
 
-        RegistrationEventContext context = buildRegistrationEventContext(properties, newUser, userStore);
-
-        return new WSO2RegistrationSuccessEventPayload.Builder()
-                .initiatorType(context.initiatorType)
-                .action(context.action)
-                .user(context.user)
-                .tenant(context.tenant)
-                .organization(context.organization)
-                .userStore(context.userStore)
-                .initiatorIpAddress(context.initiatorIpAddress)
-                .build();
-    }
-
-    @Override
-    public Constants.EventSchema getEventSchemaType() {
-
-        return Constants.EventSchema.WSO2;
-    }
-
-    /**
-     * Builds common registration event context from properties and user data.
-     *
-     * @param properties the event properties
-     * @param user the user object
-     * @param userStore the user store object
-     * @return the registration event context
-     */
-    private RegistrationEventContext buildRegistrationEventContext(Map<String, Object> properties, User user,
-                                                                    UserStore userStore) {
-
-        String rootTenantId = String.valueOf(
-                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantId());
-        String rootTenantDomain = String.valueOf(
-                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantDomain());
-
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
@@ -138,16 +83,33 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         }
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
-        user.setOrganization(organization);
+        newUser.setOrganization(organization);
 
-         return new RegistrationEventContext(tenant, user, userStore, initiatorType, initiatorIpAddress, action,
-                 organization);
-     }
+        return new WSO2RegistrationSuccessEventPayload.Builder()
+                .initiatorType(initiatorType)
+                .action(action)
+                .user(newUser)
+                .tenant(tenant)
+                .organization(organization)
+                .userStore(userStore)
+                .initiatorIpAddress(initiatorIpAddress)
+                .build();
+    }
 
-     @Override
-     public EventPayload buildRegistrationFailureEvent(EventData eventData) throws IdentityEventException {
+    @Override
+    public Constants.EventSchema getEventSchemaType() {
+
+        return Constants.EventSchema.WSO2;
+    }
+
+    @Override
+    public EventPayload buildRegistrationFailureEvent(EventData eventData) throws IdentityEventException {
 
         Map<String, Object> properties = eventData.getEventParams();
+        String rootTenantId = String.valueOf(
+                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantId());
+        String rootTenantDomain = String.valueOf(
+                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantDomain());
         String accessedTenantDomain = String.valueOf(
                 IdentityContext.getThreadLocalIdentityContext().getOrganization().getOrganizationHandle());
 
@@ -161,10 +123,19 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         User newUser = new User();
         WSO2PayloadUtils.enrichUser(properties, newUser, accessedTenantDomain);
 
-        RegistrationEventContext context = buildRegistrationEventContext(properties, newUser, userStore);
+        Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
+        String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
+        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
+        String action = null;
+        if (flow != null) {
+            action = Optional.ofNullable(resolveAction(flow.getName()))
+                    .map(Enum::name)
+                    .orElse(null);
+        }
 
         String errorMessage = String.valueOf(properties.get(IdentityEventConstants.EventProperty.ERROR_MESSAGE));
-        Context failureContext = null;
+        Context context = null;
 
         if (properties.get(IdentityEventConstants.EventProperty.STEP_ID) != null) {
 
@@ -174,47 +145,50 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
             int stepId = Integer.parseInt((String) properties.get(IdentityEventConstants.EventProperty.STEP_ID));
 
             Step failedStep = new Step(stepId, idpName, currentAuthenticator);
-            failureContext = new Context(failedStep);
+            context = new Context(failedStep);
 
         }
 
-         Reason reason = new Reason(errorMessage, failureContext);
+        Reason reason = new Reason(errorMessage, context);
+        Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
+                IdentityContext.getThreadLocalIdentityContext());
+        newUser.setOrganization(organization);
 
-         return new WSO2RegistrationFailureEventPayload.Builder()
-                 .initiatorType(context.initiatorType)
-                 .action(context.action)
-                 .user(context.user)
-                 .tenant(context.tenant)
-                 .organization(context.organization)
-                 .userStore(context.userStore)
-                 .reason(reason)
-                 .initiatorIpAddress(context.initiatorIpAddress)
-                 .build();
-     }
+        return new WSO2RegistrationFailureEventPayload.Builder()
+                .initiatorType(initiatorType)
+                .action(action)
+                .user(newUser)
+                .tenant(tenant)
+                .organization(organization)
+                .userStore(userStore)
+                .reason(reason)
+                .initiatorIpAddress(initiatorIpAddress)
+                .build();
+    }
 
-     private RegistrationAction resolveAction(Flow.Name name) {
+    private RegistrationAction resolveAction(Flow.Name name) {
 
-         if (name == null) {
-             return null;
-         }
+        if (name == null) {
+            return null;
+        }
 
-         switch (name) {
-             case REGISTER:
-                 return RegistrationAction.REGISTER;
-             case INVITE:
-             case INVITED_USER_REGISTRATION:
-                 return RegistrationAction.INVITE;
-             case JUST_IN_TIME_PROVISION:
-                 return RegistrationAction.JUST_IN_TIME_PROVISION;
-             default: {
-                 log.debug(name + " is not a valid registration action.");
-                 return null;
-             }
-         }
-     }
+        switch (name) {
+            case REGISTER:
+                return RegistrationAction.REGISTER;
+            case INVITE:
+            case INVITED_USER_REGISTRATION:
+                return RegistrationAction.INVITE;
+            case JUST_IN_TIME_PROVISION:
+                return RegistrationAction.JUST_IN_TIME_PROVISION;
+            default: {
+                log.debug(name + " is not a valid registration action.");
+                return null;
+            }
+        }
+    }
 
-     public enum RegistrationAction {
-         REGISTER, INVITE, JUST_IN_TIME_PROVISION
-     }
+    public enum RegistrationAction {
+        REGISTER, INVITE, JUST_IN_TIME_PROVISION
+    }
 
- }
+}
