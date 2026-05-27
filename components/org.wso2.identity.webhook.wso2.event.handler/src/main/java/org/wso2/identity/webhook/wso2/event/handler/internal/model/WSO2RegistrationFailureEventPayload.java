@@ -42,6 +42,7 @@ public class WSO2RegistrationFailureEventPayload extends WSO2BaseEventPayload {
         this.userStore = builder.userStore;
         this.user = builder.user;
         this.reason = builder.reason;
+        this.initiatorIpAddress = builder.initiatorIpAddress;
     }
 
     public static class Builder {
@@ -53,6 +54,7 @@ public class WSO2RegistrationFailureEventPayload extends WSO2BaseEventPayload {
         private User user;
         private String action;
         private Reason reason;
+        private String initiatorIpAddress;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -93,6 +95,12 @@ public class WSO2RegistrationFailureEventPayload extends WSO2BaseEventPayload {
         public Builder reason(Reason reason) {
 
             this.reason = reason;
+            return this;
+        }
+
+        public Builder initiatorIpAddress(String initiatorIpAddress) {
+
+            this.initiatorIpAddress = initiatorIpAddress;
             return this;
         }
 

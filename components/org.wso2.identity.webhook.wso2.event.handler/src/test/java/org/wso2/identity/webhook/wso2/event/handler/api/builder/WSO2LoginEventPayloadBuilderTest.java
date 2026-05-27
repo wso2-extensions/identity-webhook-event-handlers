@@ -53,6 +53,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -79,6 +81,8 @@ public class WSO2LoginEventPayloadBuilderTest {
     private static final String SAMPLE_TENANT_ID = "100";
     private static final String SAMPLE_USER_REF = "https://localhost:9443/t/myorg/scim2/Users/" + SAMPLE_USER_ID;
     private static final String SAMPLE_ERROR_MESSAGE = "Sample error message";
+    private static final String SAMPLE_X_FORWARDED_FOR = "203.0.113.10, 10.10.10.10";
+    private static final String SAMPLE_INITIATOR_IP = "203.0.113.10";
 
     @Mock
     private EventData mockEventData;
@@ -103,6 +107,9 @@ public class WSO2LoginEventPayloadBuilderTest {
 
     @Mock
     private AuthenticatedUser mockAuthenticatedUser;
+
+    @Mock
+    private HttpServletRequest mockHttpServletRequest;
 
     private MockedStatic<FrameworkUtils> frameworkUtils;
 
@@ -129,6 +136,7 @@ public class WSO2LoginEventPayloadBuilderTest {
         when(mockIdentityContext.getRootOrganization()).thenReturn(mockRootOrg);
         identityContextMockedStatic.when(IdentityContext::getThreadLocalIdentityContext)
                 .thenReturn(mockIdentityContext);
+        when(mockHttpServletRequest.getHeader("X-Forwarded-For")).thenReturn(SAMPLE_X_FORWARDED_FOR);
     }
 
     @AfterClass
@@ -157,6 +165,7 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
         when(mockEventData.getAuthenticatedUser()).thenReturn(mockAuthenticatedUser);
+        when(mockEventData.getRequest()).thenReturn(mockHttpServletRequest);
 
         EventPayload eventPayload = payloadBuilder.buildAuthenticationSuccessEvent(mockEventData);
         assertTrue(eventPayload instanceof WSO2AuthenticationSuccessEventPayload);
@@ -171,6 +180,7 @@ public class WSO2LoginEventPayloadBuilderTest {
         assertEquals(successPayload.getTenant().getName(), tenantName);
         assertEquals(successPayload.getUser().getRef(), userRef);
         assertEquals(successPayload.getAuthenticationMethods().size(), authMethodsSize);
+        assertEquals(successPayload.getInitiatorIpAddress(), SAMPLE_INITIATOR_IP);
     }
 
     @Test(expectedExceptions = IdentityEventException.class)
@@ -204,6 +214,7 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
         mockAuthenticationContext.setSubject(mockAuthenticatedUser);
+        when(mockEventData.getRequest()).thenReturn(mockHttpServletRequest);
 
         EventPayload eventPayload = payloadBuilder.buildAuthenticationFailedEvent(mockEventData);
         assertTrue(eventPayload instanceof WSO2AuthenticationFailedEventPayload);
@@ -224,6 +235,7 @@ public class WSO2LoginEventPayloadBuilderTest {
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getStep(), failedStep);
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getIdp(), idp);
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getAuthenticator(), authenticator);
+        assertEquals(failedPayload.getInitiatorIpAddress(), SAMPLE_INITIATOR_IP);
     }
 
     @Test
@@ -231,6 +243,7 @@ public class WSO2LoginEventPayloadBuilderTest {
 
         when(mockEventData.getAuthenticationContext()).thenReturn(mockAuthenticationContext);
         mockAuthenticationContext.setSubject(null);
+        when(mockEventData.getRequest()).thenReturn(mockHttpServletRequest);
 
         EventPayload eventPayload = payloadBuilder.buildAuthenticationFailedEvent(mockEventData);
         assertTrue(eventPayload instanceof WSO2AuthenticationFailedEventPayload);
@@ -249,6 +262,7 @@ public class WSO2LoginEventPayloadBuilderTest {
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getStep(), 2);
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getIdp(), SAMPLE_IDP);
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getAuthenticator(), SAMPLE_AUTHENTICATOR);
+        assertEquals(failedPayload.getInitiatorIpAddress(), SAMPLE_INITIATOR_IP);
 
     }
 

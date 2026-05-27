@@ -53,6 +53,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -79,6 +81,8 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     private static final String DOMAIN_QUALIFIED_TEST_USER_NAME = "DEFAULT/tom";
     private static final String FAILURE_MESSAGE = "InvalidOperation Invalid operation. User store is read only";
     public static final String DEFAULT_USER_STORE = "DEFAULT";
+    private static final String SAMPLE_X_FORWARDED_FOR = "198.51.100.5, 10.10.10.10";
+    private static final String SAMPLE_INITIATOR_IP = "198.51.100.5";
 
     @Mock
     private EventData mockEventData;
@@ -91,6 +95,9 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
     @InjectMocks
     private WSO2RegistrationEventPayloadBuilder payloadBuilder;
+
+    @Mock
+    private HttpServletRequest mockHttpServletRequest;
 
     @Mock
     private ClaimMetadataManagementService claimMetadataManagementService;
@@ -131,6 +138,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         when(mockIdentityContext.getRootOrganization()).thenReturn(mockRootOrg);
         identityContextMockedStatic.when(IdentityContext::getThreadLocalIdentityContext)
                 .thenReturn(mockIdentityContext);
+        when(mockHttpServletRequest.getHeader("X-Forwarded-For")).thenReturn(SAMPLE_X_FORWARDED_FOR);
 
         CommonTestUtils.initPrivilegedCarbonContext();
     }
@@ -173,6 +181,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         when(mockEventData.getEventParams()).thenReturn(params);
         when(mockEventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
+        when(mockEventData.getRequest()).thenReturn(mockHttpServletRequest);
 
         Flow mockFlow = new Flow.Builder()
                 .name(Flow.Name.REGISTER)
@@ -230,6 +239,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertNotNull(wso2BaseEventPayload.getUserStore());
         assertEquals(wso2BaseEventPayload.getUserStore().getId(), "REVGQVVMVA==");
         assertEquals(wso2BaseEventPayload.getUserStore().getName(), DEFAULT_USER_STORE);
+        assertEquals(wso2BaseEventPayload.getInitiatorIpAddress(), SAMPLE_INITIATOR_IP);
     }
 
     @Test
@@ -258,6 +268,7 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         params.put(IdentityEventConstants.EventProperty.USER_CLAIMS, claims);
 
         when(mockEventData.getEventParams()).thenReturn(params);
+        when(mockEventData.getRequest()).thenReturn(mockHttpServletRequest);
 
         Flow mockFlow = new Flow.Builder()
                 .name(Flow.Name.REGISTER)

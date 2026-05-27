@@ -62,6 +62,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
+
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.USERNAME_CLAIM;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.CREATED_CLAIM;
@@ -76,6 +78,8 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
 public class WSO2PayloadUtils {
 
     private static final Log log = LogFactory.getLog(WSO2PayloadUtils.class);
+    private static final String X_FORWARDED_FOR_HEADER = "X-Forwarded-For";
+    private static final String X_REAL_IP_HEADER = "X-Real-IP";
 
     // Generic user based grant types that are typically associated with a user.
     private static final Set<String> USER_BASED_GRANT_TYPES = Set.of(
@@ -636,6 +640,32 @@ public class WSO2PayloadUtils {
             log.debug("Flow credential type is null.");
         }
         return credentialType;
+    }
+
+    /**
+     * Resolves the initiator IP address from the event request.
+     *
+     * @param eventData Event data.
+     * @return Initiator IP address or null if unavailable.
+     */
+    public static String resolveInitiatorIpAddress(EventData eventData) {
+
+        if (eventData == null || eventData.getRequest() == null) {
+            return null;
+        }
+
+        HttpServletRequest request = eventData.getRequest();
+        String forwardedFor = request.getHeader(X_FORWARDED_FOR_HEADER);
+        if (StringUtils.isNotBlank(forwardedFor)) {
+            return forwardedFor.split(",")[0].trim();
+        }
+
+        String realIp = request.getHeader(X_REAL_IP_HEADER);
+        if (StringUtils.isNotBlank(realIp)) {
+            return realIp.trim();
+        }
+
+        return request.getRemoteAddr();
     }
 
     public static boolean isFederatedUser(EventData eventData) {

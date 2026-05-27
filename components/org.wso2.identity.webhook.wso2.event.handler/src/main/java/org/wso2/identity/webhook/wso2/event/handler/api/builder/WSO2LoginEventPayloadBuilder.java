@@ -89,6 +89,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
+        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress(eventData);
 
         return new WSO2AuthenticationSuccessEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -99,6 +100,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                 .application(application)
                 .authenticationMethods(buildAuthMethods(authenticationContext))
                 .action(action)
+                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 
@@ -149,6 +151,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
+        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress(eventData);
 
         return new WSO2AuthenticationFailedEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -159,6 +162,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                 .application(application)
                 .reason(buildAuthenticationFailedReason(authenticationContext))
                 .action(action)
+                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 

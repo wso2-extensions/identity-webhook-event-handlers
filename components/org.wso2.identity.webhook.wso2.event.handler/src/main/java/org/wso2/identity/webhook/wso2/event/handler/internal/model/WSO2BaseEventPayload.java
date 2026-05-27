@@ -37,6 +37,7 @@ public abstract class WSO2BaseEventPayload extends EventPayload {
     protected UserStore userStore;
     protected Application application;
     protected String action;
+    protected String initiatorIpAddress;
 
     public User getUser() {
 
@@ -71,5 +72,10 @@ public abstract class WSO2BaseEventPayload extends EventPayload {
     public String getAction() {
 
         return action;
+    }
+
+    public String getInitiatorIpAddress() {
+
+        return initiatorIpAddress;
     }
 }
