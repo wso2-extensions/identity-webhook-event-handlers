@@ -640,16 +640,20 @@ public class WSO2PayloadUtils {
     }
 
     /**
-     * Resolves the initiator IP address from the event request.
+     * Resolves the initiator IP address from the identity context.
      *
-     * @param eventData Event data.
      * @return Initiator IP address or null if unavailable.
      */
-    public static String resolveInitiatorIpAddress(EventData eventData) {
+    public static String resolveInitiatorIpAddress() {
 
         String initiatorIpAddress = IdentityContextUtil.getClientIpAddress();
         if (StringUtils.isBlank(initiatorIpAddress) && log.isDebugEnabled()) {
             log.debug("Initiator IP is not available in the identity context.");
+        }
+        if (StringUtils.isBlank(initiatorIpAddress)) {
+            log.info("Initiator IP is not available in the identity context.");
+        } else {
+            log.info("Resolved initiator IP from identity context: " + initiatorIpAddress);
         }
         return initiatorIpAddress;
     }
