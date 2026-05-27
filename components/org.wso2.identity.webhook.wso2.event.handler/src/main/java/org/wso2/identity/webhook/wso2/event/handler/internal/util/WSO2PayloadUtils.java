@@ -646,11 +646,11 @@ public class WSO2PayloadUtils {
      */
     public static String resolveInitiatorIpAddress() {
 
-        String initiatorIpAddress = IdentityContextUtil.getClientIpAddress();
-        if (StringUtils.isBlank(initiatorIpAddress)) {
-            log.info("Initiator IP is not available in the identity context.");
+        String initiatorIpAddress = StringUtils.trimToNull(IdentityContextUtil.getClientIpAddress());
+        if (initiatorIpAddress == null) {
+            log.debug("Initiator IP is not available in the identity context.");
         } else {
-            log.info("Resolved initiator IP from identity context: " + initiatorIpAddress);
+            log.debug("Resolved initiator IP from identity context.");
         }
         return initiatorIpAddress;
     }
