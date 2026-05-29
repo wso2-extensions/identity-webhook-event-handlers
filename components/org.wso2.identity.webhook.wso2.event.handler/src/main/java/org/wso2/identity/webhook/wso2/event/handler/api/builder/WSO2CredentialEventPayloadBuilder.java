@@ -63,6 +63,7 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
         String credentialType = WSO2PayloadUtils.getFlowCredentialType(flow);
+        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
 
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
@@ -76,6 +77,7 @@ public class WSO2CredentialEventPayloadBuilder implements CredentialEventPayload
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
+                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 

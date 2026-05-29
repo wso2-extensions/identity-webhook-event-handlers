@@ -79,6 +79,7 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
+        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
 
         return new WSO2TokenRevokedEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -88,6 +89,7 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
                 .user(user)
                 .applications(application)
                 .action(action)
+                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 
@@ -127,6 +129,7 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
+        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
 
         return new WSO2TokenIssuedEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -137,6 +140,7 @@ public class WSO2TokenEventPayloadBuilder implements TokenEventPayloadBuilder {
                 .organization(organization)
                 .userStore(userStore)
                 .action(action)
+                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 

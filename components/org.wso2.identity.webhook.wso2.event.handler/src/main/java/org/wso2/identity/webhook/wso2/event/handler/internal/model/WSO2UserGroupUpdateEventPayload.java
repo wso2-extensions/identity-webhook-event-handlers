@@ -37,6 +37,7 @@ public class WSO2UserGroupUpdateEventPayload extends WSO2BaseEventPayload {
         this.organization = builder.organization;
         this.userStore = builder.userStore;
         this.tenant = builder.tenant;
+        this.initiatorIpAddress = builder.initiatorIpAddress;
     }
 
     public Group getGroup() {
@@ -54,6 +55,7 @@ public class WSO2UserGroupUpdateEventPayload extends WSO2BaseEventPayload {
         private Organization organization;
         private UserStore userStore;
         private Tenant tenant;
+        private String initiatorIpAddress;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -82,6 +84,12 @@ public class WSO2UserGroupUpdateEventPayload extends WSO2BaseEventPayload {
         public Builder tenant(Tenant tenant) {
 
             this.tenant = tenant;
+            return this;
+        }
+
+        public Builder initiatorIpAddress(String initiatorIpAddress) {
+
+            this.initiatorIpAddress = initiatorIpAddress;
             return this;
         }
 

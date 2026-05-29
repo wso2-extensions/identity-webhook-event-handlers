@@ -57,6 +57,7 @@ public class WSO2TokenIssuedEventPayload extends WSO2BaseEventPayload {
         this.application = builder.application;
         this.scopes = builder.scopes;
         this.action = builder.action;
+        this.initiatorIpAddress = builder.initiatorIpAddress;
     }
 
     /**
@@ -74,6 +75,7 @@ public class WSO2TokenIssuedEventPayload extends WSO2BaseEventPayload {
         private Application application;
         private List<String> scopes;
         private String action;
+        private String initiatorIpAddress;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -126,6 +128,12 @@ public class WSO2TokenIssuedEventPayload extends WSO2BaseEventPayload {
         public Builder action(String action) {
 
             this.action = action;
+            return this;
+        }
+
+        public Builder initiatorIpAddress(String initiatorIpAddress) {
+
+            this.initiatorIpAddress = initiatorIpAddress;
             return this;
         }
 

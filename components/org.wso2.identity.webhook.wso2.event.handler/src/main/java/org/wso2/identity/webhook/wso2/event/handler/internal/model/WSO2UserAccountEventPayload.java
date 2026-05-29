@@ -33,6 +33,7 @@ public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
         this.userStore = builder.userStore;
         this.tenant = builder.tenant;
         this.action = builder.action;
+        this.initiatorIpAddress = builder.initiatorIpAddress;
     }
 
     /**
@@ -46,6 +47,7 @@ public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
         private UserStore userStore;
         private Tenant tenant;
         private String action;
+        private String initiatorIpAddress;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -80,6 +82,12 @@ public class WSO2UserAccountEventPayload extends WSO2BaseEventPayload {
         public Builder action(String action) {
 
             this.action = action;
+            return this;
+        }
+
+        public Builder initiatorIpAddress(String initiatorIpAddress) {
+
+            this.initiatorIpAddress = initiatorIpAddress;
             return this;
         }
 
