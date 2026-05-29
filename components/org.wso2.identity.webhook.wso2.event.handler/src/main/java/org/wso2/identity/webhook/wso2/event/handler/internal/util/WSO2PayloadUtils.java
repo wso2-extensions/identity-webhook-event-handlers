@@ -34,6 +34,7 @@ import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
+import org.wso2.carbon.identity.core.context.util.IdentityContextUtil;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -636,6 +637,22 @@ public class WSO2PayloadUtils {
             log.debug("Flow credential type is null.");
         }
         return credentialType;
+    }
+
+    /**
+     * Resolves the initiator IP address from the identity context.
+     *
+     * @return Initiator IP address or null if unavailable.
+     */
+    public static String resolveInitiatorIpAddress() {
+
+        String initiatorIpAddress = StringUtils.trimToNull(IdentityContextUtil.getClientIpAddress());
+        if (initiatorIpAddress == null) {
+            log.debug("Initiator IP is not available in the identity context.");
+        } else {
+            log.debug("Resolved initiator IP from identity context.");
+        }
+        return initiatorIpAddress;
     }
 
     public static boolean isFederatedUser(EventData eventData) {

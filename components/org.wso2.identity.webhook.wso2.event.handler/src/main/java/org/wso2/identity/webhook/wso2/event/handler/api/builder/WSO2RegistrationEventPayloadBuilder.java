@@ -74,6 +74,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
+        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
         String action = null;
         if (flow != null) {
             action = Optional.ofNullable(resolveAction(flow.getName()))
@@ -91,6 +92,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
+                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 
@@ -124,6 +126,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
+        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
         String action = null;
         if (flow != null) {
             action = Optional.ofNullable(resolveAction(flow.getName()))
@@ -159,6 +162,7 @@ public class WSO2RegistrationEventPayloadBuilder implements RegistrationEventPay
                 .organization(organization)
                 .userStore(userStore)
                 .reason(reason)
+                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 

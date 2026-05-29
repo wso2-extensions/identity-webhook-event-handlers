@@ -64,6 +64,7 @@ public class WSO2TokenRevokedEventPayload extends WSO2BaseEventPayload {
         this.action = builder.action;
         this.organization = builder.organization;
         this.application = builder.applications;
+        this.initiatorIpAddress = builder.initiatorIpAddress;
     }
 
     /**
@@ -80,6 +81,7 @@ public class WSO2TokenRevokedEventPayload extends WSO2BaseEventPayload {
         private String action;
         private Organization organization;
         private List<Application> applications;
+        private String initiatorIpAddress;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -132,6 +134,12 @@ public class WSO2TokenRevokedEventPayload extends WSO2BaseEventPayload {
         public Builder organization(Organization organization) {
 
             this.organization = organization;
+            return this;
+        }
+
+        public Builder initiatorIpAddress(String initiatorIpAddress) {
+
+            this.initiatorIpAddress = initiatorIpAddress;
             return this;
         }
 

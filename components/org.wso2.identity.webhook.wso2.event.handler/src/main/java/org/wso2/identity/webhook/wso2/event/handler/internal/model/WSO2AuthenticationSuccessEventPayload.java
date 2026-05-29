@@ -43,6 +43,7 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
         this.application = builder.application;
         this.initiatorType = builder.initiatorType;
         this.action = builder.action;
+        this.initiatorIpAddress = builder.initiatorIpAddress;
         this.authenticationMethods = builder.authenticationMethods;
     }
 
@@ -63,6 +64,7 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
         private Application application;
         private String initiatorType;
         private String action;
+        private String initiatorIpAddress;
         private List<String> authenticationMethods = new ArrayList<>();
 
         public Builder user(User user) {
@@ -116,6 +118,12 @@ public class WSO2AuthenticationSuccessEventPayload extends WSO2BaseEventPayload 
         public Builder action(String action) {
 
             this.action = action;
+            return this;
+        }
+
+        public Builder initiatorIpAddress(String initiatorIpAddress) {
+
+            this.initiatorIpAddress = initiatorIpAddress;
             return this;
         }
 

@@ -26,6 +26,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.carbon.base.CarbonBaseConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
@@ -33,6 +34,7 @@ import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.context.model.Organization;
 import org.wso2.carbon.identity.core.context.model.RootOrganization;
+import org.wso2.carbon.identity.core.context.util.IdentityContextUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -53,6 +55,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.User;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserClaim;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.CommonTestUtils;
 
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +83,7 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2Pay
  */
 public class WSO2UserOperationEventPayloadBuilderTest {
 
+    private static final String SAMPLE_INITIATOR_IP = "203.0.113.10";
     private static final String ADDED_GROUP_ID = "36a4541a-1055-4986-872c-cdf2faa7a468";
     private static final String DELETED_GROUP_ID = "36a4541a-1055-4986-872c-cdf2faa7a468";
     private static final int TENANT_ID = -1234;
@@ -117,12 +121,17 @@ public class WSO2UserOperationEventPayloadBuilderTest {
 
     private MockedStatic<FrameworkUtils> frameworkUtils;
     private MockedStatic<IdentityContext> identityContextMockedStatic;
+    private MockedStatic<IdentityContextUtil> identityContextUtil;
     private IdentityContext mockIdentityContext;
     RootOrganization mockRootOrg;
     Organization mockOrg;
 
     @BeforeClass
     public void setup() throws Exception {
+
+        // Set carbon.home before any class loading or mocking
+        String carbonHome = Paths.get(System.getProperty("user.dir"), "src", "test", "resources").toString();
+        System.setProperty(CarbonBaseConstants.CARBON_HOME, carbonHome);
 
         MockitoAnnotations.openMocks(this);
         WSO2EventHookHandlerDataHolder.getInstance().setClaimMetadataManagementService(claimMetadataManagementService);
@@ -157,6 +166,9 @@ public class WSO2UserOperationEventPayloadBuilderTest {
                 .thenReturn(mockIdentityContext);
 
         CommonTestUtils.initPrivilegedCarbonContext();
+
+        identityContextUtil = mockStatic(IdentityContextUtil.class);
+        identityContextUtil.when(IdentityContextUtil::getClientIpAddress).thenReturn(SAMPLE_INITIATOR_IP);
     }
 
     @AfterClass
@@ -167,6 +179,9 @@ public class WSO2UserOperationEventPayloadBuilderTest {
         Mockito.reset(realmConfiguration, claimMetadataManagementService, userStoreManager);
         IdentityUtil.threadLocalProperties.remove();
         frameworkUtils.close();
+        if (identityContextUtil != null) {
+            identityContextUtil.close();
+        }
         if (identityContextMockedStatic != null) {
             identityContextMockedStatic.close();
         }
@@ -418,6 +433,8 @@ public class WSO2UserOperationEventPayloadBuilderTest {
 
         assertNotNull(wso2BaseEventPayload.getInitiatorType());
         assertEquals(wso2BaseEventPayload.getInitiatorType(), Flow.InitiatingPersona.ADMIN.name());
+
+        assertEquals(wso2BaseEventPayload.getInitiatorIpAddress(), SAMPLE_INITIATOR_IP);
 
         assertNotNull(wso2BaseEventPayload.getTenant());
         assertEquals(wso2BaseEventPayload.getTenant().getName(), TENANT_DOMAIN);
