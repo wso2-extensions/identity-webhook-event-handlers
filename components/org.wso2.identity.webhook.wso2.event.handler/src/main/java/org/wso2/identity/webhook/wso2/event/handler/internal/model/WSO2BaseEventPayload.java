@@ -31,13 +31,13 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 public abstract class WSO2BaseEventPayload extends EventPayload {
 
     protected String initiatorType;
+    protected String initiatorIpAddress;
     protected User user;
     protected Tenant tenant;
     protected Organization organization;
     protected UserStore userStore;
     protected Application application;
     protected String action;
-    protected String initiatorIpAddress;
 
     public User getUser() {
 
