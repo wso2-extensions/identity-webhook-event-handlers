@@ -71,7 +71,6 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
-        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
 
         return new WSO2SessionCreatedEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -82,7 +81,6 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 .userStore(userStore)
                 .application(application)
                 .action(action)
-                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 
@@ -101,7 +99,6 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
-        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
 
         return new WSO2SessionPresentedEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -112,7 +109,6 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 .userStore(userStore)
                 .application(application)
                 .action(action)
-                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 
@@ -130,7 +126,6 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
-        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
 
         return new WSO2SessionRevokedEventPayload.Builder()
                 .initiatorType(initiatorType)
@@ -140,7 +135,6 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 .userStore(userStore)
                 .sessions(sessions)
                 .action(action)
-                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 

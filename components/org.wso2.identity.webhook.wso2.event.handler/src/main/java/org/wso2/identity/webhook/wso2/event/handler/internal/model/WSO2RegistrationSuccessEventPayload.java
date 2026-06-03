@@ -50,7 +50,6 @@ public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
         this.registrationMethods = builder.registrationMethods;
         this.credentialsEnrolled = builder.credentialsEnrolled;
         this.action = builder.action;
-        this.initiatorIpAddress = builder.initiatorIpAddress;
     }
 
     public static class Builder {
@@ -63,7 +62,6 @@ public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
         private List<String> registrationMethods;
         private List<String> credentialsEnrolled;
         private String action;
-        private String initiatorIpAddress;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -74,12 +72,6 @@ public class WSO2RegistrationSuccessEventPayload extends WSO2BaseEventPayload {
         public Builder action(String action) {
 
             this.action = action;
-            return this;
-        }
-
-        public Builder initiatorIpAddress(String initiatorIpAddress) {
-
-            this.initiatorIpAddress = initiatorIpAddress;
             return this;
         }
 

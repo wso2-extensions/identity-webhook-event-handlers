@@ -34,7 +34,6 @@ import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.core.context.model.Organization;
 import org.wso2.carbon.identity.core.context.model.RootOrganization;
-import org.wso2.carbon.identity.core.context.util.IdentityContextUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
@@ -80,7 +79,6 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     private static final String DOMAIN_QUALIFIED_TEST_USER_NAME = "DEFAULT/tom";
     private static final String FAILURE_MESSAGE = "InvalidOperation Invalid operation. User store is read only";
     public static final String DEFAULT_USER_STORE = "DEFAULT";
-    private static final String SAMPLE_INITIATOR_IP = "198.51.100.5";
 
     @Mock
     private EventData mockEventData;
@@ -98,7 +96,6 @@ public class WSO2RegistrationEventPayloadBuilderTest {
     private ClaimMetadataManagementService claimMetadataManagementService;
 
     private MockedStatic<FrameworkUtils> frameworkUtils;
-    private MockedStatic<IdentityContextUtil> identityContextUtil;
     private MockedStatic<IdentityContext> identityContextMockedStatic;
     private IdentityContext mockIdentityContext;
     RootOrganization mockRootOrg;
@@ -119,8 +116,6 @@ public class WSO2RegistrationEventPayloadBuilderTest {
 
         frameworkUtils = mockStatic(FrameworkUtils.class);
         frameworkUtils.when(FrameworkUtils::getMultiAttributeSeparator).thenReturn(",");
-        identityContextUtil = mockStatic(IdentityContextUtil.class);
-        identityContextUtil.when(IdentityContextUtil::getClientIpAddress).thenReturn(SAMPLE_INITIATOR_IP);
 
         // Properly manage static mock for IdentityContext
         identityContextMockedStatic = Mockito.mockStatic(IdentityContext.class);
@@ -148,7 +143,6 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         Mockito.reset(realmConfiguration, claimMetadataManagementService, userStoreManager);
         PrivilegedCarbonContext.endTenantFlow();
         frameworkUtils.close();
-        identityContextUtil.close();
         if (identityContextMockedStatic != null) {
             identityContextMockedStatic.close();
         }
@@ -236,7 +230,6 @@ public class WSO2RegistrationEventPayloadBuilderTest {
         assertNotNull(wso2BaseEventPayload.getUserStore());
         assertEquals(wso2BaseEventPayload.getUserStore().getId(), "REVGQVVMVA==");
         assertEquals(wso2BaseEventPayload.getUserStore().getName(), DEFAULT_USER_STORE);
-        assertEquals(wso2BaseEventPayload.getInitiatorIpAddress(), SAMPLE_INITIATOR_IP);
     }
 
     @Test

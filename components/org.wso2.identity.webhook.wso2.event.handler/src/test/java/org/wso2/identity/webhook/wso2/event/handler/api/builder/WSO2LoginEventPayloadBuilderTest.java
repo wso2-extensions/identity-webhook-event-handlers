@@ -39,7 +39,6 @@ import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.RootOrganization;
-import org.wso2.carbon.identity.core.context.util.IdentityContextUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
@@ -80,7 +79,6 @@ public class WSO2LoginEventPayloadBuilderTest {
     private static final String SAMPLE_TENANT_ID = "100";
     private static final String SAMPLE_USER_REF = "https://localhost:9443/t/myorg/scim2/Users/" + SAMPLE_USER_ID;
     private static final String SAMPLE_ERROR_MESSAGE = "Sample error message";
-    private static final String SAMPLE_INITIATOR_IP = "203.0.113.10";
 
     @Mock
     private EventData mockEventData;
@@ -107,7 +105,6 @@ public class WSO2LoginEventPayloadBuilderTest {
     private AuthenticatedUser mockAuthenticatedUser;
 
     private MockedStatic<FrameworkUtils> frameworkUtils;
-    private MockedStatic<IdentityContextUtil> identityContextUtil;
 
     @BeforeClass
     public void setup() {
@@ -124,8 +121,6 @@ public class WSO2LoginEventPayloadBuilderTest {
         mockIdentityTenantUtil();
         frameworkUtils = mockStatic(FrameworkUtils.class);
         frameworkUtils.when(FrameworkUtils::getMultiAttributeSeparator).thenReturn(",");
-        identityContextUtil = mockStatic(IdentityContextUtil.class);
-        identityContextUtil.when(IdentityContextUtil::getClientIpAddress).thenReturn(SAMPLE_INITIATOR_IP);
         identityContextMockedStatic = Mockito.mockStatic(IdentityContext.class);
         mockIdentityContext = Mockito.mock(IdentityContext.class);
         mockRootOrg = Mockito.mock(RootOrganization.class);
@@ -143,7 +138,6 @@ public class WSO2LoginEventPayloadBuilderTest {
         closeMockedIdentityTenantUtil();
         Mockito.reset(mockOrganizationManager, claimMetadataManagementService, mockIdentityContext, mockRootOrg);
         identityContextMockedStatic.close();
-        identityContextUtil.close();
         frameworkUtils.close();
     }
 
@@ -177,7 +171,6 @@ public class WSO2LoginEventPayloadBuilderTest {
         assertEquals(successPayload.getTenant().getName(), tenantName);
         assertEquals(successPayload.getUser().getRef(), userRef);
         assertEquals(successPayload.getAuthenticationMethods().size(), authMethodsSize);
-        assertEquals(successPayload.getInitiatorIpAddress(), SAMPLE_INITIATOR_IP);
     }
 
     @Test(expectedExceptions = IdentityEventException.class)
@@ -231,7 +224,6 @@ public class WSO2LoginEventPayloadBuilderTest {
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getStep(), failedStep);
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getIdp(), idp);
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getAuthenticator(), authenticator);
-        assertEquals(failedPayload.getInitiatorIpAddress(), SAMPLE_INITIATOR_IP);
     }
 
     @Test
@@ -257,7 +249,6 @@ public class WSO2LoginEventPayloadBuilderTest {
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getStep(), 2);
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getIdp(), SAMPLE_IDP);
         assertEquals(failedPayload.getReason().getContext().getFailedStep().getAuthenticator(), SAMPLE_AUTHENTICATOR);
-        assertEquals(failedPayload.getInitiatorIpAddress(), SAMPLE_INITIATOR_IP);
 
     }
 

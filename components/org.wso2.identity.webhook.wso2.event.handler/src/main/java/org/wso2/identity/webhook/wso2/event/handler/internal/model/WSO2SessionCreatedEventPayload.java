@@ -44,7 +44,6 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         this.session = builder.session;
         this.action = builder.action;
         this.initiatorType = builder.initiatorType;
-        this.initiatorIpAddress = builder.initiatorIpAddress;
     }
 
     private WSO2SessionCreatedEventPayload() {
@@ -61,7 +60,6 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         private Session session;
         private String action;
         private String initiatorType;
-        private String initiatorIpAddress;
 
         public Builder user(User user) {
 
@@ -108,12 +106,6 @@ public class WSO2SessionCreatedEventPayload extends WSO2BaseEventPayload {
         public Builder initiatorType(String initiatorType) {
 
             this.initiatorType = initiatorType;
-            return this;
-        }
-
-        public Builder initiatorIpAddress(String initiatorIpAddress) {
-
-            this.initiatorIpAddress = initiatorIpAddress;
             return this;
         }
 

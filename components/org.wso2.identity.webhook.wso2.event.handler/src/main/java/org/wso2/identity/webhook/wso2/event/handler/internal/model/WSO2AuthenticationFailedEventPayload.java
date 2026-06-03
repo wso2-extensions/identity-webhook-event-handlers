@@ -44,7 +44,6 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
         this.userLoginIdentifier = builder.userLoginIdentifier;
         this.initiatorType = builder.initiatorType;
         this.action = builder.action;
-        this.initiatorIpAddress = builder.initiatorIpAddress;
     }
 
     public Reason getReason() {
@@ -71,7 +70,6 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
         private String userLoginIdentifier;
         private String initiatorType;
         private String action;
-        private String initiatorIpAddress;
 
         public Builder user(User user) {
 
@@ -124,12 +122,6 @@ public class WSO2AuthenticationFailedEventPayload extends WSO2BaseEventPayload {
         public Builder action(String action) {
 
             this.action = action;
-            return this;
-        }
-
-        public Builder initiatorIpAddress(String initiatorIpAddress) {
-
-            this.initiatorIpAddress = initiatorIpAddress;
             return this;
         }
 

@@ -83,7 +83,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         if (flow != null) {
             initiatorType = flow.getInitiatingPersona().name();
         }
-        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
 
@@ -93,7 +92,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
-                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 
@@ -150,7 +148,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
             Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
             String action = WSO2PayloadUtils.getFlowAction(flow);
             String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
-            String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
 
             return new WSO2UserAccountEventPayload.Builder()
                     .initiatorType(initiatorType)
@@ -159,7 +156,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                     .tenant(tenant)
                     .organization(organization)
                     .userStore(userStore)
-                    .initiatorIpAddress(initiatorIpAddress)
                     .build();
         } finally {
             IdentityUtil.threadLocalProperties.get().remove(PRE_DELETE_USER_ID);
@@ -200,7 +196,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
-        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
 
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
@@ -213,7 +208,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .organization(organization)
                 .userStore(userStore)
                 .action(action)
-                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 
@@ -252,7 +246,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
-        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
 
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
@@ -265,7 +258,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .organization(organization)
                 .userStore(userStore)
                 .action(action)
-                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 
@@ -315,7 +307,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
-        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
         String action = null;
         if (flow != null) {
             action = Optional.ofNullable(resolveAction(flow.getName()))
@@ -333,7 +324,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
-                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 
@@ -376,7 +366,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
-        String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
         String action = null;
         if (flow != null) {
             action = Optional.ofNullable(resolveAction(flow.getName()))
@@ -394,7 +383,6 @@ public class WSO2UserOperationEventPayloadBuilder implements UserOperationEventP
                 .tenant(tenant)
                 .organization(organization)
                 .userStore(userStore)
-                .initiatorIpAddress(initiatorIpAddress)
                 .build();
     }
 

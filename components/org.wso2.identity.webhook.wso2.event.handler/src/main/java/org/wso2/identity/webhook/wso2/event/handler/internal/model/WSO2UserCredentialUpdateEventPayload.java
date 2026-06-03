@@ -36,7 +36,6 @@ public class WSO2UserCredentialUpdateEventPayload extends WSO2BaseEventPayload {
         this.userStore = builder.userStore;
         this.user = builder.user;
         this.tenant = builder.tenant;
-        this.initiatorIpAddress = builder.initiatorIpAddress;
     }
 
     public String getCredentialType() {
@@ -53,7 +52,6 @@ public class WSO2UserCredentialUpdateEventPayload extends WSO2BaseEventPayload {
         private String credentialType;
         private String action;
         private Tenant tenant;
-        private String initiatorIpAddress;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -94,12 +92,6 @@ public class WSO2UserCredentialUpdateEventPayload extends WSO2BaseEventPayload {
         public Builder tenant(Tenant tenant) {
 
             this.tenant = tenant;
-            return this;
-        }
-
-        public Builder initiatorIpAddress(String initiatorIpAddress) {
-
-            this.initiatorIpAddress = initiatorIpAddress;
             return this;
         }
 

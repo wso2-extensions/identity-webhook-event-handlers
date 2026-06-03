@@ -41,7 +41,6 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
         this.sessionId = builder.sessionId;
         this.sessions = builder.sessions;
         this.action = builder.action;
-        this.initiatorIpAddress = builder.initiatorIpAddress;
     }
 
     public String getSessionId() {
@@ -68,7 +67,6 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
         private String sessionId;
         private List<Session> sessions;
         private String action;
-        private String initiatorIpAddress;
 
         public Builder initiatorType(String initiatorType) {
 
@@ -115,12 +113,6 @@ public class WSO2SessionRevokedEventPayload extends WSO2BaseEventPayload {
         public Builder action(String action) {
 
             this.action = action;
-            return this;
-        }
-
-        public Builder initiatorIpAddress(String initiatorIpAddress) {
-
-            this.initiatorIpAddress = initiatorIpAddress;
             return this;
         }
 

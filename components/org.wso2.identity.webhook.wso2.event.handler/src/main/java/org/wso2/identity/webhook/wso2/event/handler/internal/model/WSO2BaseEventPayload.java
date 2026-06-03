@@ -31,7 +31,6 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 public abstract class WSO2BaseEventPayload extends EventPayload {
 
     protected String initiatorType;
-    protected String initiatorIpAddress;
     protected User user;
     protected Tenant tenant;
     protected Organization organization;
@@ -72,10 +71,5 @@ public abstract class WSO2BaseEventPayload extends EventPayload {
     public String getAction() {
 
         return action;
-    }
-
-    public String getInitiatorIpAddress() {
-
-        return initiatorIpAddress;
     }
 }
