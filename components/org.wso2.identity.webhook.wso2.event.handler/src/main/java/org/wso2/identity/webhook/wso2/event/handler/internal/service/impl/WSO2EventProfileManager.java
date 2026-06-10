@@ -26,6 +26,8 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 
 import java.util.Objects;
 
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CONSENT_CHANNEL;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CONSENT_PURPOSE_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CREDENTIAL_CHANGE_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.LOGIN_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
@@ -42,12 +44,19 @@ import static org.wso2.identity.webhook.common.event.handler.api.constants.Const
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_UPDATE_USER_LIST_OF_ROLE_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_USER_CREATED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_USER_PROFILE_UPDATED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.CONSENT_ADDED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.CONSENT_REVOKED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.CONSENT_PURPOSE_VERSION_ADDED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_CREATED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_PRESENTED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_REVOKED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.TOKEN_ISSUED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.TOKEN_REVOKED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.WSO2;
+import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.InterceptorConstants.POST_ADD_PURPOSE_VERSION;
+import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.InterceptorConstants.POST_ADD_RECEIPT;
+import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.InterceptorConstants.POST_AUTHORIZE_CONSENT;
+import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.InterceptorConstants.POST_REVOKE_RECEIPT;
 
 /**
  * This class is responsible for resolving the event metadata for WSO2 events.
@@ -121,6 +130,18 @@ public class WSO2EventProfileManager implements EventProfileManager {
             } else if (IdentityEventConstants.Event.TOKEN_REVOKED.equals(eventName)) {
                 channel = TOKEN_CHANNEL;
                 event = TOKEN_REVOKED_EVENT;
+            } else if (POST_ADD_PURPOSE_VERSION.equals(eventName)) {
+                channel = CONSENT_PURPOSE_CHANNEL;
+                event = CONSENT_PURPOSE_VERSION_ADDED_EVENT;
+            } else if (POST_ADD_RECEIPT.equals(eventName)) {
+                channel = CONSENT_CHANNEL;
+                event = CONSENT_ADDED_EVENT;
+            } else if (POST_AUTHORIZE_CONSENT.equals(eventName)) {
+                channel = CONSENT_CHANNEL;
+                event = CONSENT_ADDED_EVENT;
+            } else if (POST_REVOKE_RECEIPT.equals(eventName)) {
+                channel = CONSENT_CHANNEL;
+                event = CONSENT_REVOKED_EVENT;
             }
         }
         return EventMetadata.builder()

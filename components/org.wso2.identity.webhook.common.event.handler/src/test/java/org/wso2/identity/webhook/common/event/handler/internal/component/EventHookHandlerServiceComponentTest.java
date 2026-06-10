@@ -27,6 +27,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherService;
+import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentPurposeEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
@@ -74,6 +76,12 @@ public class EventHookHandlerServiceComponentTest {
 
     @Mock
     private TokenEventPayloadBuilder tokenEventPayloadBuilder;
+
+    @Mock
+    private ConsentEventPayloadBuilder consentEventPayloadBuilder;
+
+    @Mock
+    private ConsentPurposeEventPayloadBuilder consentPurposeEventPayloadBuilder;
 
     @BeforeMethod
     public void setUp() {
@@ -142,5 +150,21 @@ public class EventHookHandlerServiceComponentTest {
         when(tokenEventPayloadBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
         serviceComponent.addTokenEventPayloadBuilder(tokenEventPayloadBuilder);
         serviceComponent.removeTokenEventPayloadBuilder(tokenEventPayloadBuilder);
+    }
+
+    @Test
+    public void testAddAndRemoveConsentEventPayloadBuilder() {
+
+        when(consentEventPayloadBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
+        serviceComponent.addConsentEventPayloadBuilder(consentEventPayloadBuilder);
+        serviceComponent.removeConsentEventPayloadBuilder(consentEventPayloadBuilder);
+    }
+
+    @Test
+    public void testAddAndRemoveConsentPurposeEventPayloadBuilder() {
+
+        when(consentPurposeEventPayloadBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
+        serviceComponent.addConsentPurposeEventPayloadBuilder(consentPurposeEventPayloadBuilder);
+        serviceComponent.removeConsentPurposeEventPayloadBuilder(consentPurposeEventPayloadBuilder);
     }
 }

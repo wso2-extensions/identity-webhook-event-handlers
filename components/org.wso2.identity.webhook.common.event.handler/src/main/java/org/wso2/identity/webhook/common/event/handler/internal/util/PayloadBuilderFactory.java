@@ -18,6 +18,8 @@
 
 package org.wso2.identity.webhook.common.event.handler.internal.util;
 
+import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentPurposeEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
@@ -148,6 +150,31 @@ public class PayloadBuilderFactory {
         for (TokenEventPayloadBuilder tokenEventPayloadBuilder : tokenEventPayloadBuilders) {
             if (tokenEventPayloadBuilder.getEventSchemaType().equals(eventSchemaType)) {
                 return tokenEventPayloadBuilder;
+            }
+        }
+        return null;
+    }
+
+    public static ConsentPurposeEventPayloadBuilder getConsentPurposeEventPayloadBuilder(
+            Constants.EventSchema eventSchemaType) {
+
+        List<ConsentPurposeEventPayloadBuilder> consentPurposeEventPayloadBuilders =
+                EventHookHandlerDataHolder.getInstance().getConsentPurposeEventPayloadBuilders();
+        for (ConsentPurposeEventPayloadBuilder builder : consentPurposeEventPayloadBuilders) {
+            if (builder.getEventSchemaType().equals(eventSchemaType)) {
+                return builder;
+            }
+        }
+        return null;
+    }
+
+    public static ConsentEventPayloadBuilder getConsentEventPayloadBuilder(Constants.EventSchema eventSchemaType) {
+
+        List<ConsentEventPayloadBuilder> consentEventPayloadBuilders =
+                EventHookHandlerDataHolder.getInstance().getConsentEventPayloadBuilders();
+        for (ConsentEventPayloadBuilder builder : consentEventPayloadBuilders) {
+            if (builder.getEventSchemaType().equals(eventSchemaType)) {
+                return builder;
             }
         }
         return null;

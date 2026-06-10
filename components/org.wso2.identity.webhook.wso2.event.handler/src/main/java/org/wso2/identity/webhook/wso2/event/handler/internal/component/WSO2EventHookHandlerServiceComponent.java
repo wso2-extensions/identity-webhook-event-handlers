@@ -27,6 +27,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.wso2.carbon.consent.mgt.core.ConsentManager;
 import org.wso2.carbon.identity.application.authentication.framework.UserSessionManagementService;
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
@@ -39,6 +40,8 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayl
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
+import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2ConsentEventPayloadBuilder;
+import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2ConsentPurposeEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.service.impl.WSO2EventProfileManager;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2CredentialEventPayloadBuilder;
@@ -78,6 +81,15 @@ public class WSO2EventHookHandlerServiceComponent {
                     new WSO2RegistrationEventPayloadBuilder(), null);
             context.getBundleContext().registerService(TokenEventPayloadBuilder.class.getName(),
                     new WSO2TokenEventPayloadBuilder(), null);
+
+            context.getBundleContext().registerService(
+                    org.wso2.identity.webhook.common.event.handler.api.builder.ConsentPurposeEventPayloadBuilder.class
+                            .getName(),
+                    new WSO2ConsentPurposeEventPayloadBuilder(), null);
+            context.getBundleContext().registerService(
+                    org.wso2.identity.webhook.common.event.handler.api.builder.ConsentEventPayloadBuilder.class
+                            .getName(),
+                    new WSO2ConsentEventPayloadBuilder(), null);
         } catch (Exception e) {
             log.error("Error while activating event handler.", e);
         }
@@ -206,5 +218,23 @@ public class WSO2EventHookHandlerServiceComponent {
 
         log.debug("Unsetting the Application Management Service");
         WSO2EventHookHandlerDataHolder.getInstance().setApplicationManagementService(null);
+    }
+
+    @Reference(
+            name = "consent.manager",
+            service = ConsentManager.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetConsentManager")
+    protected void setConsentManager(ConsentManager consentManager) {
+
+        log.debug("Setting the Consent Manager");
+        WSO2EventHookHandlerDataHolder.getInstance().setConsentManager(consentManager);
+    }
+
+    protected void unsetConsentManager(ConsentManager consentManager) {
+
+        log.debug("Unsetting the Consent Manager");
+        WSO2EventHookHandlerDataHolder.getInstance().setConsentManager(null);
     }
 }

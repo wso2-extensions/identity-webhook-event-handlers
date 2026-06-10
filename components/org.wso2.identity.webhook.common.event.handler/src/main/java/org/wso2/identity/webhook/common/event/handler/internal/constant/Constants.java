@@ -47,6 +47,12 @@ public class Constants {
     public static final String TOKEN_EVENT_HOOK_NAME = "TokenEventHook";
     public static final String TOKEN_EVENT_HOOK_ENABLED = "TokenEventHook.enable";
 
+    public static final String CONSENT_PURPOSE_EVENT_HOOK_NAME = "ConsentPurposeEventHook";
+    public static final String CONSENT_PURPOSE_EVENT_HOOK_ENABLED = "ConsentPurposeEventHook.enable";
+
+    public static final String CONSENT_EVENT_HOOK_NAME = "ConsentEventHook";
+    public static final String CONSENT_EVENT_HOOK_ENABLED = "ConsentEventHook.enable";
+
     public static final String SKIP_SIGNUP_CONFIRMATION_IF_ACCOUNT_LOCK_DISABLED =
             "Webhooks.Registration.SkipSignupConfirmationIfAccountLockDisabled";
 
