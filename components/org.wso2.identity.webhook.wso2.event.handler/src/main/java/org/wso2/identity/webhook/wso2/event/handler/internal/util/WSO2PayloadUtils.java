@@ -282,7 +282,7 @@ public class WSO2PayloadUtils {
 
     public static Optional<UserClaim> generateUserClaim(String claimKey, String claimValue, String tenantDomain) {
 
-        if (StringUtils.isBlank(claimKey) || StringUtils.isBlank(claimValue)) {
+        if (StringUtils.isBlank(claimKey) || claimValue == null) {
             return Optional.empty();
         }
 

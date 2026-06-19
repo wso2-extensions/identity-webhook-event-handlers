@@ -18,12 +18,15 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.internal.model.common;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * User claim class.
  */
 public class UserClaim {
 
     private String uri;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Object value;
 
     public UserClaim(Builder builder) {
