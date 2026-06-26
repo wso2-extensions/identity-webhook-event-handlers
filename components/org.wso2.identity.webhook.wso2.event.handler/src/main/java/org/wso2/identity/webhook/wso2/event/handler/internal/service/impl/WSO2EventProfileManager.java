@@ -56,7 +56,6 @@ import static org.wso2.identity.webhook.common.event.handler.api.constants.Const
 import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.InterceptorConstants.POST_ADD_PURPOSE_VERSION;
 import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.InterceptorConstants.POST_ADD_RECEIPT;
 import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.InterceptorConstants.POST_AUTHORIZE_CONSENT;
-import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.InterceptorConstants.POST_REVOKE_RECEIPT;
 
 /**
  * This class is responsible for resolving the event metadata for WSO2 events.
@@ -138,10 +137,9 @@ public class WSO2EventProfileManager implements EventProfileManager {
                 event = CONSENT_ADDED_EVENT;
             } else if (POST_AUTHORIZE_CONSENT.equals(eventName)) {
                 channel = CONSENT_CHANNEL;
-                event = CONSENT_ADDED_EVENT;
-            } else if (POST_REVOKE_RECEIPT.equals(eventName)) {
-                channel = CONSENT_CHANNEL;
-                event = CONSENT_REVOKED_EVENT;
+                Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
+                event = (flow != null && Flow.Name.CONSENT_REVOKE.equals(flow.getName()))
+                        ? CONSENT_REVOKED_EVENT : CONSENT_ADDED_EVENT;
             }
         }
         return EventMetadata.builder()

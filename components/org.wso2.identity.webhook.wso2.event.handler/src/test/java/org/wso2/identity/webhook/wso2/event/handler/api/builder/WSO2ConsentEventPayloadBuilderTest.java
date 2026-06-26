@@ -207,7 +207,6 @@ public class WSO2ConsentEventPayloadBuilderTest {
         assertTrue(payloads.get(0) instanceof WSO2ConsentAddedEventPayload);
 
         WSO2ConsentAddedEventPayload payload = (WSO2ConsentAddedEventPayload) payloads.get(0);
-        assertEquals(payload.getSubjectId(), SUBJECT_ID);
         assertEquals(payload.getInitiatorType(), Flow.InitiatingPersona.USER.name());
         assertEquals(payload.getInitiatorIpAddress(), SAMPLE_INITIATOR_IP);
 
@@ -358,7 +357,6 @@ public class WSO2ConsentEventPayloadBuilderTest {
         assertTrue(payloads.get(0) instanceof WSO2ConsentAddedEventPayload);
 
         WSO2ConsentAddedEventPayload payload = (WSO2ConsentAddedEventPayload) payloads.get(0);
-        assertEquals(payload.getSubjectId(), SUBJECT_ID);
         assertNotNull(payload.getConsent());
         assertEquals(payload.getConsent().getId(), RECEIPT_ID);
         assertEquals(payload.getConsent().getState(), "APPROVED");

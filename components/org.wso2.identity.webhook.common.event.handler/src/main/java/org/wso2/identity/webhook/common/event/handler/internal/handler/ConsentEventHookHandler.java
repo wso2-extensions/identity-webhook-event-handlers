@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 
 import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.InterceptorConstants.POST_ADD_RECEIPT;
 import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.InterceptorConstants.POST_AUTHORIZE_CONSENT;
-import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.InterceptorConstants.POST_REVOKE_RECEIPT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.CONSENT_REVOKED_EVENT;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
@@ -80,8 +79,7 @@ public class ConsentEventHookHandler extends AbstractEventHandler {
                 return false;
             }
             canHandle = POST_ADD_RECEIPT.equals(eventName) ||
-                    POST_AUTHORIZE_CONSENT.equals(eventName) ||
-                    POST_REVOKE_RECEIPT.equals(eventName);
+                    POST_AUTHORIZE_CONSENT.equals(eventName);
             if (LOG.isDebugEnabled()) {
                 LOG.debug(eventName + (canHandle ? " event can be handled." : " event cannot be handled."));
             }

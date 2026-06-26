@@ -31,12 +31,10 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UserSt
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WSO2ConsentAddedEventPayload extends WSO2BaseEventPayload {
 
-    private final String subjectId;
     private final Consent consent;
 
     private WSO2ConsentAddedEventPayload(Builder builder) {
 
-        this.subjectId = builder.subjectId;
         this.consent = builder.consent;
         this.tenant = builder.tenant;
         this.organization = builder.organization;
@@ -47,11 +45,6 @@ public class WSO2ConsentAddedEventPayload extends WSO2BaseEventPayload {
         this.initiatorIpAddress = builder.initiatorIpAddress;
     }
 
-    public String getSubjectId() {
-
-        return subjectId;
-    }
-
     public Consent getConsent() {
 
         return consent;
@@ -59,7 +52,6 @@ public class WSO2ConsentAddedEventPayload extends WSO2BaseEventPayload {
 
     public static class Builder {
 
-        private String subjectId;
         private Consent consent;
         private Tenant tenant;
         private Organization organization;
@@ -68,12 +60,6 @@ public class WSO2ConsentAddedEventPayload extends WSO2BaseEventPayload {
         private String action;
         private String initiatorType;
         private String initiatorIpAddress;
-
-        public Builder subjectId(String subjectId) {
-
-            this.subjectId = subjectId;
-            return this;
-        }
 
         public Builder consent(Consent consent) {
 

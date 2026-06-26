@@ -58,6 +58,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.wso2.carbon.user.core.UserCoreConstants;
+
 import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.AUTHZ_STATUS;
 import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.RECEIPT_ID;
 import static org.wso2.carbon.consent.mgt.core.constant.ConsentConstants.RECEIPT_INPUT;
@@ -98,8 +100,9 @@ public class WSO2ConsentEventPayloadBuilder implements ConsentEventPayloadBuilde
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
-        String userStoreDomain = WSO2PayloadUtils.resolveUserStoreDomain(eventData.getEventParams());
-        String userName = (String) params.get(IdentityEventConstants.EventProperty.USER_NAME);
+        String[] userContext = resolveUserContext(subjectId);
+        String userStoreDomain = userContext[0];
+        String userName = userContext[1];
         User user = WSO2PayloadUtils.buildUser(userStoreDomain, userName, tenant.getName());
         UserStore userStore = new UserStore(userStoreDomain);
 
@@ -127,7 +130,6 @@ public class WSO2ConsentEventPayloadBuilder implements ConsentEventPayloadBuilde
                         .build();
 
                 payloads.add(new WSO2ConsentAddedEventPayload.Builder()
-                        .subjectId(subjectId)
                         .consent(consent)
                         .tenant(tenant)
                         .organization(organization)
@@ -150,7 +152,7 @@ public class WSO2ConsentEventPayloadBuilder implements ConsentEventPayloadBuilde
             return Collections.emptyList();
         }
         String receiptId = String.valueOf(receiptIdParam);
-        String subjectId = (String) params.get(IdentityEventConstants.EventProperty.USER_ID);
+        String subjectId = (String) params.get(IdentityEventConstants.EventProperty.USER_NAME);
         String authzStatus = (String) params.get(AUTHZ_STATUS);
 
         Tenant tenant = resolveTenant();
@@ -160,8 +162,9 @@ public class WSO2ConsentEventPayloadBuilder implements ConsentEventPayloadBuilde
         String initiatorType = WSO2PayloadUtils.getFlowInitiatorType(flow);
         String action = WSO2PayloadUtils.getFlowAction(flow);
         String initiatorIpAddress = WSO2PayloadUtils.resolveInitiatorIpAddress();
-        String userStoreDomain = WSO2PayloadUtils.resolveUserStoreDomain(eventData.getEventParams());
-        String userName = (String) params.get(IdentityEventConstants.EventProperty.USER_NAME);
+        String[] userContext = resolveUserContext(subjectId);
+        String userStoreDomain = userContext[0];
+        String userName = userContext[1];
         User user = WSO2PayloadUtils.buildUser(userStoreDomain, userName, tenant.getName());
         UserStore userStore = new UserStore(userStoreDomain);
 
@@ -196,7 +199,6 @@ public class WSO2ConsentEventPayloadBuilder implements ConsentEventPayloadBuilde
                             .purpose(purpose)
                             .build();
                     payloads.add(new WSO2ConsentAddedEventPayload.Builder()
-                            .subjectId(subjectId)
                             .consent(consent)
                             .tenant(tenant)
                             .organization(organization)
@@ -242,8 +244,9 @@ public class WSO2ConsentEventPayloadBuilder implements ConsentEventPayloadBuilde
             Receipt receipt = consentManager.getReceiptWithExtendedSchema(receiptId);
 
             String subjectId = receipt.getPiiPrincipalId();
-            String userStoreDomain = WSO2PayloadUtils.resolveUserStoreDomain(eventData.getEventParams());
-            String userName = (String) params.get(IdentityEventConstants.EventProperty.USER_NAME);
+            String[] userContext = resolveUserContext(subjectId);
+            String userStoreDomain = userContext[0];
+            String userName = userContext[1];
             User user = WSO2PayloadUtils.buildUser(userStoreDomain, userName, tenant.getName());
             UserStore userStore = new UserStore(userStoreDomain);
 
@@ -339,6 +342,15 @@ public class WSO2ConsentEventPayloadBuilder implements ConsentEventPayloadBuilde
             LOG.warn("Unable to resolve PII category name for id: " + id, e);
             return null;
         }
+    }
+
+    private String[] resolveUserContext(String subjectId) {
+
+        if (subjectId != null && subjectId.contains("/")) {
+            int idx = subjectId.indexOf('/');
+            return new String[]{subjectId.substring(0, idx), subjectId.substring(idx + 1)};
+        }
+        return new String[]{UserCoreConstants.PRIMARY_DEFAULT_DOMAIN_NAME, subjectId};
     }
 
     private Tenant resolveTenant() {
