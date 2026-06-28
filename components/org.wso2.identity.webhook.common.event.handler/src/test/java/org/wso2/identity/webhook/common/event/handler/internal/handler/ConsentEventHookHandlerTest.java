@@ -83,8 +83,8 @@ public class ConsentEventHookHandlerTest {
     private static final String CONSENT_CHANNEL_URI = "https://schemas.identity.wso2.org/events/consent";
     private static final String CONSENT_ADDED_EVENT_URI =
             "https://schemas.identity.wso2.org/events/consent/event-type/consentAdded";
-    private static final String CONSENT_AUTHORIZED_EVENT_URI =
-            "https://schemas.identity.wso2.org/events/consent/event-type/consentAuthorized";
+    private static final String CONSENT_REVOKED_EVENT_URI =
+            "https://schemas.identity.wso2.org/events/consent/event-type/consentRevoked";
 
     @Mock
     private ConfigurationManager mockedConfigurationManager;
@@ -162,12 +162,21 @@ public class ConsentEventHookHandlerTest {
         assertFalse(consentEventHookHandler.canHandle(new IdentityEventMessageContext(new Event(null))));
     }
 
+    @Test
+    public void testCannotHandle_postRevokeReceipt() {
+
+        // revokeReceipt is deprecated (superseded by authorizeConsent with REVOKED) and is intentionally not webhooked.
+        Event event = new Event("POST_REVOKE_RECEIPT");
+        IdentityEventMessageContext messageContext = new IdentityEventMessageContext(event);
+        assertFalse(consentEventHookHandler.canHandle(messageContext));
+    }
+
     @DataProvider(name = "consentEventProvider")
     public Object[][] consentEventProvider() {
 
         return new Object[][] {
                 {POST_ADD_RECEIPT, CONSENT_ADDED_EVENT_URI},
-                {POST_AUTHORIZE_CONSENT, CONSENT_AUTHORIZED_EVENT_URI}
+                {POST_AUTHORIZE_CONSENT, CONSENT_ADDED_EVENT_URI}
         };
     }
 
@@ -355,6 +364,57 @@ public class ConsentEventHookHandlerTest {
                 consentEventHookHandler.handleEvent(event);
 
                 verify(mockedEventPublisherService, times(2)).publish(any(), any());
+            }
+        }
+    }
+
+    @Test
+    public void testHandleEvent_revokeRoutesToRevokedBuilder() throws Exception {
+
+        // A revoke surfaces as a POST_AUTHORIZE_CONSENT event whose resolved type is consentRevoked; the handler
+        // must invoke buildConsentRevokedEvent rather than buildConsentAddedEvent.
+        Event event = createEventWithProperties(POST_AUTHORIZE_CONSENT);
+
+        org.wso2.carbon.identity.webhook.metadata.api.model.Event channelEvent =
+                new org.wso2.carbon.identity.webhook.metadata.api.model.Event(
+                        POST_AUTHORIZE_CONSENT, "description", CONSENT_REVOKED_EVENT_URI);
+        Channel channel = new Channel("Consents", "Consent channel", CONSENT_CHANNEL_URI,
+                Collections.singletonList(channelEvent));
+        EventProfile eventProfile = new EventProfile("WSO2", "uri", Collections.singletonList(channel));
+        when(mockedWebhookMetadataService.getSupportedEventProfiles())
+                .thenReturn(Collections.singletonList(eventProfile));
+
+        // Use a fresh builder mock so the times(0) assertion is not affected by invocations from other tests.
+        ConsentEventPayloadBuilder revokeBuilder = mock(ConsentEventPayloadBuilder.class);
+        when(revokeBuilder.getEventSchemaType()).thenReturn(Constants.EventSchema.WSO2);
+        when(revokeBuilder.buildConsentRevokedEvent(any(EventData.class)))
+                .thenReturn(Collections.singletonList(mockedEventPayload));
+
+        try (MockedStatic<PayloadBuilderFactory> factoryMocked = mockStatic(PayloadBuilderFactory.class)) {
+            factoryMocked.when(() -> PayloadBuilderFactory.getConsentEventPayloadBuilder(Constants.EventSchema.WSO2))
+                    .thenReturn(revokeBuilder);
+
+            try (MockedStatic<EventHookHandlerUtils> utilsMocked = mockStatic(EventHookHandlerUtils.class)) {
+                EventData eventData = mock(EventData.class);
+                when(eventData.getTenantDomain()).thenReturn(SAMPLE_TENANT_DOMAIN);
+                EventMetadata eventMetadata = mock(EventMetadata.class);
+                when(eventMetadata.getChannel()).thenReturn(CONSENT_CHANNEL_URI);
+                when(eventMetadata.getEvent()).thenReturn(CONSENT_REVOKED_EVENT_URI);
+                SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
+
+                utilsMocked.when(() -> EventHookHandlerUtils.buildEventDataProvider(any(Event.class)))
+                        .thenReturn(eventData);
+                utilsMocked.when(() -> EventHookHandlerUtils.getEventProfileManagerByProfile(anyString(), anyString()))
+                        .thenReturn(eventMetadata);
+                utilsMocked.when(() -> EventHookHandlerUtils.buildSecurityEventToken(any(), anyString()))
+                        .thenReturn(tokenPayload);
+                when(mockedEventPublisherService.canHandleEvent(any(EventContext.class))).thenReturn(true);
+
+                consentEventHookHandler.handleEvent(event);
+
+                verify(revokeBuilder, times(1)).buildConsentRevokedEvent(any(EventData.class));
+                verify(revokeBuilder, times(0)).buildConsentAddedEvent(any(EventData.class));
+                verify(mockedEventPublisherService, times(1)).publish(eq(tokenPayload), any());
             }
         }
     }
