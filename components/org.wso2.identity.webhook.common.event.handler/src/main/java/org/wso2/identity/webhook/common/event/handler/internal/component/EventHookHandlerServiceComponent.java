@@ -41,6 +41,8 @@ import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherServic
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
+import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentPurposeEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
@@ -50,6 +52,8 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPa
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.VerificationEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.ConsentEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.ConsentPurposeEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.CredentialEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.RegistrationEventHookHandler;
@@ -119,6 +123,22 @@ public class EventHookHandlerServiceComponent {
             if (isTokenEventHandlerEnabled != null && isTokenEventHandlerEnabled
                     .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(), new TokenEventHookHandler(), null);
+            }
+
+            String isConsentPurposeEventHandlerEnabled = getIdentityEventProperty(
+                    Constants.CONSENT_PURPOSE_EVENT_HOOK_NAME, Constants.CONSENT_PURPOSE_EVENT_HOOK_ENABLED);
+            if (isConsentPurposeEventHandlerEnabled != null && isConsentPurposeEventHandlerEnabled
+                    .equalsIgnoreCase(Boolean.TRUE.toString())) {
+                bundleContext.registerService(AbstractEventHandler.class.getName(),
+                        new ConsentPurposeEventHookHandler(), null);
+            }
+
+            String isConsentEventHandlerEnabled = getIdentityEventProperty(
+                    Constants.CONSENT_EVENT_HOOK_NAME, Constants.CONSENT_EVENT_HOOK_ENABLED);
+            if (isConsentEventHandlerEnabled != null && isConsentEventHandlerEnabled
+                    .equalsIgnoreCase(Boolean.TRUE.toString())) {
+                bundleContext.registerService(AbstractEventHandler.class.getName(),
+                        new ConsentEventHookHandler(), null);
             }
         } catch (IdentityEventServerException e) {
             log.error("Error while activating event handler.", e);
@@ -434,6 +454,59 @@ public class EventHookHandlerServiceComponent {
         log.debug("Remove Token Event Payload Builder service " + tokenEventPayloadBuilder.getEventSchemaType());
         EventHookHandlerDataHolder.getInstance().removeTokenEventPayloadBuilder(tokenEventPayloadBuilder);
     }
+
+    @Reference(
+            name = "consent.purpose.event.payload.builder",
+            service = ConsentPurposeEventPayloadBuilder.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeConsentPurposeEventPayloadBuilder"
+    )
+    protected void addConsentPurposeEventPayloadBuilder(
+            ConsentPurposeEventPayloadBuilder consentPurposeEventPayloadBuilder) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Add Consent Purpose Event Payload Builder service " +
+                    consentPurposeEventPayloadBuilder.getEventSchemaType());
+        }
+        EventHookHandlerDataHolder.getInstance()
+                .addConsentPurposeEventPayloadBuilder(consentPurposeEventPayloadBuilder);
+    }
+
+    protected void removeConsentPurposeEventPayloadBuilder(
+            ConsentPurposeEventPayloadBuilder consentPurposeEventPayloadBuilder) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Remove Consent Purpose Event Payload Builder service " +
+                    consentPurposeEventPayloadBuilder.getEventSchemaType());
+        }
+        EventHookHandlerDataHolder.getInstance()
+                .removeConsentPurposeEventPayloadBuilder(consentPurposeEventPayloadBuilder);
+    }
+
+    @Reference(
+            name = "consent.event.payload.builder",
+            service = ConsentEventPayloadBuilder.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeConsentEventPayloadBuilder"
+    )
+    protected void addConsentEventPayloadBuilder(ConsentEventPayloadBuilder consentEventPayloadBuilder) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Add Consent Event Payload Builder service " + consentEventPayloadBuilder.getEventSchemaType());
+        }
+        EventHookHandlerDataHolder.getInstance().addConsentEventPayloadBuilder(consentEventPayloadBuilder);
+    }
+
+    protected void removeConsentEventPayloadBuilder(ConsentEventPayloadBuilder consentEventPayloadBuilder) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Remove Consent Event Payload Builder service " + consentEventPayloadBuilder.getEventSchemaType());
+        }
+        EventHookHandlerDataHolder.getInstance().removeConsentEventPayloadBuilder(consentEventPayloadBuilder);
+    }
+
     /**
      * Get the identity property specified in identity-event.properties.
      *

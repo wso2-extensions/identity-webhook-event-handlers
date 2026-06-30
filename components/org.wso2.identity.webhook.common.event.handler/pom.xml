@@ -125,6 +125,10 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.consent.mgt</groupId>
+            <artifactId>org.wso2.carbon.consent.mgt.core</artifactId>
+        </dependency>
 
         <!--Test dependencies-->
         <dependency>
@@ -208,7 +212,11 @@
                             version="${carbon.identity.framework.imp.pkg.version.range}",
                             org.wso2.carbon.identity.compatibility.settings.core.*;
                             version="${carbon.identity.framework.imp.pkg.version.range}",
-                            org.slf4j; version="${org.slf4j.imp.pkg.version.range}"
+                            org.slf4j; version="${org.slf4j.imp.pkg.version.range}",
+                            org.wso2.carbon.consent.mgt.core.constant;
+                            version="${carbon.consent.mgt.imp.pkg.version.range}",
+                            org.wso2.carbon.consent.mgt.core.model;
+                            version="${carbon.consent.mgt.imp.pkg.version.range}"
                         </Import-Package>
                     </instructions>
                 </configuration>

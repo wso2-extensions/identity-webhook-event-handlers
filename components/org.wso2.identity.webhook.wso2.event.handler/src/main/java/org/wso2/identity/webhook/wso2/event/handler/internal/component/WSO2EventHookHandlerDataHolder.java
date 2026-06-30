@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.internal.component;
 
+import org.wso2.carbon.consent.mgt.core.ConsentManager;
 import org.wso2.carbon.identity.application.authentication.framework.UserSessionManagementService;
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
@@ -34,8 +35,8 @@ public class WSO2EventHookHandlerDataHolder {
     private RealmService realmService;
     private ClaimMetadataManagementService claimMetadataManagementService;
     private ApplicationManagementService applicationManagementService;
-
     private UserSessionManagementService userSessionManagementService;
+    private ConsentManager consentManager;
 
     private WSO2EventHookHandlerDataHolder() {
 
@@ -146,5 +147,25 @@ public class WSO2EventHookHandlerDataHolder {
     public void setApplicationManagementService(ApplicationManagementService applicationManagementService) {
 
         this.applicationManagementService = applicationManagementService;
+    }
+
+    /**
+     * Get the consent manager.
+     *
+     * @return ConsentManager instance.
+     */
+    public ConsentManager getConsentManager() {
+
+        return consentManager;
+    }
+
+    /**
+     * Set the consent manager.
+     *
+     * @param consentManager ConsentManager instance.
+     */
+    public void setConsentManager(ConsentManager consentManager) {
+
+        this.consentManager = consentManager;
     }
 }

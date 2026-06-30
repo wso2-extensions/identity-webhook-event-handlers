@@ -267,6 +267,11 @@
                 <version>${carbon.identity.framework.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.consent.mgt</groupId>
+                <artifactId>org.wso2.carbon.consent.mgt.core</artifactId>
+                <version>${carbon.consent.mgt.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -484,7 +489,7 @@
         <carbon.user.api.imp.pkg.version.range>[1.0.1, 2.0.0)</carbon.user.api.imp.pkg.version.range>
 
         <!--Carbon Identity Framework Version-->
-        <carbon.identity.framework.version>7.11.94</carbon.identity.framework.version>
+        <carbon.identity.framework.version>7.11.143</carbon.identity.framework.version>
         <carbon.identity.framework.imp.pkg.version.range>[5.20.90, 8.0.0)
         </carbon.identity.framework.imp.pkg.version.range>
 
@@ -562,5 +567,9 @@
         <org.wso2.identity.webhook.common.event.handler.version.range>[1.0.0, 2.0.0)
         </org.wso2.identity.webhook.common.event.handler.version.range>
         <org.slf4j.imp.pkg.version.range>[1.6.1,2.0.0)</org.slf4j.imp.pkg.version.range>
+
+        <!-- Carbon Consent Management -->
+        <carbon.consent.mgt.version>2.9.10</carbon.consent.mgt.version>
+        <carbon.consent.mgt.imp.pkg.version.range>[2.0.0, 3.0.0)</carbon.consent.mgt.imp.pkg.version.range>
     </properties>
 </project>

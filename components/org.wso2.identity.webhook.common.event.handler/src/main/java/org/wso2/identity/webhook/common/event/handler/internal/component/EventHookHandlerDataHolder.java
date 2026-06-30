@@ -26,6 +26,8 @@ import org.wso2.carbon.identity.flow.mgt.FlowMgtService;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
+import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentPurposeEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
@@ -60,6 +62,8 @@ public class EventHookHandlerDataHolder {
     private final List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders = new ArrayList<>();
     private final List<RegistrationEventPayloadBuilder> registrationEventPayloadBuilders = new ArrayList<>();
     private final List<TokenEventPayloadBuilder> tokenEventPayloadBuilders = new ArrayList<>();
+    private final List<ConsentPurposeEventPayloadBuilder> consentPurposeEventPayloadBuilders = new ArrayList<>();
+    private final List<ConsentEventPayloadBuilder> consentEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
 
@@ -419,6 +423,38 @@ public class EventHookHandlerDataHolder {
     public void setApplicationManagementService(ApplicationManagementService applicationManagementService) {
 
         this.applicationManagementService = applicationManagementService;
+    }
+
+    public List<ConsentPurposeEventPayloadBuilder> getConsentPurposeEventPayloadBuilders() {
+
+        return consentPurposeEventPayloadBuilders;
+    }
+
+    public void addConsentPurposeEventPayloadBuilder(
+            ConsentPurposeEventPayloadBuilder consentPurposeEventPayloadBuilder) {
+
+        consentPurposeEventPayloadBuilders.add(consentPurposeEventPayloadBuilder);
+    }
+
+    public void removeConsentPurposeEventPayloadBuilder(
+            ConsentPurposeEventPayloadBuilder consentPurposeEventPayloadBuilder) {
+
+        consentPurposeEventPayloadBuilders.remove(consentPurposeEventPayloadBuilder);
+    }
+
+    public List<ConsentEventPayloadBuilder> getConsentEventPayloadBuilders() {
+
+        return consentEventPayloadBuilders;
+    }
+
+    public void addConsentEventPayloadBuilder(ConsentEventPayloadBuilder consentEventPayloadBuilder) {
+
+        consentEventPayloadBuilders.add(consentEventPayloadBuilder);
+    }
+
+    public void removeConsentEventPayloadBuilder(ConsentEventPayloadBuilder consentEventPayloadBuilder) {
+
+        consentEventPayloadBuilders.remove(consentEventPayloadBuilder);
     }
 
     /**
