@@ -277,7 +277,6 @@ public class WSO2ConsentEventPayloadBuilder implements ConsentEventPayloadBuilde
                             .purpose(purpose)
                             .build();
                     payloads.add(new WSO2ConsentRevokedEventPayload.Builder()
-                            .subjectId(subjectId)
                             .consent(consent)
                             .tenant(tenant)
                             .organization(organization)
