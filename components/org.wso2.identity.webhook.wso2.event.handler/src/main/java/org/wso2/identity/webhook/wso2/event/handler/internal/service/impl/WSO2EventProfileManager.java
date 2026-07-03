@@ -30,6 +30,7 @@ import static org.wso2.identity.webhook.common.event.handler.api.constants.Const
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CONSENT_PURPOSE_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.CREDENTIAL_CHANGE_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.LOGIN_CHANNEL;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.ROLE_MANAGEMENT_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.SESSION_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.TOKEN_CHANNEL;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Channel.USER_OPERATION_CHANNEL;
@@ -47,6 +48,13 @@ import static org.wso2.identity.webhook.common.event.handler.api.constants.Const
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.CONSENT_ADDED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.CONSENT_REVOKED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.CONSENT_PURPOSE_VERSION_ADDED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.ROLE_CREATED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.ROLE_DELETED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.ROLE_GROUPS_UPDATED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.ROLE_IDP_GROUPS_UPDATED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.ROLE_PERMISSIONS_UPDATED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.ROLE_META_UPDATED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.ROLE_USERS_UPDATED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_CREATED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_PRESENTED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_REVOKED_EVENT;
@@ -140,6 +148,27 @@ public class WSO2EventProfileManager implements EventProfileManager {
                 Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
                 event = (flow != null && Flow.Name.CONSENT_REVOKE.equals(flow.getName()))
                         ? CONSENT_REVOKED_EVENT : CONSENT_ADDED_EVENT;
+            } else if (IdentityEventConstants.Event.POST_ADD_ROLE_V2_EVENT.equals(eventName)) {
+                channel = ROLE_MANAGEMENT_CHANNEL;
+                event = ROLE_CREATED_EVENT;
+            } else if (IdentityEventConstants.Event.POST_UPDATE_ROLE_V2_NAME_EVENT.equals(eventName)) {
+                channel = ROLE_MANAGEMENT_CHANNEL;
+                event = ROLE_META_UPDATED_EVENT;
+            } else if (IdentityEventConstants.Event.POST_DELETE_ROLE_V2_EVENT.equals(eventName)) {
+                channel = ROLE_MANAGEMENT_CHANNEL;
+                event = ROLE_DELETED_EVENT;
+            } else if (IdentityEventConstants.Event.POST_UPDATE_USER_LIST_OF_ROLE_V2_EVENT.equals(eventName)) {
+                channel = ROLE_MANAGEMENT_CHANNEL;
+                event = ROLE_USERS_UPDATED_EVENT;
+            } else if (IdentityEventConstants.Event.POST_UPDATE_GROUP_LIST_OF_ROLE_V2_EVENT.equals(eventName)) {
+                channel = ROLE_MANAGEMENT_CHANNEL;
+                event = ROLE_GROUPS_UPDATED_EVENT;
+            } else if (IdentityEventConstants.Event.POST_UPDATE_IDP_GROUP_LIST_OF_ROLE_V2_EVENT.equals(eventName)) {
+                channel = ROLE_MANAGEMENT_CHANNEL;
+                event = ROLE_IDP_GROUPS_UPDATED_EVENT;
+            } else if (IdentityEventConstants.Event.POST_UPDATE_PERMISSIONS_FOR_ROLE_V2_EVENT.equals(eventName)) {
+                channel = ROLE_MANAGEMENT_CHANNEL;
+                event = ROLE_PERMISSIONS_UPDATED_EVENT;
             }
         }
         return EventMetadata.builder()

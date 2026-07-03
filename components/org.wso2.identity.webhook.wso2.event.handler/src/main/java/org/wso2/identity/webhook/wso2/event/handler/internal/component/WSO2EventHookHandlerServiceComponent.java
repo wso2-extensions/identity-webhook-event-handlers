@@ -32,7 +32,10 @@ import org.wso2.carbon.identity.application.authentication.framework.UserSession
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
+import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
+import org.wso2.carbon.idp.mgt.IdpManager;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.identity.webhook.common.event.handler.api.builder.RoleManagementEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
@@ -42,6 +45,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPa
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2ConsentEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2ConsentPurposeEventPayloadBuilder;
+import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2RoleManagementEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.service.impl.WSO2EventProfileManager;
 import org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2CredentialEventPayloadBuilder;
@@ -90,6 +94,8 @@ public class WSO2EventHookHandlerServiceComponent {
                     org.wso2.identity.webhook.common.event.handler.api.builder.ConsentEventPayloadBuilder.class
                             .getName(),
                     new WSO2ConsentEventPayloadBuilder(), null);
+            context.getBundleContext().registerService(RoleManagementEventPayloadBuilder.class.getName(),
+                    new WSO2RoleManagementEventPayloadBuilder(), null);
         } catch (Exception e) {
             log.error("Error while activating event handler.", e);
         }
@@ -236,5 +242,61 @@ public class WSO2EventHookHandlerServiceComponent {
 
         log.debug("Unsetting the Consent Manager");
         WSO2EventHookHandlerDataHolder.getInstance().setConsentManager(null);
+    }
+
+    /**
+     * Set role management service implementation.
+     *
+     * @param roleManagementService RoleManagementService instance
+     */
+    @Reference(
+            name = "role.management.service.component",
+            service = RoleManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetRoleManagementService")
+    protected void setRoleManagementService(RoleManagementService roleManagementService) {
+
+        log.debug("Setting the Role Management Service");
+        WSO2EventHookHandlerDataHolder.getInstance().setRoleManagementService(roleManagementService);
+    }
+
+    /**
+     * Unset role management service implementation.
+     *
+     * @param roleManagementService RoleManagementService instance
+     */
+    protected void unsetRoleManagementService(RoleManagementService roleManagementService) {
+
+        log.debug("Unsetting the Role Management Service");
+        WSO2EventHookHandlerDataHolder.getInstance().setRoleManagementService(null);
+    }
+
+    /**
+     * Set IdP manager implementation.
+     *
+     * @param idpManager IdpManager instance
+     */
+    @Reference(
+            name = "idp.manager.component",
+            service = IdpManager.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetIdpManager")
+    protected void setIdpManager(IdpManager idpManager) {
+
+        log.debug("Setting the IdP Manager");
+        WSO2EventHookHandlerDataHolder.getInstance().setIdpManager(idpManager);
+    }
+
+    /**
+     * Unset IdP manager implementation.
+     *
+     * @param idpManager IdpManager instance
+     */
+    protected void unsetIdpManager(IdpManager idpManager) {
+
+        log.debug("Unsetting the IdP Manager");
+        WSO2EventHookHandlerDataHolder.getInstance().setIdpManager(null);
     }
 }

@@ -32,6 +32,7 @@ public class Constants {
     public static final String DATA_MAP = "dataMap";
     public static final String ORGANIZATION_AUTHENTICATOR = "OrganizationAuthenticator";
     public static final String SCIM2_USERS_ENDPOINT = "/scim2/Users";
+    public static final String SCIM2_ROLES_ENDPOINT = "/scim2/v2/Roles";
     public static final String CONSOLE_APP_CONSUMER_KEY = "CONSOLE";
     public static final String CONSOLE_APP_NAME = "Console";
 
@@ -45,5 +46,6 @@ public class Constants {
     public static final String USERNAME_CLAIM_URI = "http://wso2.org/claims/username";
     public static final String EMAIL_CLAIM_URI = "http://wso2.org/claims/emailaddress";
     public static final String WSO2_CLAIM_URI_PREFIX = "http://wso2.org/claims/";
+    public static final String AGENT_NAME_CLAIM_URI = "http://wso2.org/claims/agent/Name";
 
 }
