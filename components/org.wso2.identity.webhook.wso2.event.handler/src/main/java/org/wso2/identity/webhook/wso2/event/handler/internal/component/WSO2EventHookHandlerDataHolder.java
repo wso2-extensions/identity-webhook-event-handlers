@@ -22,6 +22,8 @@ import org.wso2.carbon.identity.application.authentication.framework.UserSession
 import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
+import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
+import org.wso2.carbon.idp.mgt.IdpManager;
 import org.wso2.carbon.user.core.service.RealmService;
 
 /**
@@ -34,6 +36,8 @@ public class WSO2EventHookHandlerDataHolder {
     private RealmService realmService;
     private ClaimMetadataManagementService claimMetadataManagementService;
     private ApplicationManagementService applicationManagementService;
+    private RoleManagementService roleManagementService;
+    private IdpManager idpManager;
 
     private UserSessionManagementService userSessionManagementService;
 
@@ -146,5 +150,45 @@ public class WSO2EventHookHandlerDataHolder {
     public void setApplicationManagementService(ApplicationManagementService applicationManagementService) {
 
         this.applicationManagementService = applicationManagementService;
+    }
+
+    /**
+     * Get the role management service.
+     *
+     * @return RoleManagementService instance.
+     */
+    public RoleManagementService getRoleManagementService() {
+
+        return roleManagementService;
+    }
+
+    /**
+     * Set the role management service.
+     *
+     * @param roleManagementService RoleManagementService instance.
+     */
+    public void setRoleManagementService(RoleManagementService roleManagementService) {
+
+        this.roleManagementService = roleManagementService;
+    }
+
+    /**
+     * Get the IdP manager.
+     *
+     * @return IdpManager instance.
+     */
+    public IdpManager getIdpManager() {
+
+        return idpManager;
+    }
+
+    /**
+     * Set the IdP manager.
+     *
+     * @param idpManager IdpManager instance.
+     */
+    public void setIdpManager(IdpManager idpManager) {
+
+        this.idpManager = idpManager;
     }
 }

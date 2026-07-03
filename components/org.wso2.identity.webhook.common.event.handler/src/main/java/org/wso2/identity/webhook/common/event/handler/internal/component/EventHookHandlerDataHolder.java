@@ -26,6 +26,7 @@ import org.wso2.carbon.identity.flow.mgt.FlowMgtService;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
+import org.wso2.identity.webhook.common.event.handler.api.builder.RoleManagementEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
@@ -60,6 +61,7 @@ public class EventHookHandlerDataHolder {
     private final List<VerificationEventPayloadBuilder> verificationEventPayloadBuilders = new ArrayList<>();
     private final List<RegistrationEventPayloadBuilder> registrationEventPayloadBuilders = new ArrayList<>();
     private final List<TokenEventPayloadBuilder> tokenEventPayloadBuilders = new ArrayList<>();
+    private final List<RoleManagementEventPayloadBuilder> roleManagementEventPayloadBuilders = new ArrayList<>();
 
     private EventHookHandlerDataHolder() {
 
@@ -439,5 +441,37 @@ public class EventHookHandlerDataHolder {
     public void setOrganizationManager(OrganizationManager organizationManager) {
 
         this.organizationManager = organizationManager;
+    }
+
+    /**
+     * Get the list of role management event payload builder implementations available.
+     *
+     * @return List of role management event payload builder implementations.
+     */
+    public List<RoleManagementEventPayloadBuilder> getRoleManagementEventPayloadBuilders() {
+
+        return roleManagementEventPayloadBuilders;
+    }
+
+    /**
+     * Add a role management event payload builder implementation.
+     *
+     * @param roleManagementEventPayloadBuilder Role management event payload builder implementation.
+     */
+    public void addRoleManagementEventPayloadBuilder(
+            RoleManagementEventPayloadBuilder roleManagementEventPayloadBuilder) {
+
+        roleManagementEventPayloadBuilders.add(roleManagementEventPayloadBuilder);
+    }
+
+    /**
+     * Remove a role management event payload builder implementation.
+     *
+     * @param roleManagementEventPayloadBuilder Role management event payload builder implementation.
+     */
+    public void removeRoleManagementEventPayloadBuilder(
+            RoleManagementEventPayloadBuilder roleManagementEventPayloadBuilder) {
+
+        roleManagementEventPayloadBuilders.remove(roleManagementEventPayloadBuilder);
     }
 }

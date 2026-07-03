@@ -48,6 +48,7 @@ public class Constants {
         public static final String VERIFICATION_CHANNEL = "https://schemas.identity.wso2.org/events/verification";
         public static final String SESSION_CHANNEL = "https://schemas.identity.wso2.org/events/session";
         public static final String TOKEN_CHANNEL = "https://schemas.identity.wso2.org/events/token";
+        public static final String ROLE_MANAGEMENT_CHANNEL = "https://schemas.identity.wso2.org/events/role";
     }
 
     /**
@@ -73,5 +74,31 @@ public class Constants {
         public static final String SESSION_PRESENTED_EVENT = "https://schemas.identity.wso2.org/events/session/event-type/sessionPresented";
         public static final String TOKEN_ISSUED_EVENT = "https://schemas.identity.wso2.org/events/token/event-type/accessTokenIssued";
         public static final String TOKEN_REVOKED_EVENT = "https://schemas.identity.wso2.org/events/token/event-type/accessTokenRevoked";
+        public static final String ROLE_CREATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleCreated";
+        public static final String ROLE_META_UPDATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleMetaUpdated";
+        public static final String ROLE_DELETED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleDeleted";
+        public static final String ROLE_USERS_UPDATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleUsersUpdated";
+        public static final String ROLE_GROUPS_UPDATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleGroupsUpdated";
+        public static final String ROLE_IDP_GROUPS_UPDATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleIdpGroupsUpdated";
+        public static final String ROLE_PERMISSIONS_UPDATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/rolePermissionsUpdated";
+    }
+
+    /**
+     * This class represents role management event handler configuration keys.
+     */
+    public static class RoleManagement {
+
+        public static final int ROLE_LIST_MAX_SIZE = 1000;
+
+        private RoleManagement() {
+
+        }
     }
 }
