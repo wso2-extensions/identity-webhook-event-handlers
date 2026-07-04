@@ -23,6 +23,7 @@ import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentPurpose
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.LoginEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.RegistrationEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.RoleManagementEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.UserOperationEventPayloadBuilder;
@@ -175,6 +176,26 @@ public class PayloadBuilderFactory {
         for (ConsentEventPayloadBuilder builder : consentEventPayloadBuilders) {
             if (builder.getEventSchemaType().equals(eventSchemaType)) {
                 return builder;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the role management event payload builder.
+     *
+     * @param eventSchemaType Event schema type.
+     * @return Role management event payload builder.
+     */
+    public static RoleManagementEventPayloadBuilder getRoleManagementEventPayloadBuilder(
+            Constants.EventSchema eventSchemaType) {
+
+        List<RoleManagementEventPayloadBuilder> roleManagementEventPayloadBuilders =
+                EventHookHandlerDataHolder.getInstance().getRoleManagementEventPayloadBuilders();
+        for (RoleManagementEventPayloadBuilder roleManagementEventPayloadBuilder :
+                roleManagementEventPayloadBuilders) {
+            if (roleManagementEventPayloadBuilder.getEventSchemaType().equals(eventSchemaType)) {
+                return roleManagementEventPayloadBuilder;
             }
         }
         return null;

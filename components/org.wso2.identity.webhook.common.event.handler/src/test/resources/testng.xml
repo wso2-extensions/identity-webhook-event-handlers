@@ -32,6 +32,7 @@
             <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.TokenEventHookHandlerTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.ConsentEventHookHandlerTest"/>
             <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.ConsentPurposeEventHookHandlerTest"/>
+            <class name="org.wso2.identity.webhook.common.event.handler.internal.handler.RoleManagementEventHookHandlerTest"/>
         </classes>
     </test>
 </suite>

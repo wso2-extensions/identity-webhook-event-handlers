@@ -34,6 +34,7 @@ import org.wso2.carbon.identity.core.ServiceURLBuilder;
 import org.wso2.carbon.identity.core.URLBuilderException;
 import org.wso2.carbon.identity.core.context.IdentityContext;
 import org.wso2.carbon.identity.core.context.model.Flow;
+import org.wso2.carbon.identity.core.context.model.RootOrganization;
 import org.wso2.carbon.identity.core.context.util.IdentityContextUtil;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
@@ -573,10 +574,14 @@ public class WSO2PayloadUtils {
      */
     public static Tenant buildTenant() {
 
-        String rootTenantId = String.valueOf(
-                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantId());
-        String rootTenantDomain = String.valueOf(
-                IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantDomain());
+        RootOrganization rootOrganization = IdentityContext.getThreadLocalIdentityContext()
+            .getRootOrganization();
+        if (rootOrganization == null) {
+            log.debug("Root organization is not available in the identity context.");
+            return null;
+        }
+        String rootTenantId = String.valueOf(rootOrganization.getAssociatedTenantId());
+        String rootTenantDomain = String.valueOf(rootOrganization.getAssociatedTenantDomain());
 
         return new Tenant(rootTenantId, rootTenantDomain);
     }

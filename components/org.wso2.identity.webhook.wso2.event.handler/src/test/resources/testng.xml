@@ -27,6 +27,7 @@
             <class name="org.wso2.identity.webhook.wso2.event.handler.internal.service.impl.WSO2EventProfileManagerTest"/>
             <class name="org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2ConsentEventPayloadBuilderTest"/>
             <class name="org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2ConsentPurposeEventPayloadBuilderTest"/>
+            <class name="org.wso2.identity.webhook.wso2.event.handler.api.builder.WSO2RoleManagementEventPayloadBuilderTest"/>
         </classes>
     </test>
 </suite>

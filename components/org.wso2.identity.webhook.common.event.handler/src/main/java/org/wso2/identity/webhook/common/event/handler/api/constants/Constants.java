@@ -50,6 +50,7 @@ public class Constants {
         public static final String TOKEN_CHANNEL = "https://schemas.identity.wso2.org/events/token";
         public static final String CONSENT_CHANNEL = "https://schemas.identity.wso2.org/events/consent";
         public static final String CONSENT_PURPOSE_CHANNEL = "https://schemas.identity.wso2.org/events/consent-purpose";
+        public static final String ROLE_MANAGEMENT_CHANNEL = "https://schemas.identity.wso2.org/events/role";
     }
 
     /**
@@ -81,5 +82,31 @@ public class Constants {
                 "https://schemas.identity.wso2.org/events/consent/event-type/consentAdded";
         public static final String CONSENT_REVOKED_EVENT =
                 "https://schemas.identity.wso2.org/events/consent/event-type/consentRevoked";
+        public static final String ROLE_CREATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleCreated";
+        public static final String ROLE_META_UPDATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleMetaUpdated";
+        public static final String ROLE_DELETED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleDeleted";
+        public static final String ROLE_USERS_UPDATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleUsersUpdated";
+        public static final String ROLE_GROUPS_UPDATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleGroupsUpdated";
+        public static final String ROLE_IDP_GROUPS_UPDATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/roleIdpGroupsUpdated";
+        public static final String ROLE_PERMISSIONS_UPDATED_EVENT =
+                "https://schemas.identity.wso2.org/events/role/event-type/rolePermissionsUpdated";
+    }
+
+    /**
+     * This class represents role management event handler configuration keys.
+     */
+    public static class RoleManagement {
+
+        public static final int ROLE_LIST_MAX_SIZE = 1000;
+
+        private RoleManagement() {
+
+        }
     }
 }

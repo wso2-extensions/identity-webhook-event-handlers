@@ -43,6 +43,7 @@ import org.wso2.carbon.identity.topic.management.api.service.TopicManagementServ
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentPurposeEventPayloadBuilder;
+import org.wso2.identity.webhook.common.event.handler.api.builder.RoleManagementEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.TokenEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
@@ -57,6 +58,7 @@ import org.wso2.identity.webhook.common.event.handler.internal.handler.ConsentPu
 import org.wso2.identity.webhook.common.event.handler.internal.handler.CredentialEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.LoginEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.RegistrationEventHookHandler;
+import org.wso2.identity.webhook.common.event.handler.internal.handler.RoleManagementEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.SessionEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.TokenEventHookHandler;
 import org.wso2.identity.webhook.common.event.handler.internal.handler.UserOperationEventHookHandler;
@@ -139,6 +141,15 @@ public class EventHookHandlerServiceComponent {
                     .equalsIgnoreCase(Boolean.TRUE.toString())) {
                 bundleContext.registerService(AbstractEventHandler.class.getName(),
                         new ConsentEventHookHandler(), null);
+            }
+
+            String isRoleManagementEventHandlerEnabled =
+                    getIdentityEventProperty(Constants.ROLE_MANAGEMENT_EVENT_HOOK_NAME,
+                            Constants.ROLE_MANAGEMENT_EVENT_HOOK_ENABLED);
+            if (isRoleManagementEventHandlerEnabled != null && isRoleManagementEventHandlerEnabled
+                    .equalsIgnoreCase(Boolean.TRUE.toString())) {
+                bundleContext.registerService(AbstractEventHandler.class.getName(),
+                        new RoleManagementEventHookHandler(), null);
             }
         } catch (IdentityEventServerException e) {
             log.error("Error while activating event handler.", e);
@@ -505,6 +516,31 @@ public class EventHookHandlerServiceComponent {
             log.debug("Remove Consent Event Payload Builder service " + consentEventPayloadBuilder.getEventSchemaType());
         }
         EventHookHandlerDataHolder.getInstance().removeConsentEventPayloadBuilder(consentEventPayloadBuilder);
+    }
+
+    @Reference(
+            name = "role.management.event.payload.builder",
+            service = RoleManagementEventPayloadBuilder.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "removeRoleManagementEventPayloadBuilder"
+    )
+    protected void addRoleManagementEventPayloadBuilder(
+            RoleManagementEventPayloadBuilder roleManagementEventPayloadBuilder) {
+
+        log.debug("Add Role Management Event Payload Builder service " +
+                roleManagementEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance()
+                .addRoleManagementEventPayloadBuilder(roleManagementEventPayloadBuilder);
+    }
+
+    protected void removeRoleManagementEventPayloadBuilder(
+            RoleManagementEventPayloadBuilder roleManagementEventPayloadBuilder) {
+
+        log.debug("Remove Role Management Event Payload Builder service " +
+                roleManagementEventPayloadBuilder.getEventSchemaType());
+        EventHookHandlerDataHolder.getInstance()
+                .removeRoleManagementEventPayloadBuilder(roleManagementEventPayloadBuilder);
     }
 
     /**
