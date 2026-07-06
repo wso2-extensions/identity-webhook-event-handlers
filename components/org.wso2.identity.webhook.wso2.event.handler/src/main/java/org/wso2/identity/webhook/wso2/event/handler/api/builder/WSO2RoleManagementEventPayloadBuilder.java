@@ -72,7 +72,6 @@ import java.util.function.IntConsumer;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.RoleManagement.ROLE_LIST_MAX_SIZE;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.AGENT_NAME_CLAIM_URI;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_ROLES_ENDPOINT;
-import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.SCIM2_USERS_ENDPOINT;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.USERNAME_CLAIM_URI;
 
 /**
@@ -482,15 +481,13 @@ public class WSO2RoleManagementEventPayloadBuilder implements RoleManagementEven
 
     /**
      * Build user entries carrying id + user-store domain + selected claims (username,
-     * agent name) + SCIM ref. The agent-name claim is emitted only when non-blank;
-     * agents are identified uniformly through this claim rather than a separate representation.
+     * agent name). The agent-name claim is emitted only when non-blank; agents are
+     * identified uniformly through this claim rather than a separate representation.
      */
     private List<UserEntry> toEnrichedUserEntries(List<String> userIds, AbstractUserStoreManager userManager) {
 
         List<UserEntry> entries = new ArrayList<>();
-        String userRefBase = WSO2PayloadUtils.constructFullURLWithEndpoint(SCIM2_USERS_ENDPOINT);
         for (String userId : userIds) {
-            String ref = userRefBase != null ? userRefBase + "/" + userId : null;
             String userStoreDomain = resolveUserStoreDomain(userId, userManager);
             Map<String, String> claimValues = resolveUserClaims(userId, userManager,
                     new String[]{USERNAME_CLAIM_URI, AGENT_NAME_CLAIM_URI});
@@ -503,7 +500,7 @@ public class WSO2RoleManagementEventPayloadBuilder implements RoleManagementEven
             if (StringUtils.isNotBlank(agentName)) {
                 claims.add(new UserClaim.Builder().uri(AGENT_NAME_CLAIM_URI).value(agentName).build());
             }
-            entries.add(new UserEntry(userId, userStoreDomain, claims.isEmpty() ? null : claims, ref));
+            entries.add(new UserEntry(userId, userStoreDomain, claims.isEmpty() ? null : claims));
         }
         return entries;
     }
