@@ -240,13 +240,11 @@ public class WSO2RoleManagementEventPayloadBuilderTest {
         UserEntry user1 = created.getRole().getUsers().get(0);
         assertEquals(user1.getId(), USER_ID_1);
         assertEquals(user1.getUserStoreDomain(), USER_STORE_1);
-        assertNotNull(user1.getRef());
         assertUsernameClaim(user1, USERNAME_1);
         assertNoAgentNameClaim(user1);
         UserEntry user2 = created.getRole().getUsers().get(1);
         assertEquals(user2.getId(), USER_ID_2);
         assertEquals(user2.getUserStoreDomain(), USER_STORE_2);
-        assertNotNull(user2.getRef());
         assertUsernameClaim(user2, USERNAME_2);
         assertAgentNameClaim(user2, AGENT_NAME_2);
         assertNotNull(created.getRole().getGroups());
@@ -339,7 +337,6 @@ public class WSO2RoleManagementEventPayloadBuilderTest {
         UserEntry addedUser = userList.getRole().getAddedUsers().get(0);
         assertEquals(addedUser.getId(), USER_ID_1);
         assertEquals(addedUser.getUserStoreDomain(), USER_STORE_1);
-        assertNotNull(addedUser.getRef());
         assertUsernameClaim(addedUser, USERNAME_1);
         assertNoAgentNameClaim(addedUser);
         assertNotNull(userList.getRole().getRemovedUsers());
@@ -347,7 +344,6 @@ public class WSO2RoleManagementEventPayloadBuilderTest {
         UserEntry removedUser = userList.getRole().getRemovedUsers().get(0);
         assertEquals(removedUser.getId(), USER_ID_2);
         assertEquals(removedUser.getUserStoreDomain(), USER_STORE_2);
-        assertNotNull(removedUser.getRef());
         assertUsernameClaim(removedUser, USERNAME_2);
         assertAgentNameClaim(removedUser, AGENT_NAME_2);
     }

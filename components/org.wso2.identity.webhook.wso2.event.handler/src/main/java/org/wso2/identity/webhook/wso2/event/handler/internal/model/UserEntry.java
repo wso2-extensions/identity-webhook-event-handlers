@@ -25,9 +25,9 @@ import java.util.List;
 
 /**
  * User entry in a role membership list. Carries the user's id, the user-store domain,
- * a list of claims (e.g. username, agent name), and a SCIM resource ref. Agents —
- * identified by their user-store — surface additional identifiers as claims rather
- * than a separate representation.
+ * and a list of claims (e.g. username, agent name). Agents — identified by their
+ * user-store — surface additional identifiers as claims rather than a separate
+ * representation.
  */
 public class UserEntry {
 
@@ -36,15 +36,12 @@ public class UserEntry {
     private String userStoreDomain;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<UserClaim> claims;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String ref;
 
-    public UserEntry(String id, String userStoreDomain, List<UserClaim> claims, String ref) {
+    public UserEntry(String id, String userStoreDomain, List<UserClaim> claims) {
 
         this.id = id;
         this.userStoreDomain = userStoreDomain;
         this.claims = claims;
-        this.ref = ref;
     }
 
     public String getId() {
@@ -60,10 +57,5 @@ public class UserEntry {
     public List<UserClaim> getClaims() {
 
         return claims;
-    }
-
-    public String getRef() {
-
-        return ref;
     }
 }
