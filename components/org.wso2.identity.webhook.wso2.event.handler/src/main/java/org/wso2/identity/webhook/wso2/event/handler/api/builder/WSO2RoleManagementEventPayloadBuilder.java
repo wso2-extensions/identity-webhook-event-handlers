@@ -150,14 +150,16 @@ public class WSO2RoleManagementEventPayloadBuilder implements RoleManagementEven
         Map<String, Object> props = eventData.getEventParams();
         String roleId = (String) props.get(IdentityEventConstants.EventProperty.ROLE_ID);
         String roleName = (String) props.get(IdentityEventConstants.EventProperty.ROLE_NAME);
+        String audience = (String) props.get(IdentityEventConstants.EventProperty.AUDIENCE);
+        String audienceId = (String) props.get(IdentityEventConstants.EventProperty.AUDIENCE_ID);
+        String audienceName = (String) props.get(IdentityEventConstants.EventProperty.AUDIENCE_NAME);
 
         EnvelopeContext ctx = new EnvelopeContext();
 
         RoleRef role = new RoleRef();
         role.setId(roleId);
-        if (StringUtils.isNotBlank(roleName)) {
-            role.setName(roleName);
-        }
+        role.setName(roleName);
+        role.setAudience(buildRoleAudience(audience, audienceId, audienceName));
 
         return new WSO2RoleDeletedEventPayload.Builder()
                 .tenant(ctx.tenant)
