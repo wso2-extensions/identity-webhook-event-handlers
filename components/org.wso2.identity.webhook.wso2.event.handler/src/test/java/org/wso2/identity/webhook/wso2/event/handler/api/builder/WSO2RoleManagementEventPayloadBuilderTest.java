@@ -301,6 +301,7 @@ public class WSO2RoleManagementEventPayloadBuilderTest {
         EventData eventData = mock(EventData.class);
         Map<String, Object> props = new HashMap<>();
         props.put(IdentityEventConstants.EventProperty.ROLE_ID, ROLE_ID);
+        props.put(IdentityEventConstants.EventProperty.ROLE_NAME, ROLE_NAME);
         when(eventData.getEventParams()).thenReturn(props);
         when(eventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
 
@@ -312,6 +313,8 @@ public class WSO2RoleManagementEventPayloadBuilderTest {
         WSO2RoleDeletedEventPayload deleted = (WSO2RoleDeletedEventPayload) payload;
         assertNotNull(deleted.getRole());
         assertEquals(deleted.getRole().getId(), ROLE_ID);
+        assertEquals(deleted.getRole().getName(), ROLE_NAME);
+        assertEquals(deleted.getAction(), "USER_GROUP_UPDATE");
     }
 
     @Test

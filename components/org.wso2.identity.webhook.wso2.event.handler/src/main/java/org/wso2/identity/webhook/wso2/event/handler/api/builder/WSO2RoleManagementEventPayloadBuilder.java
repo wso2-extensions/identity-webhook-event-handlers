@@ -149,13 +149,15 @@ public class WSO2RoleManagementEventPayloadBuilder implements RoleManagementEven
 
         Map<String, Object> props = eventData.getEventParams();
         String roleId = (String) props.get(IdentityEventConstants.EventProperty.ROLE_ID);
+        String roleName = (String) props.get(IdentityEventConstants.EventProperty.ROLE_NAME);
 
         EnvelopeContext ctx = new EnvelopeContext();
 
-        // roleDeleted: no enrichment — role is already gone. Only id in payload.
-        // ref is intentionally omitted since the SCIM resource no longer exists.
         RoleRef role = new RoleRef();
         role.setId(roleId);
+        if (StringUtils.isNotBlank(roleName)) {
+            role.setName(roleName);
+        }
 
         return new WSO2RoleDeletedEventPayload.Builder()
                 .tenant(ctx.tenant)
