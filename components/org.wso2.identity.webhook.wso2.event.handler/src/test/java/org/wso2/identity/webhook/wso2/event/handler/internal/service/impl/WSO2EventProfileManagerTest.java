@@ -99,25 +99,29 @@ public class WSO2EventProfileManagerTest {
     @DataProvider(name = "consentEventDataProvider")
     public Object[][] consentEventDataProvider() {
 
-        // eventName, currentFlowName (null means no active flow), expectedChannel, expectedEvent.
+        // eventName, currentFlowName (null means no active flow), initiatingPersona, expectedChannel, expectedEvent.
         return new Object[][]{
-                {POST_ADD_RECEIPT, null, CONSENT_CHANNEL, CONSENT_ADDED_EVENT},
-                {POST_ADD_PURPOSE_VERSION, null, CONSENT_PURPOSE_CHANNEL, CONSENT_PURPOSE_VERSION_ADDED_EVENT},
+                {POST_ADD_RECEIPT, null, null, CONSENT_CHANNEL, CONSENT_ADDED_EVENT},
+                {POST_ADD_PURPOSE_VERSION, null, null, CONSENT_PURPOSE_CHANNEL, CONSENT_PURPOSE_VERSION_ADDED_EVENT},
                 // authorizeConsent publishes a single POST_AUTHORIZE_CONSENT event; the active flow decides the type.
-                {POST_AUTHORIZE_CONSENT, Flow.Name.CONSENT_ACCEPT, CONSENT_CHANNEL, CONSENT_ADDED_EVENT},
-                {POST_AUTHORIZE_CONSENT, Flow.Name.CONSENT_REJECT, CONSENT_CHANNEL, CONSENT_ADDED_EVENT},
-                {POST_AUTHORIZE_CONSENT, Flow.Name.CONSENT_REVOKE, CONSENT_CHANNEL, CONSENT_REVOKED_EVENT},
-                {POST_AUTHORIZE_CONSENT, null, CONSENT_CHANNEL, CONSENT_ADDED_EVENT}
+                {POST_AUTHORIZE_CONSENT, Flow.Name.CONSENT_CREATE, Flow.InitiatingPersona.ADMIN, CONSENT_CHANNEL,
+                        CONSENT_ADDED_EVENT},
+                {POST_AUTHORIZE_CONSENT, Flow.Name.CONSENT_GRANT, Flow.InitiatingPersona.USER, CONSENT_CHANNEL,
+                        CONSENT_ADDED_EVENT},
+                {POST_AUTHORIZE_CONSENT, Flow.Name.CONSENT_REVOKE, Flow.InitiatingPersona.USER, CONSENT_CHANNEL,
+                        CONSENT_REVOKED_EVENT},
+                {POST_AUTHORIZE_CONSENT, null, null, CONSENT_CHANNEL, CONSENT_ADDED_EVENT}
         };
     }
 
     @Test(dataProvider = "consentEventDataProvider")
     public void testResolveEventMetadataForConsentEvents(String eventName, Flow.Name currentFlowName,
+                                                         Flow.InitiatingPersona initiatingPersona,
                                                          String expectedChannel, String expectedEvent) {
 
         Flow flow = (currentFlowName == null) ? null : new Flow.Builder()
                 .name(currentFlowName)
-                .initiatingPersona(Flow.InitiatingPersona.USER)
+                .initiatingPersona(initiatingPersona)
                 .build();
         Mockito.when(mockIdentityContext.getCurrentFlow()).thenReturn(flow);
 
