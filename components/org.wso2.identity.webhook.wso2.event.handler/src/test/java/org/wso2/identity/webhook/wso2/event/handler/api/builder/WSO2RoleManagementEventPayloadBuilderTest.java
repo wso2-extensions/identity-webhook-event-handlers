@@ -85,16 +85,22 @@ public class WSO2RoleManagementEventPayloadBuilderTest {
     private static final String AUDIENCE_NAME = "TestApp";
     private static final String USER_ID_1 = "user-001";
     private static final String USER_ID_2 = "user-002";
+    private static final String USER_ID_3 = "user-003";
     private static final String USERNAME_1 = "alice";
     private static final String USERNAME_2 = "agent-01";
+    private static final String USERNAME_3 = "bob";
     private static final String AGENT_NAME_2 = "Support Agent";
     private static final String USER_STORE_1 = "PRIMARY";
     private static final String USER_STORE_2 = "AGENT";
+    private static final String USER_STORE_3 = "SECONDARY";
     private static final String USERNAME_CLAIM_URI = "http://wso2.org/claims/username";
     private static final String AGENT_NAME_CLAIM_URI = "http://wso2.org/claims/agent/Name";
     private static final String GROUP_ID_1 = "group-001";
     private static final String GROUP_NAME_1 = "dev-team";
     private static final String GROUP_USER_STORE = "PRIMARY";
+    private static final String GROUP_ID_2 = "group-002";
+    private static final String GROUP_NAME_2 = "qa-team";
+    private static final String GROUP_USER_STORE_2 = "SECONDARY";
     private static final String IDP_ID_1 = "idp-resource-001";
     private static final String IDP_NAME_1 = "SampleIdP";
 
@@ -141,10 +147,23 @@ public class WSO2RoleManagementEventPayloadBuilderTest {
         when(userStoreManager.getUserClaimValuesWithID(
                 USER_ID_2, new String[]{USERNAME_CLAIM_URI, AGENT_NAME_CLAIM_URI}, null))
                 .thenReturn(user2Claims);
+        // USER_ID_3 → username claim already carries the user-store domain prefix; the domain
+        // must be cropped from it. getUserNameFromUserID is intentionally left unstubbed
+        // (returns null) to prove the separate domain lookup is skipped.
+        Map<String, String> user3Claims = new HashMap<>();
+        user3Claims.put(USERNAME_CLAIM_URI, USER_STORE_3 + "/" + USERNAME_3);
+        when(userStoreManager.getUserClaimValuesWithID(
+                USER_ID_3, new String[]{USERNAME_CLAIM_URI, AGENT_NAME_CLAIM_URI}, null))
+                .thenReturn(user3Claims);
         Group group1 = mock(Group.class);
         when(group1.getGroupName()).thenReturn(GROUP_NAME_1);
         when(group1.getUserStoreDomain()).thenReturn(GROUP_USER_STORE);
         when(userStoreManager.getGroup(GROUP_ID_1, null)).thenReturn(group1);
+        // GROUP_ID_2 → name already carries the user-store domain prefix.
+        Group group2 = mock(Group.class);
+        when(group2.getGroupName()).thenReturn(GROUP_USER_STORE_2 + "/" + GROUP_NAME_2);
+        when(group2.getUserStoreDomain()).thenReturn("");
+        when(userStoreManager.getGroup(GROUP_ID_2, null)).thenReturn(group2);
         WSO2EventHookHandlerDataHolder.getInstance().setRealmService(realmService);
 
         // Wire IdpManager for idpName enrichment.
@@ -352,6 +371,28 @@ public class WSO2RoleManagementEventPayloadBuilderTest {
     }
 
     @Test
+    public void testBuildRoleUsersUpdatedEventCropsUserStoreFromUsername() throws IdentityEventException {
+
+        EventData eventData = mock(EventData.class);
+        Map<String, Object> props = new HashMap<>();
+        props.put(IdentityEventConstants.EventProperty.ROLE_ID, ROLE_ID);
+        props.put(IdentityEventConstants.EventProperty.NEW_USER_ID_LIST, Arrays.asList(USER_ID_3));
+        when(eventData.getEventParams()).thenReturn(props);
+        when(eventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
+
+        EventPayload payload = builder.buildRoleUsersUpdatedEvent(eventData);
+
+        WSO2RoleUsersUpdatedEventPayload userList = (WSO2RoleUsersUpdatedEventPayload) payload;
+        assertNotNull(userList.getRole().getAddedUsers());
+        assertEquals(userList.getRole().getAddedUsers().size(), 1);
+        UserEntry addedUser = userList.getRole().getAddedUsers().get(0);
+        assertEquals(addedUser.getId(), USER_ID_3);
+        // Domain cropped from the prefixed username; plain username and cropped domain reported separately.
+        assertEquals(addedUser.getUserStoreDomain(), USER_STORE_3);
+        assertUsernameClaim(addedUser, USERNAME_3);
+    }
+
+    @Test
     public void testBuildRoleGroupsUpdatedEventReturnsCorrectType() throws IdentityEventException {
 
         EventData eventData = mock(EventData.class);
@@ -375,6 +416,29 @@ public class WSO2RoleManagementEventPayloadBuilderTest {
         assertEquals(addedGroup.getId(), GROUP_ID_1);
         assertEquals(addedGroup.getGroupName(), GROUP_NAME_1);
         assertEquals(addedGroup.getUserStoreDomain(), GROUP_USER_STORE);
+    }
+
+    @Test
+    public void testBuildRoleGroupsUpdatedEventCropsUserStoreFromGroupName() throws IdentityEventException {
+
+        EventData eventData = mock(EventData.class);
+        Map<String, Object> props = new HashMap<>();
+        props.put(IdentityEventConstants.EventProperty.ROLE_ID, ROLE_ID);
+        props.put(IdentityEventConstants.EventProperty.NEW_GROUP_ID_LIST, Arrays.asList(GROUP_ID_2));
+        props.put(IdentityEventConstants.EventProperty.DELETE_GROUP_ID_LIST, Collections.emptyList());
+        when(eventData.getEventParams()).thenReturn(props);
+        when(eventData.getTenantDomain()).thenReturn(TENANT_DOMAIN);
+
+        EventPayload payload = builder.buildRoleGroupsUpdatedEvent(eventData);
+
+        WSO2RoleGroupsUpdatedEventPayload groupList = (WSO2RoleGroupsUpdatedEventPayload) payload;
+        assertNotNull(groupList.getRole().getAddedGroups());
+        assertEquals(groupList.getRole().getAddedGroups().size(), 1);
+        GroupEntry addedGroup = groupList.getRole().getAddedGroups().get(0);
+        assertEquals(addedGroup.getId(), GROUP_ID_2);
+        // Domain cropped from the prefixed name; plain name and cropped domain reported separately.
+        assertEquals(addedGroup.getGroupName(), GROUP_NAME_2);
+        assertEquals(addedGroup.getUserStoreDomain(), GROUP_USER_STORE_2);
     }
 
     @Test
