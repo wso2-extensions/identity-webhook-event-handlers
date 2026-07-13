@@ -492,13 +492,23 @@ public class WSO2RoleManagementEventPayloadBuilder implements RoleManagementEven
 
         List<UserEntry> entries = new ArrayList<>();
         for (String userId : userIds) {
-            String userStoreDomain = resolveUserStoreDomain(userId, userManager);
             Map<String, String> claimValues = resolveUserClaims(userId, userManager,
                     new String[]{USERNAME_CLAIM_URI, AGENT_NAME_CLAIM_URI});
             List<UserClaim> claims = new ArrayList<>();
             String username = claimValues.get(USERNAME_CLAIM_URI);
+            String userStoreDomain = null;
             if (StringUtils.isNotBlank(username)) {
+                // When the username already carries the user-store domain prefix
+                // (e.g. PRIMARY/alice), crop it off and use it as the domain rather
+                // than resolving the domain separately.
+                if (StringUtils.contains(username, UserCoreConstants.DOMAIN_SEPARATOR)) {
+                    userStoreDomain = UserCoreUtil.extractDomainFromName(username);
+                    username = UserCoreUtil.removeDomainFromName(username);
+                }
                 claims.add(new UserClaim.Builder().uri(USERNAME_CLAIM_URI).value(username).build());
+            }
+            if (userStoreDomain == null) {
+                userStoreDomain = resolveUserStoreDomain(userId, userManager);
             }
             String agentName = claimValues.get(AGENT_NAME_CLAIM_URI);
             if (StringUtils.isNotBlank(agentName)) {
@@ -550,7 +560,10 @@ public class WSO2RoleManagementEventPayloadBuilder implements RoleManagementEven
     /**
      * Resolve groups for the given group IDs and return enriched entries. Each entry
      * carries the plain group name and its owning user-store separately (never prefixed).
-     * On lookup failure both fields are null.
+     * When the resolved group name already has the user-store domain appended
+     * (e.g. {@code PRIMARY/dev-team}), the domain is cropped from the name and used
+     * directly instead of reading it off the {@link Group}. On lookup failure both
+     * fields are null.
      */
     private List<GroupEntry> toEnrichedGroupEntries(List<String> groupIds, AbstractUserStoreManager userManager) {
 
@@ -561,10 +574,17 @@ public class WSO2RoleManagementEventPayloadBuilder implements RoleManagementEven
                 entries.add(new GroupEntry(groupId, null, null));
                 continue;
             }
-            String domain = StringUtils.isNotBlank(group.getUserStoreDomain())
-                    ? group.getUserStoreDomain()
-                    : UserCoreConstants.PRIMARY_DEFAULT_DOMAIN_NAME;
-            entries.add(new GroupEntry(groupId, group.getGroupName(), domain));
+            String groupName = group.getGroupName();
+            String domain;
+            if (StringUtils.contains(groupName, UserCoreConstants.DOMAIN_SEPARATOR)) {
+                domain = UserCoreUtil.extractDomainFromName(groupName);
+                groupName = UserCoreUtil.removeDomainFromName(groupName);
+            } else {
+                domain = StringUtils.isNotBlank(group.getUserStoreDomain())
+                        ? group.getUserStoreDomain()
+                        : UserCoreConstants.PRIMARY_DEFAULT_DOMAIN_NAME;
+            }
+            entries.add(new GroupEntry(groupId, groupName, domain));
         }
         return entries;
     }
