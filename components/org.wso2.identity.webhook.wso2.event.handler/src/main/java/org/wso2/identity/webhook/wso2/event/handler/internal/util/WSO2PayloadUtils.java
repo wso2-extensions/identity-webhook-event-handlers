@@ -66,6 +66,7 @@ import java.util.regex.Pattern;
 
 import static org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants.USERNAME_CLAIM;
 import static org.wso2.carbon.identity.event.IdentityEventConstants.EventProperty.USER_STORE_MANAGER;
+import static org.wso2.carbon.user.core.constants.UserCoreErrorConstants.ErrorMessages.ERROR_CODE_NON_EXISTING_USER;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.CREATED_CLAIM;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.EMAIL_CLAIM_URI;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.LOCATION_CLAIM;
@@ -140,7 +141,11 @@ public class WSO2PayloadUtils {
             claimValues = ((UniqueIDUserStoreManager) userStoreManager).getUserClaimValuesWithID(
                     userId, new String[] {USERNAME_CLAIM_URI, EMAIL_CLAIM_URI}, null);
         } catch (org.wso2.carbon.user.core.UserStoreException e) {
-            log.error("Error while retrieving user claims for user: " + userId + " in tenant: " + tenantDomain, e);
+            if (ERROR_CODE_NON_EXISTING_USER.getCode().equals(e.getErrorCode())) {
+                log.debug("User with ID: " + userId + " does not exist in tenant: " + tenantDomain);
+            } else {
+                log.error("Error while retrieving user claims for user: " + userId + " in tenant: " + tenantDomain, e);
+            }
             return;
         }
 
