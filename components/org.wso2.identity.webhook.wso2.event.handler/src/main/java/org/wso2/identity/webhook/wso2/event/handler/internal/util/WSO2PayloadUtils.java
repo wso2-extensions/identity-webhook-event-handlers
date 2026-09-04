@@ -142,7 +142,9 @@ public class WSO2PayloadUtils {
                     userId, new String[] {USERNAME_CLAIM_URI, EMAIL_CLAIM_URI}, null);
         } catch (org.wso2.carbon.user.core.UserStoreException e) {
             if (ERROR_CODE_NON_EXISTING_USER.getCode().equals(e.getErrorCode())) {
-                log.debug("User with ID: " + userId + " does not exist in tenant: " + tenantDomain);
+                if (log.isDebugEnabled()) {
+                    log.debug("User with ID: " + userId + " does not exist in tenant: " + tenantDomain);
+                }
             } else {
                 log.error("Error while retrieving user claims for user: " + userId + " in tenant: " + tenantDomain, e);
             }
