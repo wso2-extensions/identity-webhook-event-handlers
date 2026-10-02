@@ -207,12 +207,8 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
             throw new IdentityRuntimeException("Unsupported event type: " + eventName);
         }
 
-        Subject subject = null;
-        if (schema.equals(org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.CAEP)) {
-            subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
-        } 
-        SecurityEventTokenPayload securityEventTokenPayload =
-                EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri, subject);
+        SecurityEventTokenPayload securityEventTokenPayload = 
+                EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri, eventData, schema);
         EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                 .publish(securityEventTokenPayload, eventContext);
     }

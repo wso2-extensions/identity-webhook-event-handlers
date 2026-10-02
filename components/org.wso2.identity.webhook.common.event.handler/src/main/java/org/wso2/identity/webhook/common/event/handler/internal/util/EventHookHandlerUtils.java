@@ -51,6 +51,7 @@ import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
@@ -121,7 +122,7 @@ public class EventHookHandlerUtils {
     public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload, String eventUri)
             throws IdentityEventException {
 
-        return buildSecurityEventToken(eventPayload, eventUri, null);
+        return buildSecurityEventToken(eventPayload, eventUri, null, null);
     }
 
     /**
@@ -130,8 +131,8 @@ public class EventHookHandlerUtils {
      * @param eventUri Event URI.
      * @return Audience string.
      */
-    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload,
-                                                                    String eventUri, Subject subId)
+    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload, String eventUri,
+                                                                    EventData eventData, EventSchema schema)
             throws IdentityEventException {
 
         if (eventPayload == null) {
@@ -145,9 +146,17 @@ public class EventHookHandlerUtils {
         Map<String, EventPayload> eventMap = new HashMap<>();
         eventMap.put(eventUri, eventPayload);
 
+        Subject subId = null;
+        long iat = System.currentTimeMillis();
+        if (EventSchema.CAEP.equals(schema)) {
+            subId = extractSubjectFromEventData(eventData);
+            // JWT iat (RFC 7519 NumericDate) and CAEP's event_timestamp both require epoch seconds.
+            iat = iat / 1000;
+        }
+
         return SecurityEventTokenPayload.builder()
                 .iss(constructBaseURL())
-                .iat(System.currentTimeMillis())
+                .iat(iat)
                 .jti(UUID.randomUUID().toString())
                 .rci(getCorrelationID())
                 .subId(subId)
