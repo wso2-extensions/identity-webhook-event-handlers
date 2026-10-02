@@ -75,7 +75,12 @@ public class SessionEventHookHandler extends AbstractEventHandler {
                 return;
             }
             for (EventProfile eventProfile : eventProfileList) {
-                handleEventPerEventProfile(event, eventData, eventProfile);
+                try {
+                    handleEventPerEventProfile(event, eventData, eventProfile);
+                } catch (Exception e) {
+                    log.warn("Error while handling session event for profile: " +
+                            eventProfile.getProfile(), e);
+                }
             }
         } catch (Exception e) {
             log.warn("Error while executing session event webhook handler.", e);
@@ -216,13 +221,9 @@ public class SessionEventHookHandler extends AbstractEventHandler {
             return;
         }
 
-        Subject subject = null;
-        if (schema.equals(org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema.CAEP)) {
-            subject = EventHookHandlerUtils.extractSubjectFromEventData(eventData);
-        }
+        SecurityEventTokenPayload securityEventTokenPayload = 
+                EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri, eventData, schema);
 
-        SecurityEventTokenPayload securityEventTokenPayload = EventHookHandlerUtils.buildSecurityEventToken(
-                eventPayload, eventUri, subject);
         try {
             EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                     .publish(securityEventTokenPayload, eventContext);

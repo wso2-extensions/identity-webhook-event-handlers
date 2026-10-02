@@ -207,7 +207,7 @@ public class CredentialEventHookHandlerTest {
                         .thenReturn(eventData);
 
                 SecurityEventTokenPayload tokenPayload = mock(SecurityEventTokenPayload.class);
-                utilsMocked.when(() -> EventHookHandlerUtils.buildSecurityEventToken(any(), anyString()))
+                utilsMocked.when(() -> EventHookHandlerUtils.buildSecurityEventToken(any(), anyString(), any(), any()))
                         .thenReturn(tokenPayload);
 
                 when(mockedEventPublisherService.canHandleEvent(any(EventContext.class))).thenReturn(true);
