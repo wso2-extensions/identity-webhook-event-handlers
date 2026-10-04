@@ -141,7 +141,10 @@ public class WSO2PayloadUtils {
             claimValues = ((UniqueIDUserStoreManager) userStoreManager).getUserClaimValuesWithID(
                     userId, new String[] {USERNAME_CLAIM_URI, EMAIL_CLAIM_URI}, null);
         } catch (org.wso2.carbon.user.core.UserStoreException e) {
-            if (ERROR_CODE_NON_EXISTING_USER.getCode().equals(e.getErrorCode())) {
+            String nonExistingUserErrorCode = ERROR_CODE_NON_EXISTING_USER.getCode();
+            // Older user store managers carry the error code only as a prefix of the message.
+            if (nonExistingUserErrorCode.equals(e.getErrorCode()) ||
+                    (e.getMessage() != null && e.getMessage().startsWith(nonExistingUserErrorCode))) {
                 if (log.isDebugEnabled()) {
                     log.debug("User with ID: " + userId + " does not exist in tenant: " + tenantDomain);
                 }
