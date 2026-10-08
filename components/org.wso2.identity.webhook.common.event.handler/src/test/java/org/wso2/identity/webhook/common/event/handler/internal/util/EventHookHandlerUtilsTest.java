@@ -263,6 +263,7 @@ public class EventHookHandlerUtilsTest {
         when(eventData.getAuthenticatedUser()).thenReturn(mockedAuthenticatedUser);
         when(mockedAuthenticatedUser.getUserId()).thenReturn("user-id-123");
         when(mockedAuthenticatedUser.getTenantDomain()).thenReturn(SAMPLE_TENANT_DOMAIN);
+        when(eventData.getUserId()).thenReturn("user-id-123");
 
         when(eventData.getAuthenticationContext()).thenReturn(mockedAuthenticationContext);
         when(mockedAuthenticationContext.getSessionIdentifier()).thenReturn("session-id-123");

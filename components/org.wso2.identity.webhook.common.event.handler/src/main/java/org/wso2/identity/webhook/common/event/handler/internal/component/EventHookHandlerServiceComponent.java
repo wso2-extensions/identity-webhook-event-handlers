@@ -41,6 +41,7 @@ import org.wso2.carbon.identity.event.publisher.api.service.EventPublisherServic
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
+import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentPurposeEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.OrganizationManagementEventPayloadBuilder;
@@ -456,6 +457,26 @@ public class EventHookHandlerServiceComponent {
     protected void unsetCompatibilitySettingsService(CompatibilitySettingsService compatibilitySettingsService) {
 
         EventHookHandlerDataHolder.getInstance().setCompatibilitySettingsService(null);
+    }
+
+    @Reference(
+            name = "realm.service",
+            service = RealmService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetRealmService")
+    protected void setRealmService(RealmService realmService) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Setting the Realm Service");
+        }
+        EventHookHandlerDataHolder.getInstance().setRealmService(realmService);
+    }
+
+    protected void unsetRealmService(RealmService realmService) {
+
+        log.debug("UnSetting the Realm Service");
+        EventHookHandlerDataHolder.getInstance().setRealmService(null);
     }
 
     @Reference(

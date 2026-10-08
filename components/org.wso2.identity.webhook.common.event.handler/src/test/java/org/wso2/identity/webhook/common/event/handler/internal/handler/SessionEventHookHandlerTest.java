@@ -206,6 +206,7 @@ public class SessionEventHookHandlerTest {
                 utilsMocked.when(() -> EventHookHandlerUtils.buildSecurityEventToken(
                                 eq(mockedEventPayload),
                                 eq(expectedEventKey),
+                                any(),
                                 any()))
                         .thenReturn(tokenPayload);
 
