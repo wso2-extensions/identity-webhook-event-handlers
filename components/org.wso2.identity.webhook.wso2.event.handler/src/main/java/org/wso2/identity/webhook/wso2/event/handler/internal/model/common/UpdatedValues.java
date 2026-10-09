@@ -31,7 +31,6 @@ public class UpdatedValues {
 
     private final String name;
     private final String description;
-    private final String status;
     private final String version;
     private final AttributeChanges attributes;
 
@@ -39,7 +38,6 @@ public class UpdatedValues {
 
         this.name = builder.name;
         this.description = builder.description;
-        this.status = builder.status;
         this.version = builder.version;
         this.attributes = builder.attributes;
     }
@@ -52,11 +50,6 @@ public class UpdatedValues {
     public String getDescription() {
 
         return description;
-    }
-
-    public String getStatus() {
-
-        return status;
     }
 
     public String getVersion() {
@@ -76,7 +69,6 @@ public class UpdatedValues {
 
         private String name;
         private String description;
-        private String status;
         private String version;
         private AttributeChanges attributes;
 
@@ -89,12 +81,6 @@ public class UpdatedValues {
         public Builder description(String description) {
 
             this.description = description;
-            return this;
-        }
-
-        public Builder status(String status) {
-
-            this.status = status;
             return this;
         }
 

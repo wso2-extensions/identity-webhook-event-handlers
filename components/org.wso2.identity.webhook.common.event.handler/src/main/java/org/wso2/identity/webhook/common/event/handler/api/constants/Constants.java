@@ -103,6 +103,10 @@ public class Constants {
                 "https://schemas.identity.wso2.org/events/organization/event-type/organizationUpdated";
         public static final String POST_ORGANIZATION_DELETED_EVENT =
                 "https://schemas.identity.wso2.org/events/organization/event-type/organizationDeleted";
+        public static final String POST_ORGANIZATION_ACTIVATED_EVENT =
+                "https://schemas.identity.wso2.org/events/organization/event-type/organizationActivated";
+        public static final String POST_ORGANIZATION_DISABLED_EVENT =
+                "https://schemas.identity.wso2.org/events/organization/event-type/organizationDisabled";
     }
 
     /**

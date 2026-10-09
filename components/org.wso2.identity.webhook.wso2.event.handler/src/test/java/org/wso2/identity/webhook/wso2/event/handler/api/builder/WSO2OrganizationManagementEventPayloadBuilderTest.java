@@ -37,6 +37,7 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2OrganizationCreatedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2OrganizationDeletedEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2OrganizationStatusEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2OrganizationUpdatedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.TargetOrganization;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.UpdatedValues;
@@ -279,7 +280,6 @@ public class WSO2OrganizationManagementEventPayloadBuilderTest {
         UpdatedValues updatedValues = targetOrganization.getUpdatedValues();
         assertNotNull(updatedValues);
         assertEquals(updatedValues.getName(), UPDATED_NAME);
-        assertEquals(updatedValues.getStatus(), STATUS_DISABLED);
         assertNull(updatedValues.getDescription());
         assertNull(updatedValues.getVersion());
 
@@ -346,8 +346,6 @@ public class WSO2OrganizationManagementEventPayloadBuilderTest {
         assertNotNull(updatedValues);
         assertEquals(updatedValues.getName(), UPDATED_NAME);
         assertEquals(updatedValues.getDescription(), UPDATED_DESCRIPTION);
-        // The status was replaced with the value the organization already held, so it is not a change.
-        assertNull(updatedValues.getStatus());
 
         assertNotNull(updatedValues.getAttributes());
         assertNull(updatedValues.getAttributes().getAdded());
@@ -460,6 +458,112 @@ public class WSO2OrganizationManagementEventPayloadBuilderTest {
         } finally {
             WSO2EventHookHandlerDataHolder.getInstance().setOrganizationManager(organizationManager);
         }
+    }
+
+    @Test
+    public void testStatusOnlyPatchDoesNotPublishTheUpdatedEvent() throws IdentityEventException {
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(EVENT_PROP_ORGANIZATION_ID, ORG_ID);
+        properties.put(EVENT_PROP_PATCH_OPERATIONS, Collections.singletonList(
+                new PatchOperation(PATCH_OP_REPLACE, PATCH_PATH_ORG_STATUS, STATUS_DISABLED)));
+
+        /*
+         The status is the only value the patch changed, so it is published as the organization disabled event
+         alone and the updated event is not built for it.
+        */
+        assertNull(builder.buildOrganizationUpdatedEvent(buildEventData(properties)));
+        assertNotNull(builder.buildOrganizationDisabledEvent(buildEventData(properties)));
+    }
+
+    @Test
+    public void testStatusOnlyReplacementDoesNotPublishTheUpdatedEvent() throws IdentityEventException {
+
+        Organization previousOrganization = buildOrganization(ORG_ID, ORG_NAME, ORG_HANDLE);
+        previousOrganization.setDescription(PREVIOUS_DESCRIPTION);
+        previousOrganization.setStatus(STATUS_ACTIVE);
+        Organization updatedOrganization = buildOrganization(ORG_ID, ORG_NAME, ORG_HANDLE);
+        updatedOrganization.setDescription(PREVIOUS_DESCRIPTION);
+        updatedOrganization.setStatus(STATUS_DISABLED);
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(EVENT_PROP_ORGANIZATION_ID, ORG_ID);
+        properties.put(EVENT_PROP_ORGANIZATION, updatedOrganization);
+        properties.put(EVENT_PROP_PREVIOUS_ORGANIZATION, previousOrganization);
+
+        assertNull(builder.buildOrganizationUpdatedEvent(buildEventData(properties)));
+        assertNotNull(builder.buildOrganizationDisabledEvent(buildEventData(properties)));
+    }
+
+    @Test
+    public void testBuildOrganizationDisabledEventResolvesTheOrganizationById() throws IdentityEventException {
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(EVENT_PROP_ORGANIZATION_ID, ORG_ID);
+
+        EventPayload payload = builder.buildOrganizationDisabledEvent(buildEventData(properties));
+
+        assertNotNull(payload);
+        assertTrue(payload instanceof WSO2OrganizationStatusEventPayload);
+        WSO2OrganizationStatusEventPayload statusPayload = (WSO2OrganizationStatusEventPayload) payload;
+        assertEnvelope(statusPayload.getInitiatorType(), statusPayload.getAction(),
+                statusPayload.getTenant().getId(), statusPayload.getTenant().getName(),
+                statusPayload.getOrganization().getId());
+
+        TargetOrganization targetOrganization = statusPayload.getTargetOrganization();
+        assertEquals(targetOrganization.getId(), ORG_ID);
+        assertEquals(targetOrganization.getName(), RESOLVED_ORG_NAME);
+        assertEquals(targetOrganization.getOrgHandle(), RESOLVED_ORG_HANDLE);
+        assertEquals(targetOrganization.getDepth(), Integer.valueOf(ORG_DEPTH));
+        assertEquals(targetOrganization.getRef(), ORGANIZATIONS_REF_PREFIX + ORG_ID);
+        // The status is carried by the event type, so the payload reports the organization alone.
+        assertNull(targetOrganization.getUpdatedValues());
+        assertNull(targetOrganization.getAttributes());
+    }
+
+    @Test
+    public void testBuildOrganizationActivatedEventTakesTheOrganizationFromTheEvent()
+            throws IdentityEventException {
+
+        Organization updatedOrganization = buildOrganization(ORG_ID, UPDATED_NAME, ORG_HANDLE);
+        updatedOrganization.setStatus(STATUS_ACTIVE);
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(EVENT_PROP_ORGANIZATION_ID, ORG_ID);
+        properties.put(EVENT_PROP_ORGANIZATION, updatedOrganization);
+
+        EventPayload payload = builder.buildOrganizationActivatedEvent(buildEventData(properties));
+
+        assertNotNull(payload);
+        assertTrue(payload instanceof WSO2OrganizationStatusEventPayload);
+        TargetOrganization targetOrganization =
+                ((WSO2OrganizationStatusEventPayload) payload).getTargetOrganization();
+        // The event carries the organization, so the name and the handle are taken from it.
+        assertEquals(targetOrganization.getName(), UPDATED_NAME);
+        assertEquals(targetOrganization.getOrgHandle(), ORG_HANDLE);
+        assertNull(targetOrganization.getUpdatedValues());
+    }
+
+    @Test
+    public void testMixedPatchReportsOnlyTheNonStatusValuesInTheUpdatedEvent() throws IdentityEventException {
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(EVENT_PROP_ORGANIZATION_ID, ORG_ID);
+        properties.put(EVENT_PROP_PATCH_OPERATIONS, Arrays.asList(
+                new PatchOperation(PATCH_OP_REPLACE, PATCH_PATH_ORG_NAME, UPDATED_NAME),
+                new PatchOperation(PATCH_OP_REPLACE, PATCH_PATH_ORG_STATUS, STATUS_DISABLED)));
+
+        /*
+         The status is published as the organization disabled event, so the update event reports the values it
+         changed besides the status.
+        */
+        EventPayload updatedPayload = builder.buildOrganizationUpdatedEvent(buildEventData(properties));
+        UpdatedValues updatedValues =
+                ((WSO2OrganizationUpdatedEventPayload) updatedPayload).getTargetOrganization().getUpdatedValues();
+        assertEquals(updatedValues.getName(), UPDATED_NAME);
+        assertNull(updatedValues.getDescription());
+
+        assertNotNull(builder.buildOrganizationDisabledEvent(buildEventData(properties)));
     }
 
     private EventData buildEventData(Map<String, Object> properties) {
