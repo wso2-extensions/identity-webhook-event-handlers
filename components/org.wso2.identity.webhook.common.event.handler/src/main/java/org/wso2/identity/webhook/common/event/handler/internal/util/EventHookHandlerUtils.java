@@ -46,6 +46,12 @@ import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayl
 import org.wso2.carbon.identity.event.publisher.api.model.common.ComplexSubject;
 import org.wso2.carbon.identity.event.publisher.api.model.common.SimpleSubject;
 import org.wso2.carbon.identity.event.publisher.api.model.common.Subject;
+import org.wso2.carbon.user.api.UserRealm;
+import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.api.UserStoreManager;
+import org.wso2.carbon.user.core.UserCoreConstants;
+import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventMetadata;
 import org.wso2.identity.webhook.common.event.handler.api.service.EventProfileManager;
@@ -85,12 +91,12 @@ public class EventHookHandlerUtils {
         AuthenticationContext authenticationContext = extractAuthenticationContext(properties);
         SessionContext sessionContext = extractSessionContext(properties);
         AuthenticatorStatus status = extractAuthenticatorStatus(properties);
-        HttpServletRequest request = extractRequest(params);
+        HttpServletRequest request = extractRequest(properties);
 
         String tenantDomain = resolveTenantDomain(authenticationContext, params, properties);
 
         AuthenticatedUser authenticatedUser = extractAuthenticatedUser(params, authenticationContext, sessionContext);
-        String userId = resolveUserId(authenticatedUser, properties);
+        String userId = resolveUserId(authenticatedUser, properties, tenantDomain);
 
         return EventData.builder()
                 .eventName(event.getEventName())
@@ -116,7 +122,7 @@ public class EventHookHandlerUtils {
     public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload, String eventUri)
             throws IdentityEventException {
 
-        return buildSecurityEventToken(eventPayload, eventUri, null);
+        return buildSecurityEventToken(eventPayload, eventUri, null, null);
     }
 
     /**
@@ -125,8 +131,8 @@ public class EventHookHandlerUtils {
      * @param eventUri Event URI.
      * @return Audience string.
      */
-    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload,
-                                                                    String eventUri, Subject subId)
+    public static SecurityEventTokenPayload buildSecurityEventToken(EventPayload eventPayload, String eventUri,
+                                                                    EventData eventData, EventSchema schema)
             throws IdentityEventException {
 
         if (eventPayload == null) {
@@ -140,9 +146,17 @@ public class EventHookHandlerUtils {
         Map<String, EventPayload> eventMap = new HashMap<>();
         eventMap.put(eventUri, eventPayload);
 
+        Subject subId = null;
+        long iat = System.currentTimeMillis();
+        if (EventSchema.CAEP.equals(schema)) {
+            subId = extractSubjectFromEventData(eventData);
+            // JWT iat (RFC 7519 NumericDate) and CAEP's event_timestamp both require epoch seconds.
+            iat = iat / 1000;
+        }
+
         return SecurityEventTokenPayload.builder()
                 .iss(constructBaseURL())
-                .iat(System.currentTimeMillis())
+                .iat(iat)
                 .jti(UUID.randomUUID().toString())
                 .rci(getCorrelationID())
                 .subId(subId)
@@ -269,14 +283,17 @@ public class EventHookHandlerUtils {
 
         AuthenticatedUser authenticatedUser = extractAuthenticatedUser(eventData);
         String sessionId = extractSessionId(eventData);
-        SimpleSubject user;
-        try {
-            user = SimpleSubject.createOpaqueSubject(authenticatedUser.getUserId());
-        } catch (UserIdNotFoundException e) {
-            throw new IdentityEventException("Error occurred while retrieving user id", e);
+
+        String userId = eventData.getUserId();
+        if (userId == null) {
+            log.debug("Unable to resolve user id for the subject; sub_id will be omitted.");
+            return null;
         }
+        SimpleSubject user = SimpleSubject.createOpaqueSubject(userId);
+
+        String tenantDomain = authenticatedUser != null ? authenticatedUser.getTenantDomain() : eventData.getTenantDomain();
         SimpleSubject tenant = SimpleSubject.createOpaqueSubject(String.valueOf(
-                IdentityTenantUtil.getTenantId(authenticatedUser.getTenantDomain())));
+                IdentityTenantUtil.getTenantId(tenantDomain)));
         SimpleSubject session = SimpleSubject.createOpaqueSubject(sessionId);
 
         return ComplexSubject.builder()
@@ -405,7 +422,52 @@ public class EventHookHandlerUtils {
         return null;
     }
 
-    private static String resolveUserId(AuthenticatedUser authenticatedUser, Map<String, Object> properties) {
+    /**
+     * Resolve the user id via the user store, as a fallback when neither the authenticated
+     * user nor a direct USER_ID property is available (e.g. admin-triggered credential changes,
+     * where there's no live authenticated session for the target user).
+     *
+     * @param userName        Username from the event properties.
+     * @param userStoreDomain User store domain from the event properties.
+     * @param tenantDomain    Tenant domain.
+     * @return Resolved user id, or null if it could not be resolved.
+     */
+    private static String resolveUserIdFromUserStore(String userName, String userStoreDomain, String tenantDomain) {
+
+        if (userName == null || userStoreDomain == null) {
+            return null;
+        }
+
+        RealmService realmService = EventHookHandlerDataHolder.getInstance().getRealmService();
+        if (realmService == null) {
+            log.debug("RealmService is not available. Skipping user store based user id resolution.");
+            return null;
+        }
+
+        try {
+            int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+            UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
+            if (userRealm == null) {
+                log.debug("UserRealm is null for tenant: " + tenantDomain);
+                return null;
+            }
+
+            UserStoreManager userStoreManager = userRealm.getUserStoreManager();
+            if (userStoreManager == null) {
+                log.debug("UserStoreManager is null for tenant: " + tenantDomain);
+                return null;
+            }
+
+            String domainQualifiedUserName = userStoreDomain + "/" + userName;
+            return userStoreManager.getUserClaimValue(domainQualifiedUserName, FrameworkConstants.USER_ID_CLAIM,
+                    UserCoreConstants.DEFAULT_PROFILE);
+        } catch (UserStoreException e) {
+            log.debug("Error while resolving user id from user store for user: " + userName, e);
+            return null;
+        }
+    }
+
+    private static String resolveUserId(AuthenticatedUser authenticatedUser, Map<String, Object> properties, String tenantDomain) {
 
         if (authenticatedUser != null) {
             try {
@@ -417,6 +479,12 @@ public class EventHookHandlerUtils {
 
         if (properties != null && properties.containsKey(IdentityEventConstants.EventProperty.USER_ID)) {
             return (String) properties.get(IdentityEventConstants.EventProperty.USER_ID);
+        }
+        
+        if (properties != null) {
+             String userName = (String) properties.get(IdentityEventConstants.EventProperty.USER_NAME);
+             String userStoreDomain = (String) properties.get(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN);
+             return resolveUserIdFromUserStore(userName, userStoreDomain, tenantDomain);
         }
         return null;
     }

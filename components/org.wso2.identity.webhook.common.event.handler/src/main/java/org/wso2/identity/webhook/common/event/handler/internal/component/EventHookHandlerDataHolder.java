@@ -26,6 +26,7 @@ import org.wso2.carbon.identity.flow.mgt.FlowMgtService;
 import org.wso2.carbon.identity.organization.management.service.OrganizationManager;
 import org.wso2.carbon.identity.topic.management.api.service.TopicManagementService;
 import org.wso2.carbon.identity.webhook.metadata.api.service.WebhookMetadataService;
+import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.ConsentPurposeEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.builder.OrganizationManagementEventPayloadBuilder;
@@ -56,6 +57,7 @@ public class EventHookHandlerDataHolder {
     private WebhookMetadataService webhookMetadataService;
     private TopicManagementService topicManagementService;
     private ApplicationManagementService applicationManagementService;
+    private RealmService realmService;
     private final List<EventProfileManager> eventProfileManagers = new ArrayList<>();
     private final List<LoginEventPayloadBuilder> loginEventPayloadBuilders = new ArrayList<>();
     private final List<UserOperationEventPayloadBuilder> userOperationEventPayloadBuilders = new ArrayList<>();
@@ -480,6 +482,26 @@ public class EventHookHandlerDataHolder {
     public void setOrganizationManager(OrganizationManager organizationManager) {
 
         this.organizationManager = organizationManager;
+    }
+
+    /**
+     * Get {@link RealmService}.
+     *
+     * @return realm service instance {@link RealmService}.
+     */
+    public RealmService getRealmService() {
+
+        return realmService;
+    }
+
+    /**
+     * Set {@link RealmService}.
+     *
+     * @param realmService Instance of {@link RealmService}.
+     */
+    public void setRealmService(RealmService realmService) {
+
+        this.realmService = realmService;
     }
 
     /**

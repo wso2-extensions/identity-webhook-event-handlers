@@ -34,6 +34,7 @@ import org.wso2.carbon.identity.event.publisher.api.model.EventContext;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
 import org.wso2.carbon.identity.event.publisher.api.model.SecurityEventTokenPayload;
 import org.wso2.carbon.identity.webhook.metadata.api.model.Channel;
+import org.wso2.carbon.identity.event.publisher.api.model.common.Subject;
 import org.wso2.carbon.identity.webhook.metadata.api.model.EventProfile;
 import org.wso2.identity.webhook.common.event.handler.api.builder.CredentialEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
@@ -98,7 +99,12 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
             }
 
             for (EventProfile eventProfile : eventProfileList) {
-                handleEventForProfile(event, eventProfile);
+                try {
+                    handleEventForProfile(event, eventProfile);
+                } catch (Exception e) {
+                    log.warn("Error while handling credential change event for profile: " +
+                            eventProfile.getProfile(), e);
+                }
             }
         } catch (Exception e) {
             log.warn("Error while retrieving credential change event publisher configuration for tenant.", e);
@@ -144,7 +150,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
         // Publish for current accessing org
         String tenantDomain = String.valueOf(
                 eventData.getEventParams().get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
-        publishCredentialEvent(tenantDomain, credentialChangeChannel, eventUri, eventProfile.getProfile(),
+        publishCredentialEvent(tenantDomain, credentialChangeChannel, eventUri, schema, eventProfile.getProfile(),
                 payloadBuilder, eventData, event.getEventName());
     }
 
@@ -178,6 +184,7 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
     }
 
     private void publishCredentialEvent(String tenantDomain, Channel credentialChangeChannel, String eventUri,
+                                        org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema schema,
                                         String eventProfileName, CredentialEventPayloadBuilder payloadBuilder,
                                         EventData eventData, String eventName)
             throws IdentityEventException, EventPublisherException {
@@ -200,8 +207,8 @@ public class CredentialEventHookHandler extends AbstractEventHandler {
             throw new IdentityRuntimeException("Unsupported event type: " + eventName);
         }
 
-        SecurityEventTokenPayload securityEventTokenPayload =
-                EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri);
+        SecurityEventTokenPayload securityEventTokenPayload = 
+                EventHookHandlerUtils.buildSecurityEventToken(eventPayload, eventUri, eventData, schema);
         EventHookHandlerDataHolder.getInstance().getEventPublisherService()
                 .publish(securityEventTokenPayload, eventContext);
     }
