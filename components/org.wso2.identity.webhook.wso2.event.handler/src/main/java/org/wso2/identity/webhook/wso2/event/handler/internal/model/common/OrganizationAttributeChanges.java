@@ -23,14 +23,14 @@ import java.util.List;
 /**
  * Represents the organization attributes added, removed and updated by an organization update.
  */
-public class AttributeChanges {
+public class OrganizationAttributeChanges {
 
     private final List<OrganizationAttribute> added;
     private final List<OrganizationAttribute> removed;
     private final List<OrganizationAttribute> updated;
 
-    public AttributeChanges(List<OrganizationAttribute> added, List<OrganizationAttribute> removed,
-                            List<OrganizationAttribute> updated) {
+    public OrganizationAttributeChanges(List<OrganizationAttribute> added, List<OrganizationAttribute> removed,
+                                        List<OrganizationAttribute> updated) {
 
         this.added = added;
         this.removed = removed;
