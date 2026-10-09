@@ -39,9 +39,12 @@ public interface OrganizationManagementEventPayloadBuilder {
 
     /**
      * Build the organization updated event.
+     * <p>
+     * Implementations return null when the update changed nothing that belongs in this event, so that an update
+     * which only changed the status of the organization is published as the organization status changed event alone.
      *
      * @param eventData Event data which contains the data for organization update.
-     * @return Event payload built from the event data.
+     * @return Event payload built from the event data, or null when the update carries no values for this event.
      * @throws IdentityEventException throws when an error is occurred.
      */
     EventPayload buildOrganizationUpdatedEvent(EventData eventData) throws IdentityEventException;
@@ -54,6 +57,30 @@ public interface OrganizationManagementEventPayloadBuilder {
      * @throws IdentityEventException throws when an error is occurred.
      */
     EventPayload buildOrganizationDeletedEvent(EventData eventData) throws IdentityEventException;
+
+    /**
+     * Build the organization activated event.
+     * <p>
+     * The event is published when an update activated the organization, in addition to the organization updated
+     * event when the update changed other values as well.
+     *
+     * @param eventData Event data which contains the data for organization update.
+     * @return Event payload built from the event data.
+     * @throws IdentityEventException throws when an error is occurred.
+     */
+    EventPayload buildOrganizationActivatedEvent(EventData eventData) throws IdentityEventException;
+
+    /**
+     * Build the organization disabled event.
+     * <p>
+     * The event is published when an update disabled the organization, in addition to the organization updated
+     * event when the update changed other values as well.
+     *
+     * @param eventData Event data which contains the data for organization update.
+     * @return Event payload built from the event data.
+     * @throws IdentityEventException throws when an error is occurred.
+     */
+    EventPayload buildOrganizationDisabledEvent(EventData eventData) throws IdentityEventException;
 
     /**
      * Get the event schema type.

@@ -35,6 +35,7 @@ import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.wso2.event.handler.internal.component.WSO2EventHookHandlerDataHolder;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2OrganizationCreatedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2OrganizationDeletedEventPayload;
+import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2OrganizationStatusEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2OrganizationUpdatedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.AttributeChanges;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.OrganizationAttribute;
@@ -59,7 +60,6 @@ import static org.wso2.carbon.identity.organization.management.service.constant.
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.PATCH_PATH_ORG_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.PATCH_PATH_ORG_DESCRIPTION;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.PATCH_PATH_ORG_NAME;
-import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.PATCH_PATH_ORG_STATUS;
 import static org.wso2.carbon.identity.organization.management.service.constant.OrganizationManagementConstants.PATCH_PATH_ORG_VERSION;
 import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Constants.ORGANIZATIONS_API_ENDPOINT;
 
@@ -120,18 +120,64 @@ public class WSO2OrganizationManagementEventPayloadBuilder implements Organizati
         UpdatedValues updatedValues = patchOperations.isEmpty() ?
                 buildUpdatedValues(updatedOrganization, extractPreviousOrganization(eventData)) :
                 buildUpdatedValues(patchOperations);
-        TargetOrganization.Builder targetOrganization = organizationRefBuilder(organizationId)
-                .depth(resolveDepth(organizationId))
-                .updatedValues(updatedValues);
-        if (updatedOrganization != null) {
-            targetOrganization.name(updatedOrganization.getName())
-                    .orgHandle(updatedOrganization.getOrganizationHandle());
-        } else {
-            resolveOrganizationDetails(organizationId, targetOrganization);
+        if (hasNoUpdatedValues(updatedValues)) {
+            /*
+             An update that changed the status alone reports no updated values, since the status is published as the
+             organization activated or the organization disabled event instead.
+            */
+            return null;
         }
+        TargetOrganization targetOrganization =
+                buildUpdatedTargetOrganization(organizationId, updatedOrganization)
+                        .updatedValues(updatedValues)
+                        .build();
 
         return new WSO2OrganizationUpdatedEventPayload.Builder()
-                .targetOrganization(targetOrganization.build())
+                .targetOrganization(targetOrganization)
+                .tenant(tenant)
+                .organization(organization)
+                .initiatorType(WSO2PayloadUtils.getFlowInitiatorType(flow))
+                .initiatorIpAddress(WSO2PayloadUtils.resolveInitiatorIpAddress())
+                .action(WSO2PayloadUtils.getFlowAction(flow))
+                .build();
+    }
+
+    @Override
+    public EventPayload buildOrganizationActivatedEvent(EventData eventData) throws IdentityEventException {
+
+        return buildOrganizationStatusEvent(eventData);
+    }
+
+    @Override
+    public EventPayload buildOrganizationDisabledEvent(EventData eventData) throws IdentityEventException {
+
+        return buildOrganizationStatusEvent(eventData);
+    }
+
+    /**
+     * Build the payload of an organization status change. The status the organization was left with is carried by
+     * the event type, and the action is resolved from the flow the organization management component published the
+     * event within, so both status events are built from the same values.
+     *
+     * @param eventData Event data of the published event.
+     * @return Event payload of the organization status change.
+     */
+    private EventPayload buildOrganizationStatusEvent(EventData eventData) {
+
+        Tenant tenant = WSO2PayloadUtils.buildTenant();
+        org.wso2.identity.webhook.wso2.event.handler.internal.model.common.Organization organization =
+                WSO2PayloadUtils.buildOrganizationFromIdentityContext(
+                        IdentityContext.getThreadLocalIdentityContext());
+        Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
+
+        Organization updatedOrganization = extractOrganization(eventData);
+        String organizationId = (updatedOrganization != null) ? updatedOrganization.getId() :
+                extractOrganizationId(eventData);
+        TargetOrganization targetOrganization =
+                buildUpdatedTargetOrganization(organizationId, updatedOrganization).build();
+
+        return new WSO2OrganizationStatusEventPayload.Builder()
+                .targetOrganization(targetOrganization)
                 .tenant(tenant)
                 .organization(organization)
                 .initiatorType(WSO2PayloadUtils.getFlowInitiatorType(flow))
@@ -180,6 +226,43 @@ public class WSO2OrganizationManagementEventPayloadBuilder implements Organizati
     }
 
     /**
+     * Check whether the update changed none of the values this event reports. The status is carried by the
+     * organization activated and the organization disabled events, so an update that changed the status alone
+     * leaves nothing for the organization updated event to report.
+     *
+     * @param updatedValues The values the update changed.
+     * @return true when the update changed none of the reported values, false otherwise.
+     */
+    private boolean hasNoUpdatedValues(UpdatedValues updatedValues) {
+
+        return updatedValues == null || (updatedValues.getName() == null &&
+                updatedValues.getDescription() == null && updatedValues.getVersion() == null &&
+                updatedValues.getAttributes() == null);
+    }
+
+    /**
+     * Resolve the organization an update was published for. A patch carries only the organization id, so the name
+     * and the organization handle are resolved by id, whereas a replacement carries the organization itself.
+     *
+     * @param organizationId        Id of the updated organization.
+     * @param updatedOrganization   The organization carried by the update, or null when the update carried none.
+     * @return Builder of the organization the update was published for.
+     */
+    private TargetOrganization.Builder buildUpdatedTargetOrganization(String organizationId,
+                                                                      Organization updatedOrganization) {
+
+        TargetOrganization.Builder targetOrganization = organizationRefBuilder(organizationId)
+                .depth(resolveDepth(organizationId));
+        if (updatedOrganization != null) {
+            targetOrganization.name(updatedOrganization.getName())
+                    .orgHandle(updatedOrganization.getOrganizationHandle());
+        } else {
+            resolveOrganizationDetails(organizationId, targetOrganization);
+        }
+        return targetOrganization;
+    }
+
+    /**
      * Represent the attributes the organization was created with as attribute additions.
      *
      * @param organization The created organization.
@@ -216,10 +299,6 @@ public class WSO2OrganizationManagementEventPayloadBuilder implements Organizati
         }
         if (isChanged(previousOrganization.getDescription(), organization.getDescription())) {
             updatedValues.description(organization.getDescription());
-            changed = true;
-        }
-        if (isChanged(previousOrganization.getStatus(), organization.getStatus())) {
-            updatedValues.status(organization.getStatus());
             changed = true;
         }
         if (isChanged(previousOrganization.getVersion(), organization.getVersion())) {
@@ -311,8 +390,6 @@ public class WSO2OrganizationManagementEventPayloadBuilder implements Organizati
                 updatedValues.name(resolvePatchedValue(patchOperation));
             } else if (PATCH_PATH_ORG_DESCRIPTION.equals(path)) {
                 updatedValues.description(resolvePatchedValue(patchOperation));
-            } else if (PATCH_PATH_ORG_STATUS.equals(path)) {
-                updatedValues.status(resolvePatchedValue(patchOperation));
             } else if (PATCH_PATH_ORG_VERSION.equals(path)) {
                 updatedValues.version(resolvePatchedValue(patchOperation));
             } else if (path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {

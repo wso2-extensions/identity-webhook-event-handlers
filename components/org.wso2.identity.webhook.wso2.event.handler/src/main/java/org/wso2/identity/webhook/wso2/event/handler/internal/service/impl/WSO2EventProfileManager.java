@@ -58,11 +58,15 @@ import static org.wso2.identity.webhook.common.event.handler.api.constants.Const
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.ROLE_USERS_UPDATED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ORGANIZATION_CREATED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ORGANIZATION_DELETED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ORGANIZATION_ACTIVATED_EVENT;
+import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ORGANIZATION_DISABLED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.POST_ORGANIZATION_UPDATED_EVENT;
 import static org.wso2.carbon.identity.organization.management.ext.Constants.EVENT_POST_ADD_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.management.ext.Constants.EVENT_POST_DELETE_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.management.ext.Constants.EVENT_POST_PATCH_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.management.ext.Constants.EVENT_POST_UPDATE_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.management.ext.Constants.EVENT_POST_ACTIVATE_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.management.ext.Constants.EVENT_POST_DISABLE_ORGANIZATION;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_CREATED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_PRESENTED_EVENT;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.Event.SESSION_REVOKED_EVENT;
@@ -187,6 +191,12 @@ public class WSO2EventProfileManager implements EventProfileManager {
             } else if (EVENT_POST_DELETE_ORGANIZATION.equals(eventName)) {
                 channel = ORGANIZATION_MGT_CHANNEL;
                 event = POST_ORGANIZATION_DELETED_EVENT;
+            } else if (EVENT_POST_ACTIVATE_ORGANIZATION.equals(eventName)) {
+                channel = ORGANIZATION_MGT_CHANNEL;
+                event = POST_ORGANIZATION_ACTIVATED_EVENT;
+            } else if (EVENT_POST_DISABLE_ORGANIZATION.equals(eventName)) {
+                channel = ORGANIZATION_MGT_CHANNEL;
+                event = POST_ORGANIZATION_DISABLED_EVENT;
             }
         }
         return EventMetadata.builder()

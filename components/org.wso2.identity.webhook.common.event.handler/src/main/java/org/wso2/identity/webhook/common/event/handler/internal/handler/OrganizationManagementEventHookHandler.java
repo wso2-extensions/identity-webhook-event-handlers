@@ -54,6 +54,8 @@ import static org.wso2.carbon.identity.organization.management.ext.Constants.EVE
 import static org.wso2.carbon.identity.organization.management.ext.Constants.EVENT_POST_DELETE_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.management.ext.Constants.EVENT_POST_PATCH_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.management.ext.Constants.EVENT_POST_UPDATE_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.management.ext.Constants.EVENT_POST_ACTIVATE_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.management.ext.Constants.EVENT_POST_DISABLE_ORGANIZATION;
 import static org.wso2.identity.webhook.common.event.handler.internal.constant.Constants.EVENT_PROFILE_VERSION;
 import static org.wso2.identity.webhook.common.event.handler.api.constants.Constants.EventSchema;
 
@@ -145,14 +147,19 @@ public class OrganizationManagementEventHookHandler extends AbstractEventHandler
             return;
         }
 
-        String eventUri = organizationChannel.getEvents().stream()
-                .filter(channelEvent -> Objects.equals(eventMetadata.getEvent(), channelEvent.getEventUri()))
-                .findFirst()
-                .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
-                .orElse(null);
+        String eventUri = resolveEventUri(organizationChannel, eventMetadata.getEvent());
 
         publishOrganizationEvent(tenantDomain, organizationChannel, eventUri, eventProfile.getProfile(),
                 payloadBuilder, eventData, event.getEventName());
+    }
+
+    private String resolveEventUri(Channel organizationChannel, String eventUri) {
+
+        return organizationChannel.getEvents().stream()
+                .filter(channelEvent -> Objects.equals(eventUri, channelEvent.getEventUri()))
+                .findFirst()
+                .map(org.wso2.carbon.identity.webhook.metadata.api.model.Event::getEventUri)
+                .orElse(null);
     }
 
     /**
@@ -214,10 +221,19 @@ public class OrganizationManagementEventHookHandler extends AbstractEventHandler
                     eventPayload = payloadBuilder.buildOrganizationUpdatedEvent(eventData);
             case EVENT_POST_DELETE_ORGANIZATION ->
                     eventPayload = payloadBuilder.buildOrganizationDeletedEvent(eventData);
+            case EVENT_POST_ACTIVATE_ORGANIZATION ->
+                    eventPayload = payloadBuilder.buildOrganizationActivatedEvent(eventData);
+            case EVENT_POST_DISABLE_ORGANIZATION ->
+                    eventPayload = payloadBuilder.buildOrganizationDisabledEvent(eventData);
             case null, default -> {
                 LOG.debug("Unsupported organization event: " + eventName);
                 return;
             }
+        }
+
+        if (eventPayload == null) {
+            LOG.debug("Skipping the organization event, since no payload was built for the event: " + eventName);
+            return;
         }
 
         SecurityEventTokenPayload securityEventTokenPayload =
@@ -231,6 +247,8 @@ public class OrganizationManagementEventHookHandler extends AbstractEventHandler
         return EVENT_POST_ADD_ORGANIZATION.equals(eventName) ||
                 EVENT_POST_PATCH_ORGANIZATION.equals(eventName) ||
                 EVENT_POST_DELETE_ORGANIZATION.equals(eventName) ||
-                EVENT_POST_UPDATE_ORGANIZATION.equals(eventName);
+                EVENT_POST_UPDATE_ORGANIZATION.equals(eventName) ||
+                EVENT_POST_ACTIVATE_ORGANIZATION.equals(eventName) ||
+                EVENT_POST_DISABLE_ORGANIZATION.equals(eventName);
     }
 }
