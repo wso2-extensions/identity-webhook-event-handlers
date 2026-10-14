@@ -31,8 +31,8 @@ public class TargetOrganization {
     private final String orgHandle;
     private final Integer depth;
     private final String ref;
-    private final AttributeChanges attributes;
-    private final UpdatedValues updatedValues;
+    private final OrganizationAttributeChanges attributes;
+    private final OrganizationUpdatedValues updatedValues;
 
     private TargetOrganization(Builder builder) {
 
@@ -70,12 +70,12 @@ public class TargetOrganization {
         return ref;
     }
 
-    public AttributeChanges getAttributes() {
+    public OrganizationAttributeChanges getAttributes() {
 
         return attributes;
     }
 
-    public UpdatedValues getUpdatedValues() {
+    public OrganizationUpdatedValues getUpdatedValues() {
 
         return updatedValues;
     }
@@ -90,8 +90,8 @@ public class TargetOrganization {
         private String orgHandle;
         private Integer depth;
         private String ref;
-        private AttributeChanges attributes;
-        private UpdatedValues updatedValues;
+        private OrganizationAttributeChanges attributes;
+        private OrganizationUpdatedValues updatedValues;
 
         public Builder id(String id) {
 
@@ -123,13 +123,13 @@ public class TargetOrganization {
             return this;
         }
 
-        public Builder attributes(AttributeChanges attributes) {
+        public Builder attributes(OrganizationAttributeChanges attributes) {
 
             this.attributes = attributes;
             return this;
         }
 
-        public Builder updatedValues(UpdatedValues updatedValues) {
+        public Builder updatedValues(OrganizationUpdatedValues updatedValues) {
 
             this.updatedValues = updatedValues;
             return this;

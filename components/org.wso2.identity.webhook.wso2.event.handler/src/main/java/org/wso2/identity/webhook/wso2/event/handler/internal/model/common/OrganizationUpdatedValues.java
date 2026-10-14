@@ -27,19 +27,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * event payload is serialized with, which would otherwise drop the cleared value from the event.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UpdatedValues {
+public class OrganizationUpdatedValues {
 
     private final String name;
     private final String description;
-    private final String status;
     private final String version;
-    private final AttributeChanges attributes;
+    private final OrganizationAttributeChanges attributes;
 
-    private UpdatedValues(Builder builder) {
+    private OrganizationUpdatedValues(Builder builder) {
 
         this.name = builder.name;
         this.description = builder.description;
-        this.status = builder.status;
         this.version = builder.version;
         this.attributes = builder.attributes;
     }
@@ -54,31 +52,25 @@ public class UpdatedValues {
         return description;
     }
 
-    public String getStatus() {
-
-        return status;
-    }
-
     public String getVersion() {
 
         return version;
     }
 
-    public AttributeChanges getAttributes() {
+    public OrganizationAttributeChanges getAttributes() {
 
         return attributes;
     }
 
     /**
-     * Builder for UpdatedValues.
+     * Builder for OrganizationUpdatedValues.
      */
     public static class Builder {
 
         private String name;
         private String description;
-        private String status;
         private String version;
-        private AttributeChanges attributes;
+        private OrganizationAttributeChanges attributes;
 
         public Builder name(String name) {
 
@@ -92,27 +84,21 @@ public class UpdatedValues {
             return this;
         }
 
-        public Builder status(String status) {
-
-            this.status = status;
-            return this;
-        }
-
         public Builder version(String version) {
 
             this.version = version;
             return this;
         }
 
-        public Builder attributes(AttributeChanges attributes) {
+        public Builder attributes(OrganizationAttributeChanges attributes) {
 
             this.attributes = attributes;
             return this;
         }
 
-        public UpdatedValues build() {
+        public OrganizationUpdatedValues build() {
 
-            return new UpdatedValues(this);
+            return new OrganizationUpdatedValues(this);
         }
     }
 }
