@@ -18,6 +18,7 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
@@ -29,6 +30,7 @@ import org.wso2.carbon.identity.core.context.model.Flow;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.publisher.api.model.EventPayload;
+import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.identity.webhook.common.event.handler.api.builder.SessionEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
 import org.wso2.identity.webhook.common.event.handler.internal.constant.Constants;
@@ -63,10 +65,28 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Tenant tenant = buildTenant();
         UserStore userStore = buildUserStore(eventData);
         List<Session> sessions = getSessions(eventData);
-        Application application = buildApplication(eventData.getAuthenticationContext());
+        Application application = buildApplication(eventData.getAuthenticationContext(),
+                eventData.getTenantDomain());
+        AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
+        Organization userOrganization;
+        if (StringUtils.isNotEmpty(authenticatedUser.getUserResidentOrganization())) {
+            String userResidentTenant = null;
+            try {
+                userResidentTenant = WSO2EventHookHandlerDataHolder.getInstance().getOrganizationManager().
+                        resolveTenantDomain(authenticatedUser.getUserResidentOrganization());
+            } catch (OrganizationManagementException e) {
+                LOG.debug("Error while resolving the tenant of the organization the user resides in: " +
+                        authenticatedUser.getUserResidentOrganization(), e);
+            }
+            userOrganization = WSO2PayloadUtils.buildOrganizationFromOrgId(
+                    authenticatedUser.getUserResidentOrganization(), userResidentTenant);
+        } else {
+            userOrganization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
+                    IdentityContext.getThreadLocalIdentityContext());
+        }
+        user.setOrganization(userOrganization);
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
-        user.setOrganization(organization);
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
         String action = WSO2PayloadUtils.getFlowAction(flow);
@@ -93,7 +113,8 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         Tenant tenant = buildTenant();
         UserStore userStore = buildUserStore(eventData);
         List<Session> sessions = getSessions(eventData);
-        Application application = buildApplication(eventData.getAuthenticationContext());
+        Application application = buildApplication(eventData.getAuthenticationContext(),
+                eventData.getTenantDomain());
         Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
                 IdentityContext.getThreadLocalIdentityContext());
         user.setOrganization(organization);
@@ -155,13 +176,24 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         User user = null;
         AuthenticatedUser authenticatedUser = eventData.getAuthenticatedUser();
         if (authenticatedUser != null) {
+            String tenantDomain = eventData.getTenantDomain();
+            String userResidentOrg = authenticatedUser.getUserResidentOrganization();
+            if (StringUtils.isNotBlank(userResidentOrg)) {
+                try {
+                    tenantDomain = WSO2EventHookHandlerDataHolder.getInstance().getOrganizationManager().
+                            resolveTenantDomain(userResidentOrg);
+                } catch (OrganizationManagementException e) {
+                    LOG.debug("Error while resolving the tenant of the organization the user resides in: " +
+                            userResidentOrg, e);
+                }
+            }
             user = new User();
-            WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
-            WSO2PayloadUtils.populateUserClaims(user, authenticatedUser, eventData.getTenantDomain());
+            WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser, tenantDomain);
+            WSO2PayloadUtils.populateUserClaims(user, authenticatedUser, tenantDomain);
         } else if (eventData.getUserId() != null) {
             user = new User();
             String userId = eventData.getUserId();
-            WSO2PayloadUtils.populateUserIdAndRef(user, userId);
+            WSO2PayloadUtils.populateUserIdAndRef(user, userId, eventData.getTenantDomain());
             if (!WSO2PayloadUtils.isFederatedUser(eventData)) {
                 WSO2PayloadUtils.populateUserClaims(user, userId, eventData.getTenantDomain());
             }
@@ -192,13 +224,14 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
 
         Map<String, Object> params = eventData.getEventParams();
         Map<String, Object> properties = eventData.getProperties();
+        String sessionTenantDomain = resolveSessionTenantDomain(eventData);
         if (params.containsKey(Constants.EventDataProperties.SESSION_ID)) {
             String sessionId = params.get(Constants.EventDataProperties.SESSION_ID).toString();
-            return retrieveSessionsById(sessionId);
+            return retrieveSessionsById(sessionId, sessionTenantDomain);
         } else if (properties.containsKey(IdentityEventConstants.EventProperty.SESSION_CONTEXT_ID) &&
                 properties.get(IdentityEventConstants.EventProperty.SESSION_CONTEXT_ID) instanceof String) {
             String sessionId = (String) properties.get(IdentityEventConstants.EventProperty.SESSION_CONTEXT_ID);
-            return retrieveSessionsById(sessionId);
+            return retrieveSessionsById(sessionId, sessionTenantDomain);
         } else if (params.containsKey(IdentityEventConstants.EventProperty.SESSION_IDS)) {
             List<String> sessionIds = params.get(IdentityEventConstants.EventProperty.SESSION_IDS) instanceof List ?
                     (List<String>) params.get(IdentityEventConstants.EventProperty.SESSION_IDS) : null;
@@ -206,44 +239,65 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
                 LOG.debug("Session IDs are not provided in the event data.");
                 return new ArrayList<>();
             }
-            return retrieveSessionsByIds(sessionIds);
+            return retrieveSessionsByIds(sessionIds, sessionTenantDomain);
         }
         return new ArrayList<>();
     }
 
-    private List<Session> retrieveSessionsById(String sessionId) throws IdentityEventException {
+    /**
+     * Tenant the session belongs to, which is the organization the applications of the session are reached
+     * through.
+     */
+    private String resolveSessionTenantDomain(EventData eventData) {
+
+        if (StringUtils.isNotBlank(eventData.getTenantDomain())) {
+            return eventData.getTenantDomain();
+        }
+        IdentityContext identityContext = IdentityContext.getThreadLocalIdentityContext();
+        return identityContext.getOrganization() != null
+                ? identityContext.getOrganization().getOrganizationHandle() : null;
+    }
+
+    private List<Session> retrieveSessionsById(String sessionId, String sessionTenantDomain)
+            throws IdentityEventException {
 
         try {
             Optional<UserSession> userSession = WSO2EventHookHandlerDataHolder.getInstance()
                     .getUserSessionManagementService().getUserSessionBySessionId(sessionId);
-            return userSession.map(this::buildSessionList).orElseGet(ArrayList::new);
+            return userSession.map(session -> buildSessionList(session, sessionTenantDomain))
+                    .orElseGet(ArrayList::new);
         } catch (SessionManagementException e) {
             throw new IdentityEventException(
                     "Error while retrieving session information from User Session Management Service", e);
         }
     }
 
-    private List<Session> retrieveSessionsByIds(List<String> sessionIds) throws IdentityEventException {
+    private List<Session> retrieveSessionsByIds(List<String> sessionIds, String sessionTenantDomain)
+            throws IdentityEventException {
 
         List<Session> sessions = new ArrayList<>();
         // todo: This call retrieves session data per session and can be optimized to retrieve all sessions
         //  in a single call. However, the UserSessionManagementService currently does not provide a method
         //  to retrieve multiple sessions by IDs. Should evaluate impact and optimize accordingly.
         for (String sessionId : sessionIds) {
-            sessions.addAll(retrieveSessionsById(sessionId));
+            sessions.addAll(retrieveSessionsById(sessionId, sessionTenantDomain));
         }
         return sessions;
     }
 
-    private List<Session> buildSessionList(UserSession userSession) {
+    private List<Session> buildSessionList(UserSession userSession, String sessionTenantDomain) {
 
         List<Session> sessions = new ArrayList<>();
         List<Application> applications = new ArrayList<>();
         userSession.getApplications().forEach(app -> {
             if (!CONSOLE_APP_NAME.equalsIgnoreCase(app.getAppName())) {
+                // Only a session of a sub organization carries the owning organization of its applications; for a
+                // root organization the application and the session belong to the same organization.
                 Application application = new Application.Builder()
                         .id(app.getResourceId())
                         .name(app.getAppName())
+                        .organization(WSO2PayloadUtils.resolveApplicationOrganization(app.getResourceId(),
+                                sessionTenantDomain))
                         .build();
                 applications.add(application);
             }
@@ -258,15 +312,19 @@ public class WSO2SessionEventPayloadBuilder implements SessionEventPayloadBuilde
         return sessions;
     }
 
-    private Application buildApplication(AuthenticationContext authenticationContext) {
+    private Application buildApplication(AuthenticationContext authenticationContext, String eventTenantDomain) {
 
         if (authenticationContext == null) {
             return null;
         }
 
+        Organization appOrganization =
+                WSO2PayloadUtils.buildApplicationOrganization(authenticationContext, eventTenantDomain);
+
         return new Application.Builder()
                 .id(authenticationContext.getServiceProviderResourceId())
                 .name(authenticationContext.getServiceProviderName())
+                .organization(appOrganization)
                 .build();
     }
 }

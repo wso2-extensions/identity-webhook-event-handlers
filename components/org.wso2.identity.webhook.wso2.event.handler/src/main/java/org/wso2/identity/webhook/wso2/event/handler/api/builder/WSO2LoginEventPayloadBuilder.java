@@ -66,7 +66,7 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
 
         User user = new User();
         WSO2PayloadUtils.populateUserClaims(user, authenticatedUser, eventData.getTenantDomain());
-        WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser);
+        WSO2PayloadUtils.populateUserIdAndRef(user, authenticatedUser, eventData.getTenantDomain());
 
         String rootTenantId = String.valueOf(
                 IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantId());
@@ -78,12 +78,25 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
         if (authenticatedUser.getUserStoreDomain() != null) {
             userStore = new UserStore(authenticatedUser.getUserStoreDomain());
         }
-        Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
-                IdentityContext.getThreadLocalIdentityContext());
-        user.setOrganization(organization);
+        // The organization of the event, which is the organization the login was performed in. For a login to an
+        // application shared with a sub organization that is the sub organization, not the organization on the
+        // thread, which is the one owning the application.
+        Organization organization = WSO2PayloadUtils.resolveEventOrganization(eventData.getTenantDomain());
+        Organization userOrganization;
+        if (authenticatedUser.isSharedUser()) {
+            // A shared user resides in the organization it was shared from.
+            userOrganization = WSO2PayloadUtils.buildOrganizationFromOrgId(
+                    authenticatedUser.getUserResidentOrganization(), authenticatedUser.getTenantDomain());
+        } else {
+            userOrganization = organization;
+        }
+        user.setOrganization(userOrganization);
+        Organization appOrganization =
+                WSO2PayloadUtils.buildApplicationOrganization(authenticationContext, eventData.getTenantDomain());
         Application application = new Application.Builder()
                 .id(authenticationContext.getServiceProviderResourceId())
                 .name(authenticationContext.getServiceProviderName())
+                .organization(appOrganization)
                 .build();
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
@@ -140,12 +153,14 @@ public class WSO2LoginEventPayloadBuilder implements LoginEventPayloadBuilder {
                 IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantDomain());
 
         Tenant tenant = new Tenant(rootTenantId, rootTenantDomain);
+        Organization appOrganization =
+                WSO2PayloadUtils.buildApplicationOrganization(authenticationContext, eventData.getTenantDomain());
         Application application = new Application.Builder()
                 .id(authenticationContext.getServiceProviderResourceId())
                 .name(authenticationContext.getServiceProviderName())
+                .organization(appOrganization)
                 .build();
-        Organization organization = WSO2PayloadUtils.buildOrganizationFromIdentityContext(
-                IdentityContext.getThreadLocalIdentityContext());
+        Organization organization = WSO2PayloadUtils.resolveEventOrganization(eventData.getTenantDomain());
         user.setOrganization(organization);
 
         Flow flow = IdentityContext.getThreadLocalIdentityContext().getCurrentFlow();
