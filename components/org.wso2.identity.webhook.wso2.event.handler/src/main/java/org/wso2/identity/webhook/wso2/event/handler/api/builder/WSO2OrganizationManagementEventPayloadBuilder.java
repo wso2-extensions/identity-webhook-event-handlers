@@ -526,7 +526,8 @@ public class WSO2OrganizationManagementEventPayloadBuilder implements Organizati
             return null;
         }
         try {
-            return organizationManager.getOrganizationDepthInHierarchy(organizationId);
+            return WSO2PayloadUtils.getRelativeDepthFromRoot(
+                    organizationManager.getOrganizationDepthInHierarchy(organizationId));
         } catch (OrganizationManagementException e) {
             LOG.debug("Error while resolving the hierarchy depth of the organization: " + organizationId, e);
             return null;
@@ -559,7 +560,7 @@ public class WSO2OrganizationManagementEventPayloadBuilder implements Organizati
     private Integer extractPublishedDepth(EventData eventData) {
 
         Object value = eventData.getEventParams().get(EVENT_PROP_ORGANIZATION_DEPTH_IN_HIERARCHY);
-        return (value instanceof Integer) ? (Integer) value : null;
+        return (value instanceof Integer) ? WSO2PayloadUtils.getRelativeDepthFromRoot((Integer) value) : null;
     }
 
     private List<PatchOperation> extractPatchOperations(EventData eventData) {

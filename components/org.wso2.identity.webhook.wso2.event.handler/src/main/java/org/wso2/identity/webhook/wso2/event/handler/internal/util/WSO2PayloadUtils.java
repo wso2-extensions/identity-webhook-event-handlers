@@ -39,6 +39,7 @@ import org.wso2.carbon.identity.core.context.util.IdentityContextUtil;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.organization.management.service.util.Utils;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
@@ -674,5 +675,29 @@ public class WSO2PayloadUtils {
 
         return Boolean.parseBoolean(String.valueOf(
                 eventData.getProperties().get(IdentityEventConstants.EventProperty.IS_FEDERATED_USER)));
+    }
+
+    /**
+     * Get the depth of an organization relative to the root organization. The organization management service
+     * reports the depth from the super organization, which shifts with the sub organization start level of the
+     * deployment, whereas the published events report the root organization at depth zero. The root organization
+     * sits one level above the sub organization start level, so that level is the zero of the published depth.
+     *
+     * @param depthFromSuperOrganization    Depth of the organization from the super organization.
+     * @return Depth of the organization below the root organization, or null when it cannot be resolved.
+     */
+    public static Integer getRelativeDepthFromRoot(int depthFromSuperOrganization) {
+
+        if (depthFromSuperOrganization < 0) {
+            log.debug("The depth of the organization was not resolved. The depth is not reported.");
+            return null;
+        }
+        int relativeDepth = depthFromSuperOrganization - (Utils.getSubOrgStartLevel() - 1);
+        if (relativeDepth < 0) {
+            log.debug("Resolved a depth above the root organization for the published depth: " +
+                    depthFromSuperOrganization + ". The depth is not reported.");
+            return null;
+        }
+        return relativeDepth;
     }
 }
