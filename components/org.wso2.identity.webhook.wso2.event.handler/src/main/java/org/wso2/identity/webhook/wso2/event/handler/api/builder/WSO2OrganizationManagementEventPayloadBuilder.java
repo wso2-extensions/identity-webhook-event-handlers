@@ -29,6 +29,7 @@ import org.wso2.carbon.identity.organization.management.service.OrganizationMana
 import org.wso2.carbon.identity.organization.management.service.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.management.service.model.Organization;
 import org.wso2.carbon.identity.organization.management.service.model.PatchOperation;
+import org.wso2.carbon.identity.organization.management.service.util.Utils;
 import org.wso2.identity.webhook.common.event.handler.api.builder.OrganizationManagementEventPayloadBuilder;
 import org.wso2.identity.webhook.common.event.handler.api.constants.Constants;
 import org.wso2.identity.webhook.common.event.handler.api.model.EventData;
@@ -526,11 +527,36 @@ public class WSO2OrganizationManagementEventPayloadBuilder implements Organizati
             return null;
         }
         try {
-            return organizationManager.getOrganizationDepthInHierarchy(organizationId);
+            return getRelativeDepthFromRoot(organizationManager.getOrganizationDepthInHierarchy(organizationId));
         } catch (OrganizationManagementException e) {
             LOG.debug("Error while resolving the hierarchy depth of the organization: " + organizationId, e);
             return null;
         }
+    }
+
+    /**
+     * Convert a depth reported from the super organization into a depth relative to the root organization. The
+     * organization management service reports the depth from the super organization, which shifts with the sub
+     * organization start level of the deployment, whereas the event reports the root organization at depth zero.
+     * The root organization sits one level above the sub organization start level, so that level is the zero of
+     * the published depth.
+     *
+     * @param depthFromSuperOrganization    Depth of the organization from the super organization.
+     * @return Depth of the organization below the root organization, or null when it cannot be resolved.
+     */
+    private Integer getRelativeDepthFromRoot(int depthFromSuperOrganization) {
+
+        if (depthFromSuperOrganization < 0) {
+            LOG.debug("The depth of the organization was not resolved. The depth is not reported.");
+            return null;
+        }
+        int relativeDepth = depthFromSuperOrganization - (Utils.getSubOrgStartLevel() - 1);
+        if (relativeDepth < 0) {
+            LOG.debug("Resolved a depth above the root organization for the published depth: " +
+                    depthFromSuperOrganization + ". The depth is not reported.");
+            return null;
+        }
+        return relativeDepth;
     }
 
     private OrganizationManager getOrganizationManager() {
@@ -559,7 +585,7 @@ public class WSO2OrganizationManagementEventPayloadBuilder implements Organizati
     private Integer extractPublishedDepth(EventData eventData) {
 
         Object value = eventData.getEventParams().get(EVENT_PROP_ORGANIZATION_DEPTH_IN_HIERARCHY);
-        return (value instanceof Integer) ? (Integer) value : null;
+        return (value instanceof Integer) ? getRelativeDepthFromRoot((Integer) value) : null;
     }
 
     private List<PatchOperation> extractPatchOperations(EventData eventData) {
