@@ -18,7 +18,9 @@
 
 package org.wso2.identity.webhook.wso2.event.handler.api.builder;
 
+import org.mockito.Answers;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -40,6 +42,7 @@ import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2Organizat
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2OrganizationStatusEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.WSO2OrganizationUpdatedEventPayload;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.TargetOrganization;
+import org.wso2.identity.webhook.wso2.event.handler.internal.util.WSO2PayloadUtils;
 import org.wso2.identity.webhook.wso2.event.handler.internal.model.common.OrganizationUpdatedValues;
 import org.wso2.identity.webhook.wso2.event.handler.internal.util.CommonTestUtils;
 
@@ -48,7 +51,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -109,6 +114,7 @@ public class WSO2OrganizationManagementEventPayloadBuilderTest {
     @Mock
     private OrganizationManager organizationManager;
 
+    private MockedStatic<WSO2PayloadUtils> mockedPayloadUtils;
     private WSO2OrganizationManagementEventPayloadBuilder builder;
     private String expectedTenantId;
     private String expectedTenantDomain;
@@ -161,6 +167,10 @@ public class WSO2OrganizationManagementEventPayloadBuilderTest {
                 IdentityContext.getThreadLocalIdentityContext().getRootOrganization().getAssociatedTenantDomain();
         expectedContextOrganizationId = IdentityContext.getThreadLocalIdentityContext().getOrganization().getId();
 
+        mockedPayloadUtils = mockStatic(WSO2PayloadUtils.class, Answers.CALLS_REAL_METHODS);
+        mockedPayloadUtils.when(() -> WSO2PayloadUtils.getRelativeDepthFromRoot(anyInt()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         builder = new WSO2OrganizationManagementEventPayloadBuilder();
     }
 
@@ -168,6 +178,9 @@ public class WSO2OrganizationManagementEventPayloadBuilderTest {
     public void tearDown() {
 
         closeMockedServiceURLBuilder();
+        if (mockedPayloadUtils != null) {
+            mockedPayloadUtils.close();
+        }
         IdentityContext.getThreadLocalIdentityContext().exitFlow();
         WSO2EventHookHandlerDataHolder.getInstance().setOrganizationManager(organizationManager);
     }
