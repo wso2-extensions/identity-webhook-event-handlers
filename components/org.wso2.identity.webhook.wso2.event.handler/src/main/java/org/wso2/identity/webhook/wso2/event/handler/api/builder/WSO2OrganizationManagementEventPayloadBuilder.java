@@ -70,6 +70,7 @@ import static org.wso2.identity.webhook.wso2.event.handler.internal.constant.Con
 public class WSO2OrganizationManagementEventPayloadBuilder implements OrganizationManagementEventPayloadBuilder {
 
     private static final Log LOG = LogFactory.getLog(WSO2OrganizationManagementEventPayloadBuilder.class);
+    private static final String PATH_SEPARATOR = "/";
 
     @Override
     public EventPayload buildOrganizationCreatedEvent(EventData eventData) throws IdentityEventException {
@@ -431,7 +432,7 @@ public class WSO2OrganizationManagementEventPayloadBuilder implements Organizati
                 updatedValues.description(resolvePatchedValue(patchOperation));
             } else if (PATCH_PATH_ORG_VERSION.equals(path)) {
                 updatedValues.version(resolvePatchedValue(patchOperation));
-            } else if (path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
+            } else if (path.startsWith(PATCH_PATH_ORG_ATTRIBUTES) || !path.startsWith(PATH_SEPARATOR)) {
                 collectAttributeChange(patchOperation, path, added, removed, updated);
             }
         }
@@ -472,7 +473,8 @@ public class WSO2OrganizationManagementEventPayloadBuilder implements Organizati
     private void collectAttributeChange(PatchOperation patchOperation, String path, List<OrganizationAttribute> added,
                                         List<OrganizationAttribute> removed, List<OrganizationAttribute> updated) {
 
-        String attributeName = path.substring(PATCH_PATH_ORG_ATTRIBUTES.length()).trim();
+        String attributeName = path.startsWith(PATCH_PATH_ORG_ATTRIBUTES) ?
+                path.substring(PATCH_PATH_ORG_ATTRIBUTES.length()).trim() : path.trim();
         if (StringUtils.isBlank(attributeName)) {
             return;
         }
