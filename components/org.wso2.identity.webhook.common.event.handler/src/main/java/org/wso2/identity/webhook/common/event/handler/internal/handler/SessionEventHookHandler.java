@@ -126,15 +126,6 @@ public class SessionEventHookHandler extends AbstractEventHandler {
             return;
         }
 
-        if (EventHookHandlerUtils.isB2BUserLogin(eventData.getAuthenticationContext())) {
-            if (log.isDebugEnabled()) {
-                log.debug(
-                        "Session event is triggered for a B2B user federation. Skipping event handling for login event profile: " +
-                                eventProfile.getProfile());
-            }
-            return;
-        }
-
         // Publish for current accessing org
         String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         publishSessionEvent(tenantDomain, sessionChannel, eventUri, eventProfile.getProfile(), schema,
